@@ -1,0 +1,30 @@
+<!-- @dsCard group="Feedback" height=330 subtitle="Bottom sheets: acciones del menú ⋮ y la fecha de revisión." -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" rel="stylesheet">
+<style>
+body{margin:0;font-family:var(--font-sans);color:var(--on-surface);background:var(--surface)}
+.wrap{padding:16px;display:flex;flex-direction:column;gap:12px}
+.grid{display:grid;grid-template-columns:96px repeat(5,minmax(0,1fr));gap:12px 12px;align-items:center;justify-items:start}
+.h{font-size:11px;font-weight:500;line-height:16px;letter-spacing:.5px;color:var(--on-surface-variant);text-transform:uppercase}
+.ms{font-family:'Material Symbols Rounded';font-weight:normal;font-style:normal;font-size:24px;line-height:1;display:inline-block;white-space:nowrap;direction:ltr;font-feature-settings:'liga';-webkit-font-feature-settings:'liga';-webkit-font-smoothing:antialiased;font-variation-settings:'FILL' 0,'wght' 500,'GRAD' 0,'opsz' 24}
+.ms.fill{font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24}
+.sl{position:relative;overflow:hidden}
+.sl::after{content:"";position:absolute;inset:0;background:currentColor;opacity:0;border-radius:inherit;pointer-events:none}
+.hover::after{opacity:var(--state-hover)}
+.focus::after{opacity:var(--state-focus)}
+.press::after{opacity:var(--state-pressed)}
+.focus{outline:3px solid var(--secondary);outline-offset:2px}
+.note{font-size:12px;line-height:16px;letter-spacing:.4px;color:var(--on-surface-variant);margin:0}
+button{font:inherit;margin:0;border:none;background:none;padding:0;cursor:pointer;color:inherit}
+.bs{width:300px;box-sizing:border-box;display:flex;flex-direction:column;border-radius:var(--corner-extra-large) var(--corner-extra-large) 0 0;background:var(--surface-container-low);padding-bottom:8px}.hd{align-self:center;width:32px;height:4px;margin:22px 0 6px;border-radius:2px;background:var(--on-surface-variant);opacity:.4}.bs h2{margin:0;padding:8px 24px;font-size:22px;font-weight:400;line-height:28px}.ai{display:flex;align-items:center;gap:16px;min-height:56px;padding:0 24px;font-size:16px;letter-spacing:.5px}.ai.dis{opacity:.38}.ai.red{color:var(--error)}.ms.v{color:var(--on-surface-variant)}.fb{height:56px;border:1px solid var(--outline);border-radius:4px;display:flex;align-items:center;justify-content:space-between;padding:0 12px 0 16px;font-size:16px}</style>
+</head>
+<body>
+<div class="wrap">
+<div style="display:flex;gap:24px;align-items:flex-end;flex-wrap:wrap"><div class="bs"><span class="hd"></span><h2>Blockings</h2><div class="ai"><span class="ms v">edit</span>Rename</div><div class="ai"><span class="ms v">arrow_upward</span>Move up</div><div class="ai dis"><span class="ms v">arrow_downward</span>Move down</div><div class="ai red"><span class="ms">delete</span>Delete</div></div><div class="bs" style="gap:12px;padding-bottom:16px"><span class="hd"></span><h2>Set review date</h2><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 16px"><div class="fb">Mon 16 Nov<span class="ms v">event</span></div><div class="fb">10:00<span class="ms v">schedule</span></div></div></div></div>
+</div>
+<script>/* static preview */</script>
+</body>
+</html>

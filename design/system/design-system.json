@@ -1,0 +1,162 @@
+{
+ "v": 3,
+ "layout": "files",
+ "createdOnFiles": {
+  "v": 1,
+  "at": "2026-11-13T09:09:47Z"
+ },
+ "title": "My GDD",
+ "namespace": "MyGDD",
+ "libraries": [],
+ "sections": {},
+ "groups": [
+  "Logos"
+ ],
+ "assetGroups": {
+  "Logos": {
+   "name": "Logos",
+   "tile": "l",
+   "order": [
+    "my-gdd-logo-horizontal-claro.svg",
+    "my-gdd-logo-horizontal-oscuro.svg",
+    "my-gdd-logo-vertical-claro.svg",
+    "my-gdd-logo-vertical-oscuro.svg",
+    "my-gdd-logo-nombre-claro.svg",
+    "my-gdd-logo-nombre-oscuro.svg",
+    "my-gdd-logo-horizontal-claro.png",
+    "my-gdd-logo-horizontal-oscuro.png",
+    "my-gdd-logo-vertical-claro.png",
+    "my-gdd-logo-vertical-oscuro.png",
+    "my-gdd-logo-nombre-claro.png",
+    "my-gdd-logo-nombre-oscuro.png",
+    "my-gdd-icono.svg",
+    "my-gdd-icono-cuadrado.svg",
+    "my-gdd-icono-1024.png",
+    "ic_launcher_foreground.svg",
+    "ic_launcher_background.svg",
+    "ic_launcher_monochrome.svg"
+   ],
+   "files": {
+    "my-gdd-logo-horizontal-claro.svg": {
+     "name": "my-gdd-logo-horizontal-claro.svg",
+     "blob": "7541706e7114d5a0c61244550ac43b7f",
+     "size": 6999,
+     "type": "image/svg+xml"
+    },
+    "my-gdd-logo-horizontal-oscuro.svg": {
+     "name": "my-gdd-logo-horizontal-oscuro.svg",
+     "blob": "52024bdae4355ebeb3b35b7f6574c79a",
+     "size": 6999,
+     "type": "image/svg+xml"
+    },
+    "my-gdd-logo-vertical-claro.svg": {
+     "name": "my-gdd-logo-vertical-claro.svg",
+     "blob": "f3975788aae5943d4777d7324afe7cbb",
+     "size": 7004,
+     "type": "image/svg+xml"
+    },
+    "my-gdd-logo-vertical-oscuro.svg": {
+     "name": "my-gdd-logo-vertical-oscuro.svg",
+     "blob": "3626dd017d14aae356285f40b2af7167",
+     "size": 7004,
+     "type": "image/svg+xml"
+    },
+    "my-gdd-logo-nombre-claro.svg": {
+     "name": "my-gdd-logo-nombre-claro.svg",
+     "blob": "13c277f96aaaf3685acdaf35df8364f5",
+     "size": 4638,
+     "type": "image/svg+xml"
+    },
+    "my-gdd-logo-nombre-oscuro.svg": {
+     "name": "my-gdd-logo-nombre-oscuro.svg",
+     "blob": "e65ec2a9c07cd8b51306ea75e8f57e6b",
+     "size": 4638,
+     "type": "image/svg+xml"
+    },
+    "my-gdd-logo-horizontal-claro.png": {
+     "name": "my-gdd-logo-horizontal-claro.png",
+     "blob": "e29ff1f2ca457342b6d29ff1bc306681",
+     "size": 125305,
+     "type": "image/png"
+    },
+    "my-gdd-logo-horizontal-oscuro.png": {
+     "name": "my-gdd-logo-horizontal-oscuro.png",
+     "blob": "4d9e7f6a3811e92181b36aab3a324a0b",
+     "size": 121815,
+     "type": "image/png"
+    },
+    "my-gdd-logo-vertical-claro.png": {
+     "name": "my-gdd-logo-vertical-claro.png",
+     "blob": "d88dbfa9d28889f941a8d49abd1dcbbc",
+     "size": 151741,
+     "type": "image/png"
+    },
+    "my-gdd-logo-vertical-oscuro.png": {
+     "name": "my-gdd-logo-vertical-oscuro.png",
+     "blob": "10f885b91a493df1c25fa3e775e1d76d",
+     "size": 148447,
+     "type": "image/png"
+    },
+    "my-gdd-logo-nombre-claro.png": {
+     "name": "my-gdd-logo-nombre-claro.png",
+     "blob": "715adbcb8fe8f3d48d6f3e79829035fe",
+     "size": 81179,
+     "type": "image/png"
+    },
+    "my-gdd-logo-nombre-oscuro.png": {
+     "name": "my-gdd-logo-nombre-oscuro.png",
+     "blob": "1faf6531093bbcd0698ae042fb585a5d",
+     "size": 77708,
+     "type": "image/png"
+    },
+    "my-gdd-icono.svg": {
+     "name": "my-gdd-icono.svg",
+     "blob": "9c1c7f45563f40de86d6fef663e68b2d",
+     "size": 2396,
+     "type": "image/svg+xml"
+    },
+    "my-gdd-icono-cuadrado.svg": {
+     "name": "my-gdd-icono-cuadrado.svg",
+     "blob": "2044ce1636096f0619c2ca0549c77930",
+     "size": 2387,
+     "type": "image/svg+xml"
+    },
+    "my-gdd-icono-1024.png": {
+     "name": "my-gdd-icono-1024.png",
+     "blob": "8f4d9c37e4609d9eeb96251fa32aeaeb",
+     "size": 39127,
+     "type": "image/png"
+    },
+    "ic_launcher_foreground.svg": {
+     "name": "ic_launcher_foreground.svg",
+     "blob": "d324544053fe5066b53ae304e5ea17de",
+     "size": 2332,
+     "type": "image/svg+xml"
+    },
+    "ic_launcher_background.svg": {
+     "name": "ic_launcher_background.svg",
+     "blob": "f6db7955569d82fad0ec9f89463c4e1b",
+     "size": 146,
+     "type": "image/svg+xml"
+    },
+    "ic_launcher_monochrome.svg": {
+     "name": "ic_launcher_monochrome.svg",
+     "blob": "0b831754c66f3b7207cfbd108a577526",
+     "size": 816,
+     "type": "image/svg+xml"
+    }
+   }
+  }
+ },
+ "blobs": {},
+ "docs": {
+  "readme": "project/README.md",
+  "sections": []
+ },
+ "lastChange": {
+  "by": "Luis Daniel",
+  "at": "2026-11-18T11:53:30Z",
+  "via": "Claude",
+  "note": "Pendientes del README: tokens del prototipo de alta fidelidad sincronizados (18/11)."
+ }
+}

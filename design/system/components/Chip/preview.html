@@ -1,0 +1,30 @@
+<!-- @dsCard group="Selection" height=200 subtitle="Chips de filtro (Send to, Out of date) y chip de estado tocable." width=960 -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@700&display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" rel="stylesheet">
+<style>
+body{margin:0;font-family:var(--font-sans);color:var(--on-surface);background:var(--surface)}
+.wrap{padding:16px;display:flex;flex-direction:column;gap:12px}
+.grid{display:grid;grid-template-columns:96px repeat(5,minmax(150px,1fr));gap:12px 12px;align-items:center;justify-items:start}
+.h{font-size:11px;font-weight:500;line-height:16px;letter-spacing:.5px;color:var(--on-surface-variant);text-transform:uppercase}
+.ms{font-family:'Material Symbols Rounded';font-weight:normal;font-style:normal;font-size:24px;line-height:1;display:inline-block;white-space:nowrap;direction:ltr;font-feature-settings:'liga';-webkit-font-feature-settings:'liga';-webkit-font-smoothing:antialiased;font-variation-settings:'FILL' 0,'wght' 500,'GRAD' 0,'opsz' 24}
+.ms.fill{font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24}
+.sl{position:relative;overflow:hidden}
+.sl::after{content:"";position:absolute;inset:0;background:currentColor;opacity:0;border-radius:inherit;pointer-events:none}
+.hover::after{opacity:var(--state-hover)}
+.focus::after{opacity:var(--state-focus)}
+.press::after{opacity:var(--state-pressed)}
+.focus{outline:3px solid var(--secondary);outline-offset:2px}
+.note{font-size:12px;line-height:16px;letter-spacing:.4px;color:var(--on-surface-variant);margin:0}
+button{font:inherit;margin:0;border:none;background:none;padding:0;cursor:pointer;color:inherit}
+.chip{height:32px;padding:0 16px;border-radius:var(--corner-small);border:1px solid var(--outline);color:var(--on-surface-variant);display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:500;letter-spacing:.1px;white-space:nowrap}.chip.on{background:var(--secondary-container);border-color:transparent;color:var(--on-secondary-container);padding-left:8px}.chip.st{padding:0 8px 0 6px;gap:6px;background:var(--aviso-suave);border-color:var(--aviso);color:var(--on-surface)}.chip.dis{color:color-mix(in srgb,var(--on-surface) calc(var(--disabled-content)*100%),transparent);border-color:color-mix(in srgb,var(--on-surface) calc(var(--disabled-container)*100%),transparent);background:none}.lbl{display:inline-flex;align-items:center;gap:4px;height:20px;box-sizing:border-box;padding:0 6px;border-radius:var(--corner-extra-small);font-family:'Roboto Mono',ui-monospace,monospace;font-size:11px;font-weight:700;line-height:16px;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;flex:none}.lbl.av{background:var(--aviso);color:var(--on-aviso)}.lbl.ok{background:var(--exito);color:var(--on-exito)}.lbl.er{background:var(--error-container);color:var(--on-error-container)}.lbl.sym{width:20px;padding:0;justify-content:center}.chip.dis .lbl{background:none;color:inherit}</style>
+</head>
+<body>
+<div class="wrap">
+<div class="grid"><span></span><span class="h">Enabled</span><span class="h">Hover</span><span class="h">Focused</span><span class="h">Pressed</span><span class="h">Disabled</span><span class="h">Filter</span><button class="chip sl ">Animation</button><button class="chip sl hover">Animation</button><button class="chip sl focus">Animation</button><button class="chip sl press">Animation</button><button class="chip sl dis">Animation</button><span class="h">Selected</span><button class="chip on sl "><span class="ms" style="font-size:18px">check</span>Whole team</button><button class="chip on sl hover"><span class="ms" style="font-size:18px">check</span>Whole team</button><button class="chip on sl focus"><span class="ms" style="font-size:18px">check</span>Whole team</button><button class="chip on sl press"><span class="ms" style="font-size:18px">check</span>Whole team</button><button class="chip on sl dis"><span class="ms" style="font-size:18px">check</span>Whole team</button><span class="h">Status</span><button class="chip st sl "><span class="lbl av sym" aria-hidden="true">!</span>3 out of date<span class="ms" style="font-size:18px">chevron_right</span></button><button class="chip st sl hover"><span class="lbl av sym" aria-hidden="true">!</span>3 out of date<span class="ms" style="font-size:18px">chevron_right</span></button><button class="chip st sl focus"><span class="lbl av sym" aria-hidden="true">!</span>3 out of date<span class="ms" style="font-size:18px">chevron_right</span></button><button class="chip st sl press"><span class="lbl av sym" aria-hidden="true">!</span>3 out of date<span class="ms" style="font-size:18px">chevron_right</span></button><button class="chip st sl dis"><span class="lbl av sym" aria-hidden="true">!</span>3 out of date<span class="ms" style="font-size:18px">chevron_right</span></button></div>
+</div>
+<script>/* static preview */</script>
+</body>
+</html>

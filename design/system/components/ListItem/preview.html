@@ -1,0 +1,30 @@
+<!-- @dsCard group="Containment" height=260 subtitle="Filas de lista de una y dos líneas: Profile, Help y la lista compacta de Notes." -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" rel="stylesheet">
+<style>
+body{margin:0;font-family:var(--font-sans);color:var(--on-surface);background:var(--surface)}
+.wrap{padding:16px;display:flex;flex-direction:column;gap:12px}
+.grid{display:grid;grid-template-columns:96px repeat(5,minmax(0,1fr));gap:12px 12px;align-items:center;justify-items:start}
+.h{font-size:11px;font-weight:500;line-height:16px;letter-spacing:.5px;color:var(--on-surface-variant);text-transform:uppercase}
+.ms{font-family:'Material Symbols Rounded';font-weight:normal;font-style:normal;font-size:24px;line-height:1;display:inline-block;white-space:nowrap;direction:ltr;font-feature-settings:'liga';-webkit-font-feature-settings:'liga';-webkit-font-smoothing:antialiased;font-variation-settings:'FILL' 0,'wght' 500,'GRAD' 0,'opsz' 24}
+.ms.fill{font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24}
+.sl{position:relative;overflow:hidden}
+.sl::after{content:"";position:absolute;inset:0;background:currentColor;opacity:0;border-radius:inherit;pointer-events:none}
+.hover::after{opacity:var(--state-hover)}
+.focus::after{opacity:var(--state-focus)}
+.press::after{opacity:var(--state-pressed)}
+.focus{outline:3px solid var(--secondary);outline-offset:2px}
+.note{font-size:12px;line-height:16px;letter-spacing:.4px;color:var(--on-surface-variant);margin:0}
+button{font:inherit;margin:0;border:none;background:none;padding:0;cursor:pointer;color:inherit}
+.li{display:flex;align-items:center;gap:16px;min-height:56px;padding:8px 16px;width:340px;box-sizing:border-box}.li .t{flex:1;display:flex;flex-direction:column}.li .a{font-size:16px;line-height:24px;letter-spacing:.5px}.li .b{font-size:14px;line-height:20px;letter-spacing:.25px;color:var(--on-surface-variant)}.li .w{font-size:12px;color:var(--on-surface-variant)}.ms.v{color:var(--on-surface-variant)}</style>
+</head>
+<body>
+<div class="wrap">
+<div style="display:flex;flex-direction:column"><div class="li sl"><span class="ms v">person</span><span class="t"><span class="a">Personal info</span></span><span class="ms v">chevron_right</span></div><div class="li sl hover"><span class="ms v">group</span><span class="t"><span class="a">My team</span></span><span class="w">3 people</span><span class="ms v">chevron_right</span></div><div class="li sl"><span class="ms v">description</span><span class="t"><span class="a" style="font-weight:500">Blockings may be out of date</span></span><span class="w">Today</span><span class="ms v">more_vert</span></div><div class="li sl"><span class="ms v">menu_book</span><span class="t"><span class="a">Step-by-step guide</span><span class="b">How to write each block of your GDD.</span></span><span class="ms v">chevron_right</span></div></div><p class="note">La segunda fila muestra el estado hover.</p>
+</div>
+<script>/* static preview */</script>
+</body>
+</html>

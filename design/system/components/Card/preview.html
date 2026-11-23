@@ -1,0 +1,75 @@
+<!-- @dsCard group="Containment" height=600 width=1080 subtitle="Tarjetas de proyecto (Home), de departamento con su color y de bloque, sobre surface-container-low." -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@700&display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" rel="stylesheet">
+<style>
+body{margin:0;font-family:var(--font-sans);color:var(--on-surface);background:var(--surface-container-low)}
+.ms{font-family:'Material Symbols Rounded';font-weight:normal;font-style:normal;font-size:24px;line-height:1;display:inline-block;white-space:nowrap;direction:ltr;font-feature-settings:'liga';-webkit-font-feature-settings:'liga';-webkit-font-smoothing:antialiased;font-variation-settings:'FILL' 0,'wght' 500,'GRAD' 0,'opsz' 24;flex:none}
+.wrap{padding:24px;display:flex;gap:16px;align-items:flex-start}
+.col{display:flex;flex-direction:column;gap:8px}
+.h{font-size:11px;font-weight:500;line-height:16px;letter-spacing:.5px;color:var(--on-surface-variant);text-transform:uppercase;margin:0 0 4px}
+.cd{position:relative;box-sizing:border-box;background:var(--surface-container-lowest);border:1px solid var(--outline-variant)}
+[data-theme^="dark"] .cd{background:var(--surface-container-high)}
+.num{font-family:'Roboto Mono',ui-monospace,monospace;font-weight:700;color:var(--secondary)}
+.sr{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.lbl{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:var(--corner-extra-small);font-family:'Roboto Mono',ui-monospace,monospace;font-size:11px;font-weight:700;line-height:16px;flex:none;background:var(--aviso);color:var(--on-aviso)}
+.ok{font-size:16px;color:var(--exito-texto)}
+.dash{display:inline-block;width:14px;height:14px;margin:1px;box-sizing:border-box;border:2px dashed var(--on-surface-variant);border-radius:50%;flex:none}
+.wch{align-self:flex-start;margin-top:4px;min-height:32px;box-sizing:border-box;display:inline-flex;align-items:center;gap:6px;padding:0 8px 0 8px;border:1px solid var(--aviso);border-radius:var(--corner-small);background:var(--aviso-suave);font-size:14px;font-weight:500;line-height:20px;letter-spacing:.1px;color:var(--on-surface);white-space:nowrap}
+.wch .ms{font-size:18px;color:var(--on-surface-variant)}
+.pc{width:286px;height:360px;border-radius:var(--corner-extra-large);overflow:hidden;display:flex;flex-direction:column}
+.pc .band{height:196px;flex:none;display:flex;align-items:center;justify-content:center;background:var(--primary-fixed);color:var(--on-primary-fixed-variant)}
+[data-theme^="dark"] .pc .band{background:var(--secondary-container);color:var(--on-secondary-container)}
+.pc .band .ms{font-size:48px}
+.pc .more{position:absolute;top:8px;right:8px;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--surface-container-lowest);color:var(--on-surface-variant)}
+[data-theme^="dark"] .pc .more{background:var(--surface-container-high)}
+.pc .tx{padding:12px 16px 20px 20px;display:flex;flex-direction:column;gap:4px}
+.pc .nm{font-size:22px;line-height:28px}
+.ds{font-size:14px;line-height:20px;letter-spacing:.25px;color:var(--on-surface-variant)}
+.dp{width:340px;min-height:80px;border-radius:var(--corner-large);display:flex;align-items:center;padding:8px 52px 8px 72px}
+.dp .strip{position:absolute;top:0;bottom:0;left:0;width:56px;border-radius:15px 0 0 15px;display:flex;align-items:center;justify-content:center}
+.dp .num{font-size:20px;line-height:1}
+.dp .tx{display:flex;flex-direction:column;gap:4px;min-width:0}
+.dp .nm{font-size:16px;line-height:24px;letter-spacing:.5px}
+.meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:14px;line-height:20px;letter-spacing:.25px;color:var(--on-surface-variant)}
+.dp .wch{margin-top:0}
+.mv{position:absolute;width:48px;height:48px;display:flex;align-items:center;justify-content:center;color:var(--on-surface-variant)}
+.mv .ms{font-size:20px}
+.dp .mv{top:50%;right:4px;transform:translateY(-50%)}
+.grid{display:grid;grid-template-columns:repeat(2,175px);gap:8px}
+.bk{height:108px;border-radius:var(--corner-large)}
+.bk .top{position:absolute;top:0;left:0;right:0;height:47px;border-radius:15px 15px 0 0}
+.bk .in{position:relative;height:100%;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;padding:12px 12px 12px 14px}
+.bk .num{font-size:24px;line-height:28px}
+.bk .bn{font-size:14px;font-weight:500;line-height:20px;letter-spacing:.1px}
+.bk .st{position:absolute;top:14px;right:44px;display:flex;align-items:center}
+.bk .mv{top:0;right:0}
+.bk.sel{background:var(--surface-container-highest);border-color:var(--secondary)}
+.c1{background:var(--bloque-1)}.c2{background:var(--bloque-2)}.c3{background:var(--bloque-3)}.c4{background:var(--bloque-4)}.c5{background:var(--bloque-5)}.c6{background:var(--bloque-6)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="col"><p class="h">Project · Home</p>
+<div class="cd pc"><span class="band"><span class="ms" aria-hidden="true">sports_esports</span></span><span class="more"><span class="ms" style="font-size:20px" aria-hidden="true">more_vert</span></span><span class="tx"><span class="nm">Hollow Tides</span><span class="ds">2D metroidvania</span><span class="wch"><span class="lbl" aria-hidden="true">!</span>3 blocks out of date<span class="ms" aria-hidden="true">chevron_right</span></span></span></div></div>
+<div class="col"><p class="h">Department · Departments</p>
+<div class="cd dp"><span class="strip c1"><span class="num">01</span></span><span class="tx"><span class="nm">Game design</span><span class="meta"><span class="ms ok" aria-hidden="true">check_circle</span>8 blocks · Up to date</span></span><span class="mv"><span class="ms" aria-hidden="true">more_vert</span></span></div>
+<div class="cd dp"><span class="strip c2"><span class="num">02</span></span><span class="tx"><span class="nm">Narrative</span><span class="meta">5 blocks<span class="wch"><span class="lbl" aria-hidden="true">!</span>2 out of date<span class="ms" aria-hidden="true">chevron_right</span></span></span></span><span class="mv"><span class="ms" aria-hidden="true">more_vert</span></span></div>
+<div class="cd dp"><span class="strip c3"><span class="num">03</span></span><span class="tx"><span class="nm">Art</span><span class="meta"><span class="ms ok" aria-hidden="true">check_circle</span>6 blocks · Up to date</span></span><span class="mv"><span class="ms" aria-hidden="true">more_vert</span></span></div>
+<div class="cd dp"><span class="strip c4"><span class="num">04</span></span><span class="tx"><span class="nm">Animation</span><span class="meta">4 blocks<span class="wch"><span class="lbl" aria-hidden="true">!</span>1 out of date<span class="ms" aria-hidden="true">chevron_right</span></span></span></span><span class="mv"><span class="ms" aria-hidden="true">more_vert</span></span></div>
+<div class="cd dp"><span class="strip c5"><span class="num">05</span></span><span class="tx"><span class="nm">Level design</span><span class="meta"><span class="dash" aria-hidden="true"></span>Empty</span></span><span class="mv"><span class="ms" aria-hidden="true">more_vert</span></span></div>
+<div class="cd dp"><span class="strip c6"><span class="num">06</span></span><span class="tx"><span class="nm">Programming</span><span class="meta"><span class="ms ok" aria-hidden="true">check_circle</span>7 blocks · Up to date</span></span><span class="mv"><span class="ms" aria-hidden="true">more_vert</span></span></div>
+</div>
+<div class="col"><p class="h">Block · inside 04 Animation</p>
+<div class="grid">
+<div class="cd bk"><span class="top c4"></span><span class="in"><span class="num">01</span><span class="bn">Splines</span></span><span class="st"><span class="dash" role="img" aria-label="Empty"></span></span><span class="mv"><span class="ms" aria-hidden="true">more_vert</span></span></div>
+<div class="cd bk sel"><span class="top c4"></span><span class="in"><span class="num">02</span><span class="bn">Blockings</span></span><span class="st"><span class="lbl" role="img" aria-label="Out of date">!</span></span><span class="mv"><span class="ms" aria-hidden="true">more_vert</span></span></div>
+<div class="cd bk"><span class="top c4"></span><span class="in"><span class="num">03</span><span class="bn">Lip sync</span></span><span class="st"><span class="ms ok" role="img" aria-label="Up to date">check_circle</span></span><span class="mv"><span class="ms" aria-hidden="true">more_vert</span></span></div>
+<div class="cd bk"><span class="top c4"></span><span class="in"><span class="num">04</span><span class="bn">Animation reference</span></span><span class="st"><span class="ms ok" role="img" aria-label="Up to date">check_circle</span></span><span class="mv"><span class="ms" aria-hidden="true">more_vert</span></span></div>
+</div></div>
+</div>
+<script>/* static preview */</script>
+</body>
+</html>

@@ -1,0 +1,1794 @@
+{
+ "v": 3,
+ "createdOnFiles": {
+  "v": 1,
+  "at": "2026-11-18T12:44:44Z"
+ },
+ "title": "My GDD · Fase 5 · Alta fidelidad + movimiento",
+ "launch": {
+  "view": "canvas",
+  "page": "movimiento"
+ },
+ "pages": [
+  {
+   "id": "movimiento",
+   "name": "Movimiento · todas las pantallas"
+  },
+  {
+   "id": "piloto",
+   "name": "Alta fidelidad · Claro"
+  },
+  {
+   "id": "oscuro",
+   "name": "Alta fidelidad · Oscuro"
+  },
+  {
+   "id": "app",
+   "name": "Prototipo funcional"
+  }
+ ],
+ "boards": {
+  "Mov-Prototipo-Claro.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "page": "movimiento",
+   "title": "MOVIMIENTO · PROTOTIPO COMPLETO · arranque de 1 s, Log in con carga y movimiento en todas las pantallas · claro",
+   "is_interactive": true
+  },
+  "Mov-Login-Claro.dc.html": {
+   "x": 470,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "page": "movimiento",
+   "title": "MOVIMIENTO · LOG IN · arranque «Anillo» (1 s) y pulsar «Log in» · claro",
+   "is_interactive": true
+  },
+  "Mov-Home-Claro.dc.html": {
+   "x": 940,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "page": "movimiento",
+   "title": "MOVIMIENTO · HOME · globo de Notes (3 pulsos), «New GDD» y menú ⋮ · claro",
+   "is_interactive": true
+  },
+  "Mov-Departamento-Claro.dc.html": {
+   "x": 1410,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "page": "movimiento",
+   "title": "MOVIMIENTO · DEPARTAMENTO · «+ Block» (palomitas), mantener pulsado y arrastrar para reordenar, ⋮ › Delete (desintegración) y Undo · claro",
+   "is_interactive": true
+  },
+  "Mov-Editor-Claro.dc.html": {
+   "x": 1880,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "page": "movimiento",
+   "title": "MOVIMIENTO · EDITOR · «Mark as reviewed» → aviso ✓ OK · claro",
+   "is_interactive": true
+  },
+  "Mov-NewNote-Claro.dc.html": {
+   "x": 2350,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "page": "movimiento",
+   "title": "MOVIMIENTO · NEW NOTE · «Send note» con carga → aviso en Notes · claro",
+   "is_interactive": true
+  },
+  "Mov-Prototipo-Oscuro.dc.html": {
+   "x": 0,
+   "y": 1300,
+   "w": 390,
+   "h": 844,
+   "page": "movimiento",
+   "title": "MOVIMIENTO · PROTOTIPO COMPLETO · arranque de 1 s, Log in con carga y movimiento en todas las pantallas · oscuro",
+   "is_interactive": true
+  },
+  "Mov-Login-Oscuro.dc.html": {
+   "x": 470,
+   "y": 1300,
+   "w": 390,
+   "h": 844,
+   "page": "movimiento",
+   "title": "MOVIMIENTO · LOG IN · arranque «Anillo» (1 s) y pulsar «Log in» · oscuro",
+   "is_interactive": true
+  },
+  "Mov-Home-Oscuro.dc.html": {
+   "x": 940,
+   "y": 1300,
+   "w": 390,
+   "h": 844,
+   "page": "movimiento",
+   "title": "MOVIMIENTO · HOME · globo de Notes (3 pulsos), «New GDD» y menú ⋮ · oscuro",
+   "is_interactive": true
+  },
+  "Mov-Departamento-Oscuro.dc.html": {
+   "x": 1410,
+   "y": 1300,
+   "w": 390,
+   "h": 844,
+   "page": "movimiento",
+   "title": "MOVIMIENTO · DEPARTAMENTO · «+ Block» (palomitas), mantener pulsado y arrastrar para reordenar, ⋮ › Delete (desintegración) y Undo · oscuro",
+   "is_interactive": true
+  },
+  "Mov-Editor-Oscuro.dc.html": {
+   "x": 1880,
+   "y": 1300,
+   "w": 390,
+   "h": 844,
+   "page": "movimiento",
+   "title": "MOVIMIENTO · EDITOR · «Mark as reviewed» → aviso ✓ OK · oscuro",
+   "is_interactive": true
+  },
+  "Mov-NewNote-Oscuro.dc.html": {
+   "x": 2350,
+   "y": 1300,
+   "w": 390,
+   "h": 844,
+   "page": "movimiento",
+   "title": "MOVIMIENTO · NEW NOTE · «Send note» con carga → aviso en Notes · oscuro",
+   "is_interactive": true
+  },
+  "Mov-Departamento-Lento.dc.html": {
+   "x": 0,
+   "y": 2600,
+   "w": 390,
+   "h": 844,
+   "page": "movimiento",
+   "title": "CÁMARA LENTA ×4 · DEPARTAMENTO · para revisar cada animación",
+   "is_interactive": true
+  },
+  "Mov-Prototipo-Lento.dc.html": {
+   "x": 470,
+   "y": 2600,
+   "w": 390,
+   "h": 844,
+   "page": "movimiento",
+   "title": "CÁMARA LENTA ×4 · PROTOTIPO COMPLETO",
+   "is_interactive": true
+  },
+  "Mov-Departamento-Reducido.dc.html": {
+   "x": 940,
+   "y": 2600,
+   "w": 390,
+   "h": 844,
+   "page": "movimiento",
+   "title": "REDUCIR MOVIMIENTO · DEPARTAMENTO · solo fundidos de 150 ms",
+   "is_interactive": true
+  },
+  "Mov-Prototipo-Reducido.dc.html": {
+   "x": 1410,
+   "y": 2600,
+   "w": 390,
+   "h": 844,
+   "page": "movimiento",
+   "title": "REDUCIR MOVIMIENTO · PROTOTIPO COMPLETO",
+   "is_interactive": true
+  },
+  "F5-Login-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · LOG IN · vertical · texto 100 %",
+   "w": 390,
+   "x": 0,
+   "y": 0
+  },
+  "F5-Login-Error-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · LOG IN · error de campo · vertical · texto 100 %",
+   "w": 390,
+   "x": 470,
+   "y": 0
+  },
+  "F5-Signup-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · SIGN UP · vertical · texto 100 %",
+   "w": 390,
+   "x": 940,
+   "y": 0
+  },
+  "F5-Signup-Error-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · SIGN UP · email ya registrado · vertical · texto 100 %",
+   "w": 390,
+   "x": 1410,
+   "y": 0
+  },
+  "F5-Forgot-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · RESET PASSWORD · vertical · texto 100 %",
+   "w": 390,
+   "x": 1880,
+   "y": 0
+  },
+  "F5-Forgot-Enviado-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · RESET PASSWORD · enlace enviado · vertical · texto 100 %",
+   "w": 390,
+   "x": 2350,
+   "y": 0
+  },
+  "F5-Home-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · HOME · vertical · texto 100 %",
+   "w": 390,
+   "x": 0,
+   "y": 1300
+  },
+  "F5-Home-Menu-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · HOME · menú ⋮ del proyecto · vertical · texto 100 %",
+   "w": 390,
+   "x": 470,
+   "y": 1300
+  },
+  "F5-Home-Renombrar-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · HOME · renombrar proyecto · vertical · texto 100 %",
+   "w": 390,
+   "x": 940,
+   "y": 1300
+  },
+  "F5-Home-Borrar-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · HOME · borrar proyecto · vertical · texto 100 %",
+   "w": 390,
+   "x": 1410,
+   "y": 1300
+  },
+  "F5-Home-Error-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · HOME · error de carga · vertical · texto 100 %",
+   "w": 390,
+   "x": 1880,
+   "y": 1300
+  },
+  "F5-NuevoGDD-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · NEW GDD (plantilla) · vertical · texto 100 %",
+   "w": 390,
+   "x": 2350,
+   "y": 1300
+  },
+  "F5-Desactualizados-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · OUT OF DATE (bloques por revisar) · vertical · texto 100 %",
+   "w": 390,
+   "x": 2820,
+   "y": 1300
+  },
+  "F5-Departamentos-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · DEPARTMENTS · vertical · texto 100 %",
+   "w": 390,
+   "x": 0,
+   "y": 2600
+  },
+  "F5-Departamentos-Buscar-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · DEPARTMENTS · búsqueda · vertical · texto 100 %",
+   "w": 390,
+   "x": 470,
+   "y": 2600
+  },
+  "F5-Departamentos-Vacio-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · DEPARTMENTS · vacío · vertical · texto 100 %",
+   "w": 390,
+   "x": 940,
+   "y": 2600
+  },
+  "F5-Departamento-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · DEPARTAMENTO (Animation) · vertical · texto 100 %",
+   "w": 390,
+   "x": 0,
+   "y": 3900
+  },
+  "F5-Departamento-Menu-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · DEPARTAMENTO · menú ⋮ del bloque · vertical · texto 100 %",
+   "w": 390,
+   "x": 470,
+   "y": 3900
+  },
+  "F5-Departamento-Renombrar-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · DEPARTAMENTO · renombrar bloque · vertical · texto 100 %",
+   "w": 390,
+   "x": 940,
+   "y": 3900
+  },
+  "F5-Departamento-Vacio-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · DEPARTAMENTO · sin bloques · vertical · texto 100 %",
+   "w": 390,
+   "x": 1410,
+   "y": 3900
+  },
+  "F5-Departamento-BloqueCreado-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · DEPARTAMENTO · snackbar bloque creado · vertical · texto 100 %",
+   "w": 390,
+   "x": 1880,
+   "y": 3900
+  },
+  "F5-Editor-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · EDITOR (Blockings) · vertical · texto 100 %",
+   "w": 390,
+   "x": 0,
+   "y": 5200
+  },
+  "F5-Editor-Guardado-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · EDITOR · snackbar ✓ OK · vertical · texto 100 %",
+   "w": 390,
+   "x": 470,
+   "y": 5200
+  },
+  "F5-Editor-ErrorGuardar-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · EDITOR · snackbar × Error · vertical · texto 100 %",
+   "w": 390,
+   "x": 940,
+   "y": 5200
+  },
+  "F5-Editor-Revisado-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · EDITOR · Blockings revisado · vertical · texto 100 %",
+   "w": 390,
+   "x": 1410,
+   "y": 5200
+  },
+  "F5-Editor-Vacio-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · EDITOR · bloque vacío (Splines) · vertical · texto 100 %",
+   "w": 390,
+   "x": 1880,
+   "y": 5200
+  },
+  "F5-Editor-Gameplay-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · EDITOR (Gameplay) · vertical · texto 100 %",
+   "w": 390,
+   "x": 2350,
+   "y": 5200
+  },
+  "F5-Review-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · REVIEW (bloques afectados) · vertical · texto 100 %",
+   "w": 390,
+   "x": 0,
+   "y": 6500
+  },
+  "F5-Review-Revisado-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · REVIEW · Gameplay revisado · vertical · texto 100 %",
+   "w": 390,
+   "x": 470,
+   "y": 6500
+  },
+  "F5-Review-Completo-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · REVIEW · todo al día · vertical · texto 100 %",
+   "w": 390,
+   "x": 940,
+   "y": 6500
+  },
+  "F5-Notes-Recibidas-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · NOTES · Received · vertical · texto 100 %",
+   "w": 390,
+   "x": 0,
+   "y": 7800
+  },
+  "F5-Notes-Plegado-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · NOTES · Received con Pixel Kitchen plegado · vertical · texto 100 %",
+   "w": 390,
+   "x": 470,
+   "y": 7800
+  },
+  "F5-Notes-Menu-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · NOTES · menú ⋮ de la nota · vertical · texto 100 %",
+   "w": 390,
+   "x": 940,
+   "y": 7800
+  },
+  "F5-Notes-Enviadas-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · NOTES · Sent · vertical · texto 100 %",
+   "w": 390,
+   "x": 1410,
+   "y": 7800
+  },
+  "F5-Notes-EnviadasVacio-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · NOTES · Sent vacío · vertical · texto 100 %",
+   "w": 390,
+   "x": 1880,
+   "y": 7800
+  },
+  "F5-Notes-Enviada-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · NOTES · nota enviada · vertical · texto 100 %",
+   "w": 390,
+   "x": 2350,
+   "y": 7800
+  },
+  "F5-NewNote-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · NEW NOTE · vertical · texto 100 %",
+   "w": 390,
+   "x": 2820,
+   "y": 7800
+  },
+  "F5-NewNote-Vacio-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · NEW NOTE · nota vacía · vertical · texto 100 %",
+   "w": 390,
+   "x": 3290,
+   "y": 7800
+  },
+  "F5-NewNote-ErrorEnvio-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · NEW NOTE · error al enviar · vertical · texto 100 %",
+   "w": 390,
+   "x": 3760,
+   "y": 7800
+  },
+  "F5-Help-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · HELP · vertical · texto 100 %",
+   "w": 390,
+   "x": 0,
+   "y": 9100
+  },
+  "F5-Guia-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · HELP · step-by-step guide · vertical · texto 100 %",
+   "w": 390,
+   "x": 470,
+   "y": 9100
+  },
+  "F5-Glosario-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · HELP · glossary · vertical · texto 100 %",
+   "w": 390,
+   "x": 940,
+   "y": 9100
+  },
+  "F5-Feedback-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · HELP · send feedback · vertical · texto 100 %",
+   "w": 390,
+   "x": 1410,
+   "y": 9100
+  },
+  "F5-Perfil-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · PROFILE · vertical · texto 100 %",
+   "w": 390,
+   "x": 0,
+   "y": 10400
+  },
+  "F5-Perfil-Foto-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · PROFILE · foto de perfil · vertical · texto 100 %",
+   "w": 390,
+   "x": 470,
+   "y": 10400
+  },
+  "F5-Perfil-Editar-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · EDIT PROFILE · vertical · texto 100 %",
+   "w": 390,
+   "x": 940,
+   "y": 10400
+  },
+  "F5-Perfil-Datos-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · PERSONAL INFO · vertical · texto 100 %",
+   "w": 390,
+   "x": 1410,
+   "y": 10400
+  },
+  "F5-Perfil-Password-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · PASSWORD · vertical · texto 100 %",
+   "w": 390,
+   "x": 1880,
+   "y": 10400
+  },
+  "F5-Idioma-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · LANGUAGE · vertical · texto 100 %",
+   "w": 390,
+   "x": 2350,
+   "y": 10400
+  },
+  "F5-Privacidad-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · PRIVACY AND TERMS · vertical · texto 100 %",
+   "w": 390,
+   "x": 2820,
+   "y": 10400
+  },
+  "F5-Equipo-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · MY TEAM · vertical · texto 100 %",
+   "w": 390,
+   "x": 0,
+   "y": 11700
+  },
+  "F5-Equipo-Gestionar-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · MY TEAM · gestionar miembro · vertical · texto 100 %",
+   "w": 390,
+   "x": 470,
+   "y": 11700
+  },
+  "F5-Equipo-Quitar-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · MY TEAM · quitar miembro · vertical · texto 100 %",
+   "w": 390,
+   "x": 940,
+   "y": 11700
+  },
+  "F5-Equipo-Invitar-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · MY TEAM · invitar · vertical · texto 100 %",
+   "w": 390,
+   "x": 1410,
+   "y": 11700
+  },
+  "F5-Equipo-InvitarError-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · MY TEAM · invitar con error · vertical · texto 100 %",
+   "w": 390,
+   "x": 1880,
+   "y": 11700
+  },
+  "F5-Login-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · LOG IN · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 0,
+   "y": 0
+  },
+  "F5-Login-Error-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · LOG IN · error de campo · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 470,
+   "y": 0
+  },
+  "F5-Signup-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · SIGN UP · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 940,
+   "y": 0
+  },
+  "F5-Signup-Error-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · SIGN UP · email ya registrado · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 1410,
+   "y": 0
+  },
+  "F5-Forgot-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · RESET PASSWORD · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 1880,
+   "y": 0
+  },
+  "F5-Forgot-Enviado-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · RESET PASSWORD · enlace enviado · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 2350,
+   "y": 0
+  },
+  "F5-Home-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · HOME · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 0,
+   "y": 1300
+  },
+  "F5-Home-Menu-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · HOME · menú ⋮ del proyecto · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 470,
+   "y": 1300
+  },
+  "F5-Home-Renombrar-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · HOME · renombrar proyecto · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 940,
+   "y": 1300
+  },
+  "F5-Home-Borrar-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · HOME · borrar proyecto · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 1410,
+   "y": 1300
+  },
+  "F5-Home-Error-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · HOME · error de carga · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 1880,
+   "y": 1300
+  },
+  "F5-NuevoGDD-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · NEW GDD (plantilla) · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 2350,
+   "y": 1300
+  },
+  "F5-Desactualizados-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · OUT OF DATE (bloques por revisar) · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 2820,
+   "y": 1300
+  },
+  "F5-Departamentos-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · DEPARTMENTS · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 0,
+   "y": 2600
+  },
+  "F5-Departamentos-Buscar-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · DEPARTMENTS · búsqueda · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 470,
+   "y": 2600
+  },
+  "F5-Departamentos-Vacio-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · DEPARTMENTS · vacío · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 940,
+   "y": 2600
+  },
+  "F5-Departamento-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · DEPARTAMENTO (Animation) · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 0,
+   "y": 3900
+  },
+  "F5-Departamento-Menu-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · DEPARTAMENTO · menú ⋮ del bloque · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 470,
+   "y": 3900
+  },
+  "F5-Departamento-Renombrar-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · DEPARTAMENTO · renombrar bloque · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 940,
+   "y": 3900
+  },
+  "F5-Departamento-Vacio-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · DEPARTAMENTO · sin bloques · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 1410,
+   "y": 3900
+  },
+  "F5-Departamento-BloqueCreado-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · DEPARTAMENTO · snackbar bloque creado · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 1880,
+   "y": 3900
+  },
+  "F5-Editor-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · EDITOR (Blockings) · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 0,
+   "y": 5200
+  },
+  "F5-Editor-Guardado-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · EDITOR · snackbar ✓ OK · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 470,
+   "y": 5200
+  },
+  "F5-Editor-ErrorGuardar-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · EDITOR · snackbar × Error · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 940,
+   "y": 5200
+  },
+  "F5-Editor-Revisado-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · EDITOR · Blockings revisado · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 1410,
+   "y": 5200
+  },
+  "F5-Editor-Vacio-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · EDITOR · bloque vacío (Splines) · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 1880,
+   "y": 5200
+  },
+  "F5-Editor-Gameplay-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · EDITOR (Gameplay) · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 2350,
+   "y": 5200
+  },
+  "F5-Review-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · REVIEW (bloques afectados) · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 0,
+   "y": 6500
+  },
+  "F5-Review-Revisado-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · REVIEW · Gameplay revisado · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 470,
+   "y": 6500
+  },
+  "F5-Review-Completo-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · REVIEW · todo al día · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 940,
+   "y": 6500
+  },
+  "F5-Notes-Recibidas-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · NOTES · Received · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 0,
+   "y": 7800
+  },
+  "F5-Notes-Plegado-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · NOTES · Received con Pixel Kitchen plegado · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 470,
+   "y": 7800
+  },
+  "F5-Notes-Menu-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · NOTES · menú ⋮ de la nota · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 940,
+   "y": 7800
+  },
+  "F5-Notes-Enviadas-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · NOTES · Sent · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 1410,
+   "y": 7800
+  },
+  "F5-Notes-EnviadasVacio-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · NOTES · Sent vacío · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 1880,
+   "y": 7800
+  },
+  "F5-Notes-Enviada-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · NOTES · nota enviada · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 2350,
+   "y": 7800
+  },
+  "F5-NewNote-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · NEW NOTE · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 2820,
+   "y": 7800
+  },
+  "F5-NewNote-Vacio-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · NEW NOTE · nota vacía · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 3290,
+   "y": 7800
+  },
+  "F5-NewNote-ErrorEnvio-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · NEW NOTE · error al enviar · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 3760,
+   "y": 7800
+  },
+  "F5-Help-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · HELP · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 0,
+   "y": 9100
+  },
+  "F5-Guia-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · HELP · step-by-step guide · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 470,
+   "y": 9100
+  },
+  "F5-Glosario-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · HELP · glossary · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 940,
+   "y": 9100
+  },
+  "F5-Feedback-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · HELP · send feedback · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 1410,
+   "y": 9100
+  },
+  "F5-Perfil-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · PROFILE · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 0,
+   "y": 10400
+  },
+  "F5-Perfil-Foto-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · PROFILE · foto de perfil · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 470,
+   "y": 10400
+  },
+  "F5-Perfil-Editar-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · EDIT PROFILE · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 940,
+   "y": 10400
+  },
+  "F5-Perfil-Datos-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · PERSONAL INFO · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 1410,
+   "y": 10400
+  },
+  "F5-Perfil-Password-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · PASSWORD · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 1880,
+   "y": 10400
+  },
+  "F5-Idioma-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · LANGUAGE · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 2350,
+   "y": 10400
+  },
+  "F5-Privacidad-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · PRIVACY AND TERMS · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 2820,
+   "y": 10400
+  },
+  "F5-Equipo-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · MY TEAM · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 0,
+   "y": 11700
+  },
+  "F5-Equipo-Gestionar-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · MY TEAM · gestionar miembro · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 470,
+   "y": 11700
+  },
+  "F5-Equipo-Quitar-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · MY TEAM · quitar miembro · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 940,
+   "y": 11700
+  },
+  "F5-Equipo-Invitar-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · MY TEAM · invitar · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 1410,
+   "y": 11700
+  },
+  "F5-Equipo-InvitarError-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · MY TEAM · invitar con error · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 1880,
+   "y": 11700
+  },
+  "Prototipo-HF-Claro.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "app",
+   "title": "PROTOTIPO FUNCIONAL · alta fidelidad · claro · empieza en Log in",
+   "w": 390,
+   "x": 470,
+   "y": 0
+  },
+  "Prototipo-HF-Oscuro.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "app",
+   "title": "PROTOTIPO FUNCIONAL · alta fidelidad · oscuro · empieza en Log in",
+   "w": 390,
+   "x": 940,
+   "y": 0
+  },
+  "App.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "app",
+   "title": "PROTOTIPO FUNCIONAL · wireframe · Tweaks de la fase 5: look, textScale, orient y theme",
+   "w": 390,
+   "x": 0,
+   "y": 0
+  },
+  "F5-Departamentos-Creado-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "piloto",
+   "title": "F5 · DEPARTMENTS · departamento creado · vertical · texto 100 %",
+   "w": 390,
+   "x": 1410,
+   "y": 2600
+  },
+  "F5-Departamentos-Creado-Oscuro-V-100.dc.html": {
+   "h": 844,
+   "is_interactive": true,
+   "page": "oscuro",
+   "title": "F5 · DEPARTMENTS · departamento creado · oscuro · vertical · texto 100 %",
+   "w": 390,
+   "x": 1410,
+   "y": 2600
+  },
+  "Mov-Departamentos-Lento.dc.html": {
+   "x": 1880,
+   "y": 2600,
+   "w": 390,
+   "h": 844,
+   "page": "movimiento",
+   "title": "CÁMARA LENTA ×4 · DEPARTMENTS · reordenar, borrar y crear",
+   "is_interactive": true
+  },
+  "Mov-Departamentos-Reducido.dc.html": {
+   "x": 2350,
+   "y": 2600,
+   "w": 390,
+   "h": 844,
+   "page": "movimiento",
+   "title": "REDUCIR MOVIMIENTO · DEPARTMENTS · sin escalas ni giros",
+   "is_interactive": true
+  },
+  "Mov-Departamentos-Claro.dc.html": {
+   "x": 0,
+   "y": 3900,
+   "w": 390,
+   "h": 844,
+   "page": "movimiento",
+   "title": "MOVIMIENTO · DEPARTMENTS · mantener pulsado y arrastrar, ⋮ › Delete (desintegración + Undo), «+ Department» (palomitas), buscar · claro",
+   "is_interactive": true
+  },
+  "Mov-Notes-Claro.dc.html": {
+   "x": 470,
+   "y": 3900,
+   "w": 390,
+   "h": 844,
+   "page": "movimiento",
+   "title": "MOVIMIENTO · NOTES · pestañas, plegar grupos, ⋮ › Delete note (sale por la derecha + Undo) · claro",
+   "is_interactive": true
+  },
+  "Mov-Perfil-Claro.dc.html": {
+   "x": 940,
+   "y": 3900,
+   "w": 390,
+   "h": 844,
+   "page": "movimiento",
+   "title": "MOVIMIENTO · PROFILE · interruptores, foto de perfil (sheet), Edit profile · claro",
+   "is_interactive": true
+  },
+  "Mov-Equipo-Claro.dc.html": {
+   "x": 1410,
+   "y": 3900,
+   "w": 390,
+   "h": 844,
+   "page": "movimiento",
+   "title": "MOVIMIENTO · MY TEAM · Invite member (sheet + carga), Manage › Remove (diálogo + la fila sale) · claro",
+   "is_interactive": true
+  },
+  "Mov-Reset-Claro.dc.html": {
+   "x": 1880,
+   "y": 3900,
+   "w": 390,
+   "h": 844,
+   "page": "movimiento",
+   "title": "MOVIMIENTO · RESET PASSWORD · «Send link» con carga · claro",
+   "is_interactive": true
+  },
+  "Mov-Feedback-Claro.dc.html": {
+   "x": 2350,
+   "y": 3900,
+   "w": 390,
+   "h": 844,
+   "page": "movimiento",
+   "title": "MOVIMIENTO · SEND FEEDBACK · «Send feedback» con carga · claro",
+   "is_interactive": true
+  },
+  "Mov-Departamentos-Oscuro.dc.html": {
+   "x": 0,
+   "y": 5200,
+   "w": 390,
+   "h": 844,
+   "page": "movimiento",
+   "title": "MOVIMIENTO · DEPARTMENTS · mantener pulsado y arrastrar, ⋮ › Delete (desintegración + Undo), «+ Department» (palomitas), buscar · oscuro",
+   "is_interactive": true
+  },
+  "Mov-Notes-Oscuro.dc.html": {
+   "x": 470,
+   "y": 5200,
+   "w": 390,
+   "h": 844,
+   "page": "movimiento",
+   "title": "MOVIMIENTO · NOTES · pestañas, plegar grupos, ⋮ › Delete note (sale por la derecha + Undo) · oscuro",
+   "is_interactive": true
+  },
+  "Mov-Perfil-Oscuro.dc.html": {
+   "x": 940,
+   "y": 5200,
+   "w": 390,
+   "h": 844,
+   "page": "movimiento",
+   "title": "MOVIMIENTO · PROFILE · interruptores, foto de perfil (sheet), Edit profile · oscuro",
+   "is_interactive": true
+  },
+  "Mov-Equipo-Oscuro.dc.html": {
+   "x": 1410,
+   "y": 5200,
+   "w": 390,
+   "h": 844,
+   "page": "movimiento",
+   "title": "MOVIMIENTO · MY TEAM · Invite member (sheet + carga), Manage › Remove (diálogo + la fila sale) · oscuro",
+   "is_interactive": true
+  },
+  "Mov-Reset-Oscuro.dc.html": {
+   "x": 1880,
+   "y": 5200,
+   "w": 390,
+   "h": 844,
+   "page": "movimiento",
+   "title": "MOVIMIENTO · RESET PASSWORD · «Send link» con carga · oscuro",
+   "is_interactive": true
+  },
+  "Mov-Feedback-Oscuro.dc.html": {
+   "x": 2350,
+   "y": 5200,
+   "w": 390,
+   "h": 844,
+   "page": "movimiento",
+   "title": "MOVIMIENTO · SEND FEEDBACK · «Send feedback» con carga · oscuro",
+   "is_interactive": true
+  }
+ },
+ "order": [
+  "Mov-Prototipo-Claro.dc.html",
+  "Mov-Login-Claro.dc.html",
+  "Mov-Home-Claro.dc.html",
+  "Mov-Departamento-Claro.dc.html",
+  "Mov-Editor-Claro.dc.html",
+  "Mov-NewNote-Claro.dc.html",
+  "Mov-Prototipo-Oscuro.dc.html",
+  "Mov-Login-Oscuro.dc.html",
+  "Mov-Home-Oscuro.dc.html",
+  "Mov-Departamento-Oscuro.dc.html",
+  "Mov-Editor-Oscuro.dc.html",
+  "Mov-NewNote-Oscuro.dc.html",
+  "Mov-Departamento-Lento.dc.html",
+  "Mov-Prototipo-Lento.dc.html",
+  "Mov-Departamento-Reducido.dc.html",
+  "Mov-Prototipo-Reducido.dc.html",
+  "Mov-Departamentos-Lento.dc.html",
+  "Mov-Departamentos-Reducido.dc.html",
+  "Mov-Departamentos-Claro.dc.html",
+  "Mov-Notes-Claro.dc.html",
+  "Mov-Perfil-Claro.dc.html",
+  "Mov-Equipo-Claro.dc.html",
+  "Mov-Reset-Claro.dc.html",
+  "Mov-Feedback-Claro.dc.html",
+  "Mov-Departamentos-Oscuro.dc.html",
+  "Mov-Notes-Oscuro.dc.html",
+  "Mov-Perfil-Oscuro.dc.html",
+  "Mov-Equipo-Oscuro.dc.html",
+  "Mov-Reset-Oscuro.dc.html",
+  "Mov-Feedback-Oscuro.dc.html",
+  "F5-Login-V-100.dc.html",
+  "F5-Login-Error-V-100.dc.html",
+  "F5-Signup-V-100.dc.html",
+  "F5-Signup-Error-V-100.dc.html",
+  "F5-Forgot-V-100.dc.html",
+  "F5-Forgot-Enviado-V-100.dc.html",
+  "F5-Home-V-100.dc.html",
+  "F5-Home-Menu-V-100.dc.html",
+  "F5-Home-Renombrar-V-100.dc.html",
+  "F5-Home-Borrar-V-100.dc.html",
+  "F5-Home-Error-V-100.dc.html",
+  "F5-NuevoGDD-V-100.dc.html",
+  "F5-Desactualizados-V-100.dc.html",
+  "F5-Departamentos-V-100.dc.html",
+  "F5-Departamentos-Buscar-V-100.dc.html",
+  "F5-Departamentos-Vacio-V-100.dc.html",
+  "F5-Departamentos-Creado-V-100.dc.html",
+  "F5-Departamento-V-100.dc.html",
+  "F5-Departamento-Menu-V-100.dc.html",
+  "F5-Departamento-Renombrar-V-100.dc.html",
+  "F5-Departamento-Vacio-V-100.dc.html",
+  "F5-Departamento-BloqueCreado-V-100.dc.html",
+  "F5-Editor-V-100.dc.html",
+  "F5-Editor-Guardado-V-100.dc.html",
+  "F5-Editor-ErrorGuardar-V-100.dc.html",
+  "F5-Editor-Revisado-V-100.dc.html",
+  "F5-Editor-Vacio-V-100.dc.html",
+  "F5-Editor-Gameplay-V-100.dc.html",
+  "F5-Review-V-100.dc.html",
+  "F5-Review-Revisado-V-100.dc.html",
+  "F5-Review-Completo-V-100.dc.html",
+  "F5-Notes-Recibidas-V-100.dc.html",
+  "F5-Notes-Plegado-V-100.dc.html",
+  "F5-Notes-Menu-V-100.dc.html",
+  "F5-Notes-Enviadas-V-100.dc.html",
+  "F5-Notes-EnviadasVacio-V-100.dc.html",
+  "F5-Notes-Enviada-V-100.dc.html",
+  "F5-NewNote-V-100.dc.html",
+  "F5-NewNote-Vacio-V-100.dc.html",
+  "F5-NewNote-ErrorEnvio-V-100.dc.html",
+  "F5-Help-V-100.dc.html",
+  "F5-Guia-V-100.dc.html",
+  "F5-Glosario-V-100.dc.html",
+  "F5-Feedback-V-100.dc.html",
+  "F5-Perfil-V-100.dc.html",
+  "F5-Perfil-Foto-V-100.dc.html",
+  "F5-Perfil-Editar-V-100.dc.html",
+  "F5-Perfil-Datos-V-100.dc.html",
+  "F5-Perfil-Password-V-100.dc.html",
+  "F5-Idioma-V-100.dc.html",
+  "F5-Privacidad-V-100.dc.html",
+  "F5-Equipo-V-100.dc.html",
+  "F5-Equipo-Gestionar-V-100.dc.html",
+  "F5-Equipo-Quitar-V-100.dc.html",
+  "F5-Equipo-Invitar-V-100.dc.html",
+  "F5-Equipo-InvitarError-V-100.dc.html",
+  "F5-Login-Oscuro-V-100.dc.html",
+  "F5-Login-Error-Oscuro-V-100.dc.html",
+  "F5-Signup-Oscuro-V-100.dc.html",
+  "F5-Signup-Error-Oscuro-V-100.dc.html",
+  "F5-Forgot-Oscuro-V-100.dc.html",
+  "F5-Forgot-Enviado-Oscuro-V-100.dc.html",
+  "F5-Home-Oscuro-V-100.dc.html",
+  "F5-Home-Menu-Oscuro-V-100.dc.html",
+  "F5-Home-Renombrar-Oscuro-V-100.dc.html",
+  "F5-Home-Borrar-Oscuro-V-100.dc.html",
+  "F5-Home-Error-Oscuro-V-100.dc.html",
+  "F5-NuevoGDD-Oscuro-V-100.dc.html",
+  "F5-Desactualizados-Oscuro-V-100.dc.html",
+  "F5-Departamentos-Oscuro-V-100.dc.html",
+  "F5-Departamentos-Buscar-Oscuro-V-100.dc.html",
+  "F5-Departamentos-Vacio-Oscuro-V-100.dc.html",
+  "F5-Departamentos-Creado-Oscuro-V-100.dc.html",
+  "F5-Departamento-Oscuro-V-100.dc.html",
+  "F5-Departamento-Menu-Oscuro-V-100.dc.html",
+  "F5-Departamento-Renombrar-Oscuro-V-100.dc.html",
+  "F5-Departamento-Vacio-Oscuro-V-100.dc.html",
+  "F5-Departamento-BloqueCreado-Oscuro-V-100.dc.html",
+  "F5-Editor-Oscuro-V-100.dc.html",
+  "F5-Editor-Guardado-Oscuro-V-100.dc.html",
+  "F5-Editor-ErrorGuardar-Oscuro-V-100.dc.html",
+  "F5-Editor-Revisado-Oscuro-V-100.dc.html",
+  "F5-Editor-Vacio-Oscuro-V-100.dc.html",
+  "F5-Editor-Gameplay-Oscuro-V-100.dc.html",
+  "F5-Review-Oscuro-V-100.dc.html",
+  "F5-Review-Revisado-Oscuro-V-100.dc.html",
+  "F5-Review-Completo-Oscuro-V-100.dc.html",
+  "F5-Notes-Recibidas-Oscuro-V-100.dc.html",
+  "F5-Notes-Plegado-Oscuro-V-100.dc.html",
+  "F5-Notes-Menu-Oscuro-V-100.dc.html",
+  "F5-Notes-Enviadas-Oscuro-V-100.dc.html",
+  "F5-Notes-EnviadasVacio-Oscuro-V-100.dc.html",
+  "F5-Notes-Enviada-Oscuro-V-100.dc.html",
+  "F5-NewNote-Oscuro-V-100.dc.html",
+  "F5-NewNote-Vacio-Oscuro-V-100.dc.html",
+  "F5-NewNote-ErrorEnvio-Oscuro-V-100.dc.html",
+  "F5-Help-Oscuro-V-100.dc.html",
+  "F5-Guia-Oscuro-V-100.dc.html",
+  "F5-Glosario-Oscuro-V-100.dc.html",
+  "F5-Feedback-Oscuro-V-100.dc.html",
+  "F5-Perfil-Oscuro-V-100.dc.html",
+  "F5-Perfil-Foto-Oscuro-V-100.dc.html",
+  "F5-Perfil-Editar-Oscuro-V-100.dc.html",
+  "F5-Perfil-Datos-Oscuro-V-100.dc.html",
+  "F5-Perfil-Password-Oscuro-V-100.dc.html",
+  "F5-Idioma-Oscuro-V-100.dc.html",
+  "F5-Privacidad-Oscuro-V-100.dc.html",
+  "F5-Equipo-Oscuro-V-100.dc.html",
+  "F5-Equipo-Gestionar-Oscuro-V-100.dc.html",
+  "F5-Equipo-Quitar-Oscuro-V-100.dc.html",
+  "F5-Equipo-Invitar-Oscuro-V-100.dc.html",
+  "F5-Equipo-InvitarError-Oscuro-V-100.dc.html",
+  "Prototipo-HF-Claro.dc.html",
+  "Prototipo-HF-Oscuro.dc.html",
+  "App.dc.html"
+ ],
+ "notes": {
+  "mov-row0": {
+   "page": "movimiento",
+   "kind": "title1",
+   "x": 0,
+   "y": -300,
+   "maxW": 2740,
+   "text": "Movimiento · claro · prototipo y pantallas clave"
+  },
+  "mov-row1": {
+   "page": "movimiento",
+   "kind": "title1",
+   "x": 0,
+   "y": 1000,
+   "maxW": 2740,
+   "text": "Movimiento · oscuro · prototipo y pantallas clave"
+  },
+  "mov-row2": {
+   "page": "movimiento",
+   "kind": "title1",
+   "x": 0,
+   "y": 2300,
+   "maxW": 2740,
+   "text": "Cámara lenta y reducir movimiento"
+  },
+  "mov-probar": {
+   "page": "movimiento",
+   "x": -560,
+   "y": 0,
+   "w": 460,
+   "fill": "blue",
+   "text": "Qué probar (botón Play de cada pantalla)\n• Prototipo: arranque de 1 s. Inicia sesión con cualquier email con @ y una contraseña: el botón carga, pasa a verde y Home entra; el globo de Notes late 3 veces.\n• Todas las pantallas: la nueva entra desde la derecha al avanzar y desde la izquierda al volver. Los botones rellenos y tonales se encogen al pulsar.\n• Departamento: «+ Block» (palomitas). Mantén pulsado un bloque 0,4 s y arrástralo: los demás se apartan y al soltar encaja con un rebote. ⋮ › Delete: se deshace en 8 cuadrados; «Undo» (10 s) lo reconstruye.\n• Home: ⋮ › Delete abre el diálogo; al confirmar, el proyecto se desintegra (sin Undo). «New GDD» › Create: el proyecto nuevo sale con palomitas al volver a Home.\n• Editor: «Mark as reviewed» → aviso ✓ OK. El texto del cambio se despliega con suavidad.\n• New note: «Send note» con carga → aviso en Notes."
+  },
+  "mov-decisiones": {
+   "page": "movimiento",
+   "x": -560,
+   "y": 1300,
+   "w": 460,
+   "fill": "green",
+   "text": "Decisiones aplicadas (18/11)\n• Movimiento en todas las pantallas de alta fidelidad (el baja fidelidad sigue sin movimiento).\n• Borrar departamento = como los bloques: sin diálogo, se desintegra y «Undo» 10 s lo reconstruye.\n• Palomitas al crear bloque, departamento y proyecto (también desde el formulario, al volver a la lista).\n• Borrar proyecto: se mantiene el diálogo; al confirmar, desintegración sin Undo.\n• Reordenar bloques y departamentos solo arrastrando (mantener pulsado 0,4 s). No cumple el criterio WCAG 2.2 2.5.7 (arrastre con alternativa de un solo puntero): pendiente de decidir.\n• Diálogos, tarjetas plegables, buscador y errores de campo: estándar de Material 3.\n• Botones con carga: Log in, Sign up, Send link, Send feedback, Send invite y Send note.\n• Panel Tweaks › motion: full, slow (×4), reduced u off."
+  },
+  "mov-pendiente": {
+   "page": "movimiento",
+   "x": -560,
+   "y": 2600,
+   "w": 460,
+   "fill": "orange",
+   "text": "Pendiente\n• Reordenar sin arrastrar (WCAG 2.5.7): añadir «Move up / Move down» al menú ⋮ si queréis cumplirlo.\n• Estados de bloque (check que se dibuja, «!» que vibra): ningún estado cambia mientras se ve; el check se dibuja en el aviso ✓ OK.\n• Cambio de pantalla simplificado (32 px + fundido); el push completo con paralaje, en Figma o desarrollo.\n• Valorar pausar el temporizador de «Undo» con el foco o el lector de pantalla.\n• Test con usuarios: hipótesis del apartado 6 de la ficha de animaciones."
+  },
+  "piloto-row0": {
+   "kind": "title1",
+   "maxW": 2740,
+   "page": "piloto",
+   "text": "Acceso",
+   "x": 0,
+   "y": -300
+  },
+  "piloto-row1": {
+   "kind": "title1",
+   "maxW": 3210,
+   "page": "piloto",
+   "text": "Home",
+   "x": 0,
+   "y": 1000
+  },
+  "piloto-row2": {
+   "kind": "title1",
+   "maxW": 1800,
+   "page": "piloto",
+   "text": "Departamentos",
+   "x": 0,
+   "y": 2300
+  },
+  "piloto-row3": {
+   "kind": "title1",
+   "maxW": 2270,
+   "page": "piloto",
+   "text": "Departamento (bloques)",
+   "x": 0,
+   "y": 3600
+  },
+  "piloto-row4": {
+   "kind": "title1",
+   "maxW": 2740,
+   "page": "piloto",
+   "text": "Editor",
+   "x": 0,
+   "y": 4900
+  },
+  "piloto-row5": {
+   "kind": "title1",
+   "maxW": 1330,
+   "page": "piloto",
+   "text": "Review",
+   "x": 0,
+   "y": 6200
+  },
+  "piloto-row6": {
+   "kind": "title1",
+   "maxW": 4150,
+   "page": "piloto",
+   "text": "Notes y New note",
+   "x": 0,
+   "y": 7500
+  },
+  "piloto-row7": {
+   "kind": "title1",
+   "maxW": 1800,
+   "page": "piloto",
+   "text": "Help",
+   "x": 0,
+   "y": 8800
+  },
+  "piloto-row8": {
+   "kind": "title1",
+   "maxW": 3210,
+   "page": "piloto",
+   "text": "Profile y ajustes",
+   "x": 0,
+   "y": 10100
+  },
+  "piloto-row9": {
+   "kind": "title1",
+   "maxW": 2270,
+   "page": "piloto",
+   "text": "My team",
+   "x": 0,
+   "y": 11400
+  },
+  "oscuro-row0": {
+   "kind": "title1",
+   "maxW": 2740,
+   "page": "oscuro",
+   "text": "Acceso · oscuro",
+   "x": 0,
+   "y": -300
+  },
+  "oscuro-row1": {
+   "kind": "title1",
+   "maxW": 3210,
+   "page": "oscuro",
+   "text": "Home · oscuro",
+   "x": 0,
+   "y": 1000
+  },
+  "oscuro-row2": {
+   "kind": "title1",
+   "maxW": 1800,
+   "page": "oscuro",
+   "text": "Departamentos · oscuro",
+   "x": 0,
+   "y": 2300
+  },
+  "oscuro-row3": {
+   "kind": "title1",
+   "maxW": 2270,
+   "page": "oscuro",
+   "text": "Departamento (bloques) · oscuro",
+   "x": 0,
+   "y": 3600
+  },
+  "oscuro-row4": {
+   "kind": "title1",
+   "maxW": 2740,
+   "page": "oscuro",
+   "text": "Editor · oscuro",
+   "x": 0,
+   "y": 4900
+  },
+  "oscuro-row5": {
+   "kind": "title1",
+   "maxW": 1330,
+   "page": "oscuro",
+   "text": "Review · oscuro",
+   "x": 0,
+   "y": 6200
+  },
+  "oscuro-row6": {
+   "kind": "title1",
+   "maxW": 4150,
+   "page": "oscuro",
+   "text": "Notes y New note · oscuro",
+   "x": 0,
+   "y": 7500
+  },
+  "oscuro-row7": {
+   "kind": "title1",
+   "maxW": 1800,
+   "page": "oscuro",
+   "text": "Help · oscuro",
+   "x": 0,
+   "y": 8800
+  },
+  "oscuro-row8": {
+   "kind": "title1",
+   "maxW": 3210,
+   "page": "oscuro",
+   "text": "Profile y ajustes · oscuro",
+   "x": 0,
+   "y": 10100
+  },
+  "oscuro-row9": {
+   "kind": "title1",
+   "maxW": 2270,
+   "page": "oscuro",
+   "text": "My team · oscuro",
+   "x": 0,
+   "y": 11400
+  },
+  "piloto-revisar": {
+   "page": "piloto",
+   "w": 460,
+   "x": -560,
+   "y": 0,
+   "fill": "blue",
+   "text": "Alta fidelidad completa (17/11) · qué revisar\n• Todas las pantallas del prototipo en vertical al 100 %, en claro y en oscuro (página «Alta fidelidad · Oscuro»).\n• Fuera en alta fidelidad: «Set review date» (fecha, calendario y hora), el bloque vacío seleccionado (ahora tocar un bloque abre el editor) y el selector «Accent color» de Edit profile.\n• Estados con el mismo lenguaje que los bloques: ! ámbar = por revisar (Departments, Out of date, Review), check verde = al día, círculo discontinuo = vacío. «All up to date» con fondo verde suave.\n• Departments: etiqueta «N out of date» en ámbar, como en Home.\n• Departamento: el snackbar ya no tapa el FAB «Note a change» (el snackbar sube por encima).\n• Edit profile › Theme cambia el tema del prototipo (Light, Dark o System) al pulsar Save.\n• Iteración 3 (17/11): Home sin lápiz en la tarjeta y sin «Move left/right» en el ⋮. Departments, Departamento y Out of date con el fondo y las tarjetas de Home (Out of date: una tarjeta por bloque). Editor en oscuro: hoja #2B2A2B sobre fondo #141314 y barra de herramientas #353435.\n• Iteración 4 (17/11): Notes con cada proyecto en una tarjeta plegable como en Home (también en Sent) e iconos rellenos en color, sin círculo. Review, Help, guía y glosario con tarjetas.\n• Iteración 5 (18/11): Departments sin «Move up / Move down» en el ⋮ (se reordenará arrastrando). Bloques con número de orden tipo consola (01, 02…). «+ Block» y «+ Department» crean directamente «New block» y «New department», que se renombran desde el ⋮: ya no existen las pantallas New block y New department."
+  },
+  "piloto-resultado": {
+   "page": "piloto",
+   "w": 460,
+   "x": -560,
+   "y": 1300,
+   "fill": "green",
+   "text": "Comprobación automática (17/11)\n56 pantallas × 2 temas en Chromium, con Inter (más ancha que Roboto) e iconos como cajas fijas:\n• 0 textos cortados o solapados y 0 scroll horizontal.\n• Contraste ≥ 4,5:1 en todo el texto en claro y en oscuro; zonas táctiles ≥ 48 (salvo título y texto de las secciones del editor).\n• Las 62 escenas del wireframe siguen idénticas."
+  },
+  "oscuro-revisar": {
+   "page": "oscuro",
+   "w": 460,
+   "x": -560,
+   "y": 0,
+   "fill": "blue",
+   "text": "Alta fidelidad completa (17/11) · qué revisar\n• Todas las pantallas del prototipo en vertical al 100 %, en claro y en oscuro (página «Alta fidelidad · Oscuro»).\n• Fuera en alta fidelidad: «Set review date» (fecha, calendario y hora), el bloque vacío seleccionado (ahora tocar un bloque abre el editor) y el selector «Accent color» de Edit profile.\n• Estados con el mismo lenguaje que los bloques: ! ámbar = por revisar (Departments, Out of date, Review), check verde = al día, círculo discontinuo = vacío. «All up to date» con fondo verde suave.\n• Departments: etiqueta «N out of date» en ámbar, como en Home.\n• Departamento: el snackbar ya no tapa el FAB «Note a change» (el snackbar sube por encima).\n• Edit profile › Theme cambia el tema del prototipo (Light, Dark o System) al pulsar Save.\n• Iteración 3 (17/11): Home sin lápiz en la tarjeta y sin «Move left/right» en el ⋮. Departments, Departamento y Out of date con el fondo y las tarjetas de Home (Out of date: una tarjeta por bloque). Editor en oscuro: hoja #2B2A2B sobre fondo #141314 y barra de herramientas #353435.\n• Iteración 4 (17/11): Notes con cada proyecto en una tarjeta plegable como en Home (también en Sent) e iconos rellenos en color, sin círculo. Review, Help, guía y glosario con tarjetas.\n• Iteración 5 (18/11): Departments sin «Move up / Move down» en el ⋮ (se reordenará arrastrando). Bloques con número de orden tipo consola (01, 02…). «+ Block» y «+ Department» crean directamente «New block» y «New department», que se renombran desde el ⋮: ya no existen las pantallas New block y New department."
+  },
+  "oscuro-resultado": {
+   "page": "oscuro",
+   "w": 460,
+   "x": -560,
+   "y": 1300,
+   "fill": "green",
+   "text": "Comprobación automática (17/11)\n56 pantallas × 2 temas en Chromium, con Inter (más ancha que Roboto) e iconos como cajas fijas:\n• 0 textos cortados o solapados y 0 scroll horizontal.\n• Contraste ≥ 4,5:1 en todo el texto en claro y en oscuro; zonas táctiles ≥ 48 (salvo título y texto de las secciones del editor).\n• Las 62 escenas del wireframe siguen idénticas."
+  },
+  "mov-row3": {
+   "page": "movimiento",
+   "kind": "title1",
+   "x": 0,
+   "y": 3600,
+   "maxW": 2740,
+   "text": "Movimiento · claro · resto de pantallas"
+  },
+  "mov-row4": {
+   "page": "movimiento",
+   "kind": "title1",
+   "x": 0,
+   "y": 4900,
+   "maxW": 2740,
+   "text": "Movimiento · oscuro · resto de pantallas"
+  },
+  "mov-probar2": {
+   "page": "movimiento",
+   "x": -560,
+   "y": 3900,
+   "w": 460,
+   "fill": "blue",
+   "text": "Qué probar · resto de pantallas\n• Departments: mantén pulsado un departamento y arrástralo; ⋮ › Delete (desintegración + Undo); «+ Department» (palomitas); la lupa abre el buscador deslizándose. Mientras buscas no se puede reordenar.\n• Notes: pestañas Received / Sent (el indicador se desliza); pliega y despliega un grupo; ⋮ › Delete note: la fila sale por la derecha y «Undo» la devuelve.\n• Profile: los interruptores deslizan la bola; el botón de la cámara (Change profile photo) abre un sheet que sube y baja.\n• My team: «Invite member» (sheet, carga y la invitación nueva aparece en la lista); Manage › Remove › Remove: el diálogo se cierra y la fila sale.\n• Reset password y Send feedback: botón con carga → check en verde.\n• Al final de cualquier lista larga, un rebote suave."
+  }
+ },
+ "designSystems": [
+  {
+   "title": "My GDD",
+   "namespace": "my-gdd",
+   "artifact": "https://claude.ai/artifact/LCGT6S5t5cxHuzorURbxFB",
+   "version": "1795002814-f788",
+   "copiedAt": "2026-11-18T12:44:44Z"
+  }
+ ],
+ "noteOrder": [
+  "mov-row0",
+  "mov-row1",
+  "mov-row2",
+  "mov-probar",
+  "mov-decisiones",
+  "mov-pendiente",
+  "mov-row3",
+  "mov-row4",
+  "mov-probar2",
+  "piloto-row0",
+  "piloto-row1",
+  "piloto-row2",
+  "piloto-row3",
+  "piloto-row4",
+  "piloto-row5",
+  "piloto-row6",
+  "piloto-row7",
+  "piloto-row8",
+  "piloto-row9",
+  "oscuro-row0",
+  "oscuro-row1",
+  "oscuro-row2",
+  "oscuro-row3",
+  "oscuro-row4",
+  "oscuro-row5",
+  "oscuro-row6",
+  "oscuro-row7",
+  "oscuro-row8",
+  "oscuro-row9",
+  "piloto-revisar",
+  "piloto-resultado",
+  "oscuro-revisar",
+  "oscuro-resultado"
+ ]
+}
