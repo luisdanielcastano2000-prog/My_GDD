@@ -18,3 +18,7 @@ Ionic 9 + Angular 22 (componentes standalone, signals). Datos de ejemplo **en me
 - **Tokens:** `src/theme/tokens.css` se genera desde `design/system/tokens.json` con `npm run tokens` (repetirlo tras resincronizar el diseño). Tema y componentes: `src/theme/app.scss`; estructura y pantallas: `src/theme/shell.scss`. Los tokens de movimiento (`dur-*`, `ease-*`) vienen del README del sistema.
 - **Estructura:** `src/app/data/` (modelos, datos de ejemplo y `StoreService`, la única fuente de verdad), `src/app/shared/` (barra superior, barra de navegación, capas, navegación), `src/app/pages/` (pantallas por grupo). Rutas en `src/app/app.routes.ts`.
 - **Fuera de esta versión** (escenas del prototipo sin marco F5): fecha de revisión, calendario y hora de un bloque, y los formularios «New department» / «New block» (en alta fidelidad se crean con un toque).
+
+## Bitácora
+
+`BITACORA.md` registra lo hecho y las decisiones. Leerla al empezar cada sesión y actualizarla después de cada paso o decisión (fechas AAAA-MM-DD; lo no verificado se marca como tal).
