@@ -8,10 +8,10 @@ Cómo arrancar y cómo está organizado el proyecto: `CLAUDE.md`. Aquí va **lo 
 ## Estado actual (actualizado 2026-11-23)
 
 - **Hecho:** copia local del diseño (`design/`), repositorio en GitHub y front completo en Ionic + Angular (`app/`) con las 56 pantallas del lienzo, revisadas en el navegador.
-- **Datos:** de ejemplo, **en memoria** (se pierden al recargar). Todavía no hay backend ni base de datos.
-- **Siguiente:** backend + base de datos MongoDB + publicación en Render (plan pendiente de aprobación).
-- **Procesos corriendo:** el servidor de desarrollo del front (`npx ionic serve`, puerto 8100) lo arrancó Claude; se apaga al cerrar la sesión.
-- **Control de versiones:** Git, rama `main`, remoto `origin` = GitHub `luisdanielcastano2000-prog/My_GDD` (**público**). Los commits del front (`66252dd`, `81e4b2b`, `3c902ce`) son **locales, sin subir**.
+- **Datos:** cuentas reales en MongoDB (base `my_gdd`) a través de la API NestJS (`api/`). En el Mac, MongoDB local; en Render, Atlas.
+- **Siguiente:** push a GitHub (pendiente del OK del usuario) y crear el servicio en Render (lo hace el usuario con la guía).
+- **Procesos corriendo** (los arrancó Claude; se apagan al cerrar la sesión): MongoDB local (27017), API (`npm run start:dev`, 3000) y web (`npx ionic serve`, 8100).
+- **Control de versiones:** Git, rama `main`, remoto `origin` = GitHub `luisdanielcastano2000-prog/My_GDD` (**público**). Todo lo posterior a `9d815f1` está **en local, sin subir**.
 
 ---
 
@@ -35,6 +35,15 @@ Cómo arrancar y cómo está organizado el proyecto: `CLAUDE.md`. Aquí va **lo 
 | 2026-11-23 | Simplificaciones: al borrar, la tarjeta se encoge y se desvanece (no se deshace en cuadrados); no hay reordenar arrastrando (sí *Move up/down*); el color de acento se elige pero no cambia la paleta. | Ahorrar trabajo en detalles de animación; quedan anotadas como pendientes. |
 | 2026-11-23 | Se mantiene `@import` en `global.scss` (Sass avisa de que está obsoleto). | Con `@use` los estilos propios quedaban antes que los de Ionic y perdían. |
 | 2026-11-23 | Para revisar las pantallas se instala el navegador de Playwright (Chromium, ~150 MB) en `~/Library/Caches/ms-playwright`, fuera del proyecto. | El sistema de permisos lo bloqueó la primera vez; el usuario lo autorizó («hazlo tú»). |
+| 2026-11-23 | Backend con **NestJS + Mongoose**; **cuentas reales** (contraseña cifrada con bcrypt, sesión con token JWT); MongoDB en el **mismo clúster de Atlas** de Catálogo Tech (Cluster0), base nueva `my_gdd`; Render con **un solo servicio** (el backend sirve también la web). | Elegido por el usuario (todas las opciones recomendadas). |
+| 2026-11-23 | Las cuentas nuevas empiezan **vacías** («You don’t have any GDD yet»). | Elegido por el usuario. |
+| 2026-11-23 | Backend generado con `npx @nestjs/cli new api --skip-git`; se quita **NestJS Observe** (telemetría a un servicio externo que trae la plantilla). | No hace falta y es una pieza externa menos. |
+| 2026-11-23 | `bcryptjs` (JavaScript puro) en vez de `bcrypt`; JWT con `@nestjs/jwt` y un `AuthGuard` propio; validación con `class-validator` (como en Catálogo Tech). | Sin compilar nada nativo; piezas conocidas. |
+| 2026-11-23 | Un GDD = un documento de MongoDB (departamentos, bloques y secciones dentro). Los ids los genera el front (`crypto.randomUUID`). El front guarda solo lo que cambia (`StoreService.sync()`), y si falla enseña el snackbar de error con *Retry*. | Encaja con cómo el front ya maneja los datos; menos rutas y menos código. |
+| 2026-11-23 | Las notas enviadas se entregan a las personas del equipo que tienen cuenta (por email); llegan a «From your team». | Hace reales las notas del equipo sin servicio de correo. |
+| 2026-11-23 | Siguen simulados: enlace de contraseña olvidada, invitaciones por email y «Download my data». | Necesitarían un servicio de correo. |
+| 2026-11-23 | `/scenes` solo en desarrollo (`isDevMode`). La sesión (token) se guarda en `localStorage` para no perderla al recargar. | El selector usa datos de ejemplo que no deben mezclarse con cuentas reales. |
+| 2026-11-23 | Raíz con `package.json` (`npm run build` / `npm start`) para Render, y `.gitignore` en la raíz y en `api/`. | Render solo necesita dos comandos; `node_modules/` y `dist/` no se suben. |
 
 ---
 
@@ -74,13 +83,24 @@ Cómo arrancar y cómo está organizado el proyecto: `CLAUDE.md`. Aquí va **lo 
 - Commit local `3c902ce`.
 
 **Bitácora**
-- Creado este archivo a petición del usuario.
+- Creado este archivo a petición del usuario. Commit `13f152a`.
+
+**Backend + base de datos (hecho seguido, a petición del usuario)**
+- `api/` generado con el CLI de NestJS 12; instalados `@nestjs/mongoose`, `mongoose`, `@nestjs/jwt`, `bcryptjs`, `class-validator`, `class-transformer`, `@nestjs/serve-static`.
+- Código: `src/data/schemas.ts` (users, gdds, notes), `src/auth/` (signup/login, guard, DTO con mensajes del diseño), `src/data/data.controller.ts` (me, gdds, notes), `src/main.ts` (prefijo `/api`, validación), `src/app.module.ts` (MongoDB, JWT, la web).
+- Probado con `curl` contra MongoDB local: 401 sin token, 400 con email mal, 409 con email repetido, 401 con contraseña mal, guardar y leer un GDD, contraseña actual incorrecta, la web servida en `/` y `/home`.
+- Front: `api.service.ts` (peticiones + token), `StoreService` con `load()`, `logout()` y `sync()`; guards de rutas; Log in / Sign up / Log out / borrar cuenta / cambiar contraseña reales; grupo «From your team» en Notes; proxy de desarrollo (`proxy.conf.json`).
+- Prueba completa en el navegador (9 comprobaciones, todas bien, sin errores JS): sin sesión → Log in; Sign up → Home vacía; crear GDD Minimal → 4 departamentos; **recargar → siguen**; escribir en un bloque y guardar → **sigue tras recargar**; Log out; contraseña mal → aviso; Log in → los datos están; el ajuste «Large» se guarda en la cuenta.
+- Entrega de notas probada con dos cuentas: Tester invita a Lena, envía una nota y Lena la recibe («From: Tester», sin leer).
+- Modo producción en el Mac (`npm run build` + `npm start` con `NODE_ENV=production`): la misma prueba completa, toda bien, con web y API en un solo puerto.
+- Linter sin errores en `app/` y `api/`.
+- Datos de prueba: quedan cuentas de prueba (tester@, lena…@, e2e…@example.com) en la base `my_gdd` **local** del Mac (no en Atlas).
 
 ---
 
 ## Pendiente
 
 - Subir a GitHub los commits del front (falta el OK del usuario).
-- Backend + MongoDB + Render (plan por aprobar).
+- Push a GitHub y servicio en Render (siguiente paso).
 - Detalles de animación simplificados (desintegración en cuadrados, reordenar arrastrando) y escenas sin marco F5 (fecha de revisión, calendario, hora).
 - Avisos de Sass por `@import` (no afectan al funcionamiento).

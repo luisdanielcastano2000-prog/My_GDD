@@ -1,0 +1,6 @@
+# Lo que Git no guarda en el backend
+node_modules/
+dist/
+.env
+*.tsbuildinfo
+coverage/

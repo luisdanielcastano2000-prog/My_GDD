@@ -1,0 +1,10 @@
+{
+  "name": "my-gdd",
+  "private": true,
+  "description": "My GDD: web (app/, Ionic + Angular) y API (api/, NestJS) en un solo servicio",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "build": "npm ci --prefix app && npm run build --prefix app && npm ci --prefix api && npm run build --prefix api",
+    "start": "npm run start:prod --prefix api"
+  }
+}

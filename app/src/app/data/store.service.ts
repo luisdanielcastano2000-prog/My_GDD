@@ -1,5 +1,7 @@
-import { Injectable, computed, effect, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Injectable, computed, effect, inject, signal } from '@angular/core';
 
+import { ApiService, apiMessage } from './api.service';
 import type { AppData, Block, Dept, Dialog, Gdd, Note, Sheet, Snack } from './models';
 import type { Template} from './sample';
 import { CATALOG, buildGdd, mkBlock, mkSection, nid, sampleData } from './sample';
@@ -13,14 +15,25 @@ export interface Settings {
   notifications: boolean;
 }
 
+const DEFAULT_SETTINGS: Settings = { textSize: 'Default', highContrast: false, reduceMotion: false, slowMotion: false, notifications: true };
+
 /**
  * El «almacén» de la app: guarda los datos en memoria y las acciones que los cambian.
  * Las páginas leen de aquí con signals y llaman a sus métodos; nunca cambian los datos directamente.
  */
 @Injectable({ providedIn: 'root' })
 export class StoreService {
+  private api = inject(ApiService);
+
   // ---------- estado ----------
   readonly data = signal<AppData>(sampleData());
+  /** true = cuenta real: los cambios se guardan en el servidor. false = datos de ejemplo (selector de pantallas). */
+  readonly live = signal(false);
+  private snapshot: AppData | null = null; // lo último que sabemos que está guardado en el servidor
+  private savedSettings = '';
+  private syncTimer: ReturnType<typeof setTimeout> | undefined;
+  private syncing = false;
+  private syncAgain = false;
   readonly loadErr = signal(false);
   readonly sheet = signal<Sheet | null>(null);
   readonly dialog = signal<Dialog | null>(null);
@@ -30,7 +43,7 @@ export class StoreService {
   readonly homeIndex = signal(0);
   readonly notesTab = signal<'r' | 's'>('r');
   readonly notesCollapsed = signal<Record<string, boolean>>({});
-  readonly settings = signal<Settings>({ textSize: 'Default', highContrast: false, reduceMotion: false, slowMotion: false, notifications: true });
+  readonly settings = signal<Settings>({ ...DEFAULT_SETTINGS });
   readonly systemDark = signal(typeof matchMedia !== 'undefined' && matchMedia('(prefers-color-scheme: dark)').matches);
   /** Valores iniciales de formularios (los usa el selector de pantallas para abrir un estado concreto). */
   private drafts: Record<string, Record<string, unknown>> = {};
@@ -62,6 +75,88 @@ export class StoreService {
       root.style.setProperty('--gdd-ts', String(ts));
       if (ts > 1) root.classList.add(ts > 1.3 ? 'ts-larger' : 'ts-large');
     });
+    // Los ajustes de accesibilidad también se guardan en la cuenta
+    effect(() => {
+      this.settings();
+      this.scheduleSync();
+    });
+  }
+
+  // ---------- servidor: cargar y guardar ----------
+  /** Carga los datos de la cuenta (GET /api/me). Devuelve false si no hay sesión válida. */
+  async load(): Promise<boolean> {
+    if (!this.api.token) return false;
+    try {
+      const r = await this.api.me();
+      const d: AppData = { gdds: r.gdds, notes: r.notes, sent: r.sent, user: r.user, team: r.team };
+      this.data.set(d);
+      this.snapshot = structuredClone(d);
+      this.settings.set({ ...DEFAULT_SETTINGS, ...(r.settings as Partial<Settings>), slowMotion: false });
+      this.savedSettings = this.settingsKey();
+      this.loadErr.set(false);
+      this.live.set(true);
+      return true;
+    } catch (e) {
+      if (e instanceof HttpErrorResponse && (e.status === 401 || e.status === 404)) { this.logout(); return false; }
+      this.loadErr.set(true); // Home enseña «We couldn’t load your GDDs» con Retry
+      this.live.set(false);
+      return true;
+    }
+  }
+  logout(): void {
+    this.api.setToken(null);
+    this.live.set(false);
+    this.snapshot = null;
+    this.reset(true);
+    this.data.update((d) => ({ ...d, user: { ...d.user, name: '', user: '', email: '' } }));
+  }
+  private settingsKey(): string {
+    const { slowMotion: _s, ...rest } = this.settings();
+    return JSON.stringify(rest);
+  }
+  private scheduleSync(): void {
+    if (!this.live()) return;
+    clearTimeout(this.syncTimer);
+    this.syncTimer = setTimeout(() => void this.sync(), 400);
+  }
+  /** Envía al servidor solo lo que ha cambiado desde la última vez que se guardó. */
+  async sync(): Promise<void> {
+    const old = this.snapshot;
+    if (!this.live() || !old) return;
+    if (this.syncing) { this.syncAgain = true; return; }
+    this.syncing = true;
+    const cur = this.data();
+    const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
+    const jobs: Promise<unknown>[] = [];
+    cur.gdds.forEach((g, i) => {
+      const o = old.gdds.findIndex((x) => x.id === g.id);
+      if (o !== i || !same(old.gdds[o], g)) jobs.push(this.api.saveGdd(g, i));
+    });
+    old.gdds.filter((g) => !cur.gdds.some((x) => x.id === g.id)).forEach((g) => jobs.push(this.api.deleteGdd(g.id)));
+    const boxes: ['received' | 'sent', 'notes' | 'sent'][] = [['received', 'notes'], ['sent', 'sent']];
+    for (const [box, key] of boxes) {
+      const a: (Note | AppData['sent'][number])[] = old[key];
+      const b: (Note | AppData['sent'][number])[] = cur[key];
+      b.forEach((n) => { if (!same(a.find((x) => x.id === n.id), n)) jobs.push(this.api.saveNote(box, n)); });
+      a.filter((n) => !b.some((x) => x.id === n.id)).forEach((n) => jobs.push(this.api.deleteNote(n.id)));
+    }
+    const prof = Object.fromEntries(Object.entries(cur.user).filter(([k, v]) => !same((old.user as unknown as Record<string, unknown>)[k], v)));
+    const sk = this.settingsKey();
+    if (Object.keys(prof).length || sk !== this.savedSettings) {
+      jobs.push(this.api.saveProfile({ ...prof, ...(sk !== this.savedSettings ? { settings: JSON.parse(sk) as Record<string, unknown> } : {}) }));
+    }
+    if (!same(old.team, cur.team)) jobs.push(this.api.saveTeam(cur.team));
+    try {
+      await Promise.all(jobs);
+      this.snapshot = structuredClone(cur);
+      this.savedSettings = sk;
+    } catch (e) {
+      if (e instanceof HttpErrorResponse && e.status === 401) { this.logout(); location.assign('/login'); return; }
+      this.toast(e instanceof HttpErrorResponse && e.status === 400 ? apiMessage(e) : 'Your change couldn’t be saved.', { kind: 'err', action: { label: 'Retry', run: () => void this.sync() } });
+    } finally {
+      this.syncing = false;
+      if (this.syncAgain) { this.syncAgain = false; void this.sync(); }
+    }
   }
 
   // ---------- lectura ----------
@@ -102,6 +197,7 @@ export class StoreService {
     if (keepUndo) this.undoData = this.data();
     fn(d);
     this.data.set(d);
+    this.scheduleSync();
   }
   takeDraft<T extends object>(key: string, fallback: T): T {
     const v = this.drafts[key];
@@ -121,7 +217,7 @@ export class StoreService {
     this.snackTimer = setTimeout(() => { if (this.snack()?.id === s.id) this.snack.set(null); }, (s.undo || s.action ? 10000 : 4000) * k);
   }
   undo(): void {
-    if (this.undoData) this.data.set(this.undoData);
+    if (this.undoData) { this.data.set(this.undoData); this.scheduleSync(); }
     this.undoData = null;
     this.dying.set(null);
     this.snack.set(null);
@@ -143,15 +239,16 @@ export class StoreService {
   }
 
   // ---------- acceso ----------
-  signup(user: string, email: string): void {
-    this.mutate((d) => {
-      d.user.name = user.charAt(0).toUpperCase() + user.slice(1);
-      d.user.user = user.toLowerCase();
-      d.user.email = email;
-      d.team.members[0].name = d.user.name;
-      d.team.members[0].email = email;
-    });
+  /** Crea la cuenta en el servidor, entra y carga sus datos (empieza vacía). */
+  async signup(user: string, email: string, password: string): Promise<void> {
+    await this.api.signup(user, email, password);
+    await this.load();
     this.toast('Account created. Welcome, ' + this.data().user.name + '!');
+  }
+  async login(email: string, password: string): Promise<void> {
+    await this.api.login(email, password);
+    this.reset(true);
+    await this.load();
   }
 
   // ---------- crear ----------
@@ -327,8 +424,9 @@ export class StoreService {
   confirmDelete(dl: Extract<Dialog, { k: 'del' }>): 'account' | void {
     this.dialog.set(null);
     if (dl.what === 'account') {
-      this.data.set({ ...sampleData(), gdds: [], notes: [], sent: [] });
-      this.toast('Your account was deleted');
+      const done = () => { this.logout(); this.toast('Your account was deleted'); };
+      if (this.live()) this.api.deleteAccount().then(done, (e: unknown) => this.toast(apiMessage(e), { kind: 'err' }));
+      else done();
       return 'account';
     }
     if (dl.what === 'gdd') {
@@ -419,6 +517,8 @@ export class StoreService {
 
   /** Vuelve a los datos de ejemplo (lo usa el selector de pantallas). */
   reset(empty = false): void {
+    this.live.set(false);
+    clearTimeout(this.syncTimer);
     const d = sampleData();
     if (empty) { d.gdds = []; d.notes = []; d.sent = []; }
     this.data.set(d);

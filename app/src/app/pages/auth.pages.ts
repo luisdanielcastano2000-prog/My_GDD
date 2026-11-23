@@ -1,14 +1,17 @@
 // Acceso: Log in, Sign up, Reset password (formulario y «Check your email»).
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, input, signal, type WritableSignal } from '@angular/core';
 import { IonContent, IonHeader } from '@ionic/angular';
 
+import { apiMessage } from '../data/api.service';
 import { StoreService } from '../data/store.service';
 import { NavService } from '../shared/nav.service';
 import { BrandComponent, TopBarComponent } from '../shared/ui';
 
 /** Botón con carga: texto → spinner (mín. 400 ms) → check en verde → sigue. */
-export function withLoading(store: StoreService, phase: WritableSignal<'' | 'load' | 'ok'>, done: () => void): void {
-  if (phase()) return;
+export function withLoading(store: StoreService, phase: WritableSignal<'' | 'load' | 'ok'>, done: () => void, fromLoad = false): void {
+  // Evita envíos dobles; fromLoad = el spinner ya estaba girando mientras respondía el servidor
+  if (phase() === 'ok' || (phase() === 'load' && !fromLoad)) return;
   const k = store.settings().slowMotion ? 4 : 1;
   if (store.settings().reduceMotion) { done(); return; }
   phase.set('load');
@@ -78,7 +81,16 @@ export class LoginPage {
     this.errPw.set(!this.pw());
     this.bad.set(!!em && !!this.pw() && !validEmail(em));
     if (this.errEmail() || this.errPw() || this.bad()) return;
-    withLoading(this.store, this.phase, () => this.nav.root('/home'));
+    if (this.phase()) return;
+    this.phase.set('load');
+    this.store.login(em, this.pw()).then(
+      () => withLoading(this.store, this.phase, () => this.nav.root('/home'), true),
+      (e: unknown) => {
+        this.phase.set('');
+        if (e instanceof HttpErrorResponse && e.status === 401) this.bad.set(true);
+        else this.store.toast(apiMessage(e), { kind: 'err' });
+      },
+    );
   }
   forgot(): void {
     this.store.setDraft('forgot', { email: this.email() });
@@ -158,7 +170,18 @@ export class SignupPage {
     this.errEmail.set(!validEmail(em) ? 'Enter an email address, for example name@example.com.' : em === this.store.data().user.email ? this.taken : '');
     this.errPw.set(this.pw().length < 8);
     if (this.errUser() || this.errEmail() || this.errPw()) return;
-    withLoading(this.store, this.phase, () => { this.store.signup(u, em); this.nav.root('/home'); });
+    if (this.phase()) return;
+    this.phase.set('load');
+    this.store.signup(u, em, this.pw()).then(
+      () => withLoading(this.store, this.phase, () => this.nav.root('/home'), true),
+      (e: unknown) => {
+        this.phase.set('');
+        const m = apiMessage(e);
+        if (e instanceof HttpErrorResponse && e.status === 409) this.errEmail.set(this.taken);
+        else if (e instanceof HttpErrorResponse && e.status === 400) this.errEmail.set(m);
+        else this.store.toast(m, { kind: 'err' });
+      },
+    );
   }
   loginWith(): void {
     this.store.setDraft('login', { email: this.email() });

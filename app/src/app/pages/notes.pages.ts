@@ -72,7 +72,11 @@ export class NotesPage {
     const d = this.store.data();
     const col = this.store.notesCollapsed();
     const r = this.tab() === 'r';
-    return d.gdds
+    // Notas del equipo que no son de un GDD tuyo (te las envía otra persona): grupo aparte
+    const mine = new Set(d.gdds.map((g) => g.id));
+    const fromTeam = r ? d.notes.filter((n) => !n.g || !mine.has(n.g)).sort((a, b) => b.ts - a.ts).map((n) => this.noteRow(n)) : [];
+    const extra = fromTeam.length ? [{ id: 'team', name: 'From your team', items: fromTeam, open: !col['team'], nNew: d.notes.filter((n) => (!n.g || !mine.has(n.g)) && n.unread).length }] : [];
+    return [...extra, ...d.gdds
       .map((g) => {
         const items: Row[] = r
           ? d.notes.filter((n) => n.g === g.id).sort((a, b) => b.ts - a.ts).map((n) => this.noteRow(n))
@@ -80,7 +84,7 @@ export class NotesPage {
         const key = (r ? '' : 's') + g.id;
         return { id: key, name: g.name, items, open: !col[key], nNew: r ? d.notes.filter((n) => n.g === g.id && n.unread).length : 0 };
       })
-      .filter((x) => x.items.length);
+      .filter((x) => x.items.length)];
   });
 
   private noteRow(n: Note): Row {

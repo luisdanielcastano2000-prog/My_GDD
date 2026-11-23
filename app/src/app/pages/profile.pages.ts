@@ -2,6 +2,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { IonContent, IonHeader } from '@ionic/angular';
 
+import { ApiService, apiMessage } from '../data/api.service';
 import { AVATAR_ICON } from '../data/models';
 import { StoreService, type Settings } from '../data/store.service';
 import { NavService } from '../shared/nav.service';
@@ -54,7 +55,7 @@ import { SegComponent, SwitchComponent, TopBarComponent } from '../shared/ui';
           <li><button class="li" type="button" (click)="nav.go('/help/feedback')"><span class="ms">mail</span><span class="li-text"><span class="li-title">Send feedback</span></span><span class="ms li-trail">chevron_right</span></button></li>
           <li><button class="li" type="button" (click)="nav.go('/profile/privacy')"><span class="ms">shield</span><span class="li-text"><span class="li-title">Privacy and terms</span></span><span class="ms li-trail">chevron_right</span></button></li>
         </ul>
-        <button class="li card" type="button" style="margin-top:8px;color:var(--gdd-error)" (click)="nav.root('/login')"><span class="ms" style="color:var(--gdd-error)">logout</span><span class="li-title" style="color:var(--gdd-error)">Log out</span></button>
+        <button class="li card" type="button" style="margin-top:8px;color:var(--gdd-error)" (click)="store.logout(); nav.root('/login')"><span class="ms" style="color:var(--gdd-error)">logout</span><span class="li-title" style="color:var(--gdd-error)">Log out</span></button>
         <p class="version">My GDD · version 0.1</p>
       </div>
     </ion-content>
@@ -193,7 +194,7 @@ export class PersonalPage {
               <input [id]="'pw-' + f.key" [type]="show() ? 'text' : 'password'" [autocomplete]="f.key === 'cur' ? 'current-password' : 'new-password'" [value]="vals()[f.key]" (input)="setVal(f.key, $any($event.target).value)" />
               <button class="icon-btn trail" type="button" [attr.aria-label]="show() ? 'Hide passwords' : 'Show passwords'" (click)="show.set(!show())"><span class="ms">{{ show() ? 'visibility_off' : 'visibility' }}</span></button>
             </div>
-            @if (perr() === f.key) { <span class="field-error">{{ f.err }}</span> } @else if (f.key === 'nw') { <span class="field-help">At least 8 characters.</span> }
+            @if (perr() === f.key) { <span class="field-error">{{ f.key === 'cur' ? curMsg() : f.err }}</span> } @else if (f.key === 'nw') { <span class="field-help">At least 8 characters.</span> }
           </div>
         }
         <button class="btn btn-filled m block" type="submit">Update password</button>
@@ -214,6 +215,8 @@ export class PasswordPage {
     { key: 'nw', label: 'New password', err: 'The new password needs at least 8 characters.' },
     { key: 'cf', label: 'Confirm new password', err: 'The new passwords don’t match.' },
   ];
+  private api = inject(ApiService);
+  protected curMsg = signal('Enter your current password.');
   protected vals = signal({ cur: '', nw: '', cf: '' });
   protected perr = signal<'' | 'cur' | 'nw' | 'cf'>('');
   protected show = signal(false);
@@ -221,11 +224,15 @@ export class PasswordPage {
   setVal(k: 'cur' | 'nw' | 'cf', v: string): void { this.vals.update((x) => ({ ...x, [k]: v })); this.perr.set(''); }
   update(): void {
     const { cur, nw, cf } = this.vals();
-    if (!cur) { this.perr.set('cur'); return; }
+    if (!cur) { this.curMsg.set('Enter your current password.'); this.perr.set('cur'); return; }
     if (nw.length < 8) { this.perr.set('nw'); return; }
     if (nw !== cf) { this.perr.set('cf'); return; }
-    this.vals.set({ cur: '', nw: '', cf: '' });
-    this.store.toast('Password updated. Use it the next time you log in.');
+    const ok = () => { this.vals.set({ cur: '', nw: '', cf: '' }); this.store.toast('Password updated. Use it the next time you log in.'); };
+    if (!this.store.live()) { ok(); return; }
+    this.api.changePassword(cur, nw).then(ok, (e: unknown) => {
+      const m = apiMessage(e);
+      if (m === 'The current password is incorrect.') { this.curMsg.set(m); this.perr.set('cur'); } else this.store.toast(m, { kind: 'err' });
+    });
   }
 }
 

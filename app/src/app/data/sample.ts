@@ -2,9 +2,8 @@
 // Viven solo en memoria: al recargar la página se vuelve a este punto de partida.
 import type { AppData, Block, Dept, Gdd, Section } from './models';
 
-let seq = 0;
-/** Identificador único sencillo (en una app con backend lo daría la base de datos). */
-export const nid = (): string => 'id' + ++seq;
+/** Identificador único: lo genera el front para poder guardar sin esperar al servidor. */
+export const nid = (): string => crypto.randomUUID().replace(/-/g, '').slice(0, 20);
 
 /** Catálogo de departamentos: [nombre, nº de bloques en la plantilla Minimal, bloques [nombre, para qué sirve]]. */
 export const CATALOG: [string, number, [string, string][]][] = [

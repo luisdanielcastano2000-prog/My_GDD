@@ -21,7 +21,7 @@ const CARD_STEP = 294; // ancho de tarjeta (286) + separación (8)
           <span class="ms">info</span>
           <h2 class="t-headline-small">We couldn’t load your GDDs</h2>
           <p>Check your connection and try again.</p>
-          <button class="btn btn-filled m" type="button" (click)="store.loadErr.set(false)"><span class="ms">refresh</span>Retry</button>
+          <button class="btn btn-filled m" type="button" (click)="store.load()"><span class="ms">refresh</span>Retry</button>
         </div>
       } @else if (!gdds().length) {
         <div class="empty">
