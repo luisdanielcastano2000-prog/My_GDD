@@ -9,9 +9,9 @@ Cómo arrancar y cómo está organizado el proyecto: `CLAUDE.md`. Aquí va **lo 
 
 - **Hecho:** copia local del diseño (`design/`), repositorio en GitHub y front completo en Ionic + Angular (`app/`) con las 56 pantallas del lienzo, revisadas en el navegador.
 - **Datos:** cuentas reales en MongoDB (base `my_gdd`) a través de la API NestJS (`api/`). En el Mac, MongoDB local; en Render, Atlas.
-- **Siguiente:** push a GitHub (pendiente del OK del usuario) y crear el servicio en Render (lo hace el usuario con la guía).
+- **Siguiente:** el usuario crea el servicio en Render (guía dada: Build `npm run build`, Start `npm start`, variables `MONGODB_URI`, `JWT_SECRET`, `NODE_ENV`). Luego Claude comprueba la dirección pública.
 - **Procesos corriendo** (los arrancó Claude; se apagan al cerrar la sesión): MongoDB local (27017), API (`npm run start:dev`, 3000) y web (`npx ionic serve`, 8100).
-- **Control de versiones:** Git, rama `main`, remoto `origin` = GitHub `luisdanielcastano2000-prog/My_GDD` (**público**). Todo lo posterior a `9d815f1` está **en local, sin subir**.
+- **Control de versiones:** Git, rama `main`, remoto `origin` = GitHub `luisdanielcastano2000-prog/My_GDD` (**público**). Todo subido a GitHub hasta `e51342b` (push aprobado por el usuario, 2026-11-23).
 
 ---
 
@@ -101,6 +101,9 @@ Cómo arrancar y cómo está organizado el proyecto: `CLAUDE.md`. Aquí va **lo 
 ## Pendiente
 
 - Subir a GitHub los commits del front (falta el OK del usuario).
-- Push a GitHub y servicio en Render (siguiente paso).
+- Servicio en Render (lo crea el usuario) y comprobación de la dirección pública.
 - Detalles de animación simplificados (desintegración en cuadrados, reordenar arrastrando) y escenas sin marco F5 (fecha de revisión, calendario, hora).
 - Avisos de Sass por `@import` (no afectan al funcionamiento).
+
+**GitHub**
+- Push aprobado por el usuario: `9d815f1..e51342b` → `origin/main`. Comprobado con `git ls-remote`.
