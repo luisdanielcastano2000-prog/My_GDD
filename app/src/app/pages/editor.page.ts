@@ -10,7 +10,7 @@ import { TopBarComponent } from '../shared/ui';
   selector: 'app-editor',
   imports: [IonHeader, IonContent, TopBarComponent],
   template: `
-    <ion-header class="editor">
+    <ion-header class="ed-header">
       <app-top-bar [title]="b()?.name ?? ''" [sub]="g()?.name ?? ''" [back]="'/gdd/' + gid() + '/dept/' + dpid()" />
     </ion-header>
     <ion-content class="page-editor">

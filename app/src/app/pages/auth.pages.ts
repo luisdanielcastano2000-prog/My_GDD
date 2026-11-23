@@ -212,7 +212,7 @@ export class ForgotPage {
   template: `
     <ion-header><app-top-bar title="Reset password" back="/login" [profile]="false" /></ion-header>
     <ion-content>
-      <div class="sent">
+      <div class="sent-msg">
         <span class="ms">mail</span>
         <h2 class="t-headline-small">Check your email</h2>
         <p class="intro">We sent a link to {{ email() || 'your email' }}. It can take a few minutes.</p>

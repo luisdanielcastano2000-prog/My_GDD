@@ -1,10 +1,18 @@
 // Departamentos de un GDD y bloques de un departamento.
-import { Component, computed, inject, input, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, signal, viewChild } from '@angular/core';
 import { IonContent, IonHeader } from '@ionic/angular';
 
 import { StoreService } from '../data/store.service';
 import { NavService } from '../shared/nav.service';
 import { StatusComponent, TopBarComponent } from '../shared/ui';
+
+/** Cuando aparece algo nuevo al final de la lista (departamento o bloque), baja hasta verlo. */
+function scrollToNew(content: () => IonContent | undefined, popped: () => string | null, isMine: (id: string) => boolean): void {
+  effect(() => {
+    const id = popped();
+    if (id && isMine(id)) setTimeout(() => void content()?.scrollToBottom(300), 30);
+  });
+}
 
 @Component({
   selector: 'app-depts',
@@ -57,6 +65,10 @@ import { StatusComponent, TopBarComponent } from '../shared/ui';
 })
 export class DeptsPage {
   protected store = inject(StoreService);
+  private content = viewChild(IonContent);
+  constructor() {
+    scrollToNew(this.content, this.store.popped, (id) => !!this.g()?.depts.some((x) => x.id === id));
+  }
   protected nav = inject(NavService);
   readonly gid = input.required<string>(); // de la ruta /gdd/:gid
   protected q = signal(this.store.takeDraft('depts', { q: '' }).q);
@@ -125,6 +137,10 @@ export class DeptsPage {
 })
 export class DeptPage {
   protected store = inject(StoreService);
+  private content = viewChild(IonContent);
+  constructor() {
+    scrollToNew(this.content, this.store.popped, (id) => !!this.dp()?.blocks.some((x) => x.id === id));
+  }
   protected nav = inject(NavService);
   readonly gid = input.required<string>();
   readonly dpid = input.required<string>();

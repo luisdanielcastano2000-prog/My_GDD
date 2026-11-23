@@ -124,7 +124,7 @@ ion-content.page-cards { --background: var(--gdd-page-bg); }
 ion-content.page-editor { --background: var(--gdd-ed-bg); }
 
 .page { display: flex; flex-direction: column; min-height: 100%; padding: 8px 16px calc(80px * var(--gdd-ts) + 24px); gap: 16px; } /* deja sitio a la barra de navegación */
-.page.with-fab { padding-bottom: calc(80px * var(--gdd-ts) + 104px); }
+.page.with-fab { padding-bottom: calc(80px * var(--gdd-ts) + 160px); } /* FAB + snackbar */
 .intro { color: var(--gdd-on-surface-variant); }
 
 /* ---------- iconos: Material Symbols Rounded ---------- */
