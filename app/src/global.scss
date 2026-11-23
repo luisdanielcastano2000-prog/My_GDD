@@ -34,4 +34,9 @@
 
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
-@import '@ionic/angular/css/palettes/dark.system.css';
+@import '@ionic/angular/css/palettes/dark.class.css';
+
+/* My GDD: tokens del sistema de diseño (generados) + tema y componentes */
+@import './theme/tokens';
+@import './theme/app';
+@import './theme/shell'; // (Sass avisa de que @import está obsoleto: se mantiene para que estos estilos vayan después de los de Ionic)

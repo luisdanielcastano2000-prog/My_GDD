@@ -1,0 +1,219 @@
+// Notes (recibidas y enviadas) y New note.
+import { Component, computed, inject, signal } from '@angular/core';
+import { IonContent, IonHeader } from '@ionic/angular';
+
+import type { Note, SentNote } from '../data/models';
+import { StoreService } from '../data/store.service';
+import { NavService } from '../shared/nav.service';
+import { TopBarComponent } from '../shared/ui';
+
+import { withLoading } from './auth.pages';
+
+interface Row { id: string; kind: 'change' | 'team' | 'sent'; icon: string; title: string; sub: string; unread: boolean; aria: string }
+
+@Component({
+  selector: 'app-notes',
+  imports: [IonHeader, IonContent, TopBarComponent],
+  template: `
+    <ion-header class="cards">
+      <app-top-bar title="Notes" />
+      <div class="tabs" role="tablist">
+        <button type="button" role="tab" [class.on]="tab() === 'r'" [attr.aria-selected]="tab() === 'r'" (click)="store.notesTab.set('r')">Received</button>
+        <button type="button" role="tab" [class.on]="tab() === 's'" [attr.aria-selected]="tab() === 's'" (click)="store.notesTab.set('s')">Sent</button>
+      </div>
+    </ion-header>
+    <ion-content class="page-cards">
+      <div class="page with-fab" style="padding-left:12px;padding-right:12px;gap:12px">
+        @for (gr of groups(); track gr.id) {
+          <section class="nt-sec card" [class.fade-in]="true">
+            <button class="nt-head" type="button" [attr.aria-expanded]="gr.open" (click)="toggle(gr.id)">
+              <span class="name">{{ gr.name }}@if (gr.nNew) { <span class="new"> · {{ gr.nNew }} new</span> }</span>
+              <span class="ms ic-muted">{{ gr.open ? 'expand_less' : 'expand_more' }}</span>
+            </button>
+            @if (gr.open) {
+              <ul class="nt-list">
+                @for (it of gr.items; track it.id) {
+                  <li class="nt-li" [class.slide-out]="store.dying() === it.id">
+                    <button class="li" type="button" [class.unread]="it.unread" [attr.aria-label]="it.aria" (click)="open(it)">
+                      <span class="nt-ic" [class]="'nt-ic ' + it.kind"><span class="ms s20">{{ it.icon }}</span></span>
+                      <span class="li-text"><span class="li-title">{{ it.title }}</span><span class="li-sub">{{ it.sub }}</span></span>
+                    </button>
+                    <button class="icon-btn" type="button" aria-label="More options for this note" (click)="more(it)"><span class="ms">more_vert</span></button>
+                  </li>
+                }
+              </ul>
+            }
+          </section>
+        } @empty {
+          @if (tab() === 'r') {
+            <div class="empty">
+              <span class="ms">inbox</span>
+              <h2 class="t-headline-small">No notes yet</h2>
+              <p>Changes and team notes of your GDDs will appear here.</p>
+            </div>
+          } @else {
+            <div class="empty">
+              <span class="ms">send</span>
+              <h2 class="t-headline-small">No sent notes</h2>
+              <p>Notes you send to your team will appear here.</p>
+            </div>
+          }
+        }
+      </div>
+      <button class="fab" slot="fixed" type="button" (click)="newNote()"><span class="ms">add</span>New note</button>
+    </ion-content>
+  `,
+})
+export class NotesPage {
+  protected store = inject(StoreService);
+  private nav = inject(NavService);
+  protected tab = this.store.notesTab;
+  protected groups = computed(() => {
+    const d = this.store.data();
+    const col = this.store.notesCollapsed();
+    const r = this.tab() === 'r';
+    return d.gdds
+      .map((g) => {
+        const items: Row[] = r
+          ? d.notes.filter((n) => n.g === g.id).sort((a, b) => b.ts - a.ts).map((n) => this.noteRow(n))
+          : d.sent.filter((n) => (n.g ?? d.gdds[0]?.id) === g.id).sort((a, b) => b.ts - a.ts).map((n) => this.sentRow(n));
+        const key = (r ? '' : 's') + g.id;
+        return { id: key, name: g.name, items, open: !col[key], nNew: r ? d.notes.filter((n) => n.g === g.id && n.unread).length : 0 };
+      })
+      .filter((x) => x.items.length);
+  });
+
+  private noteRow(n: Note): Row {
+    return {
+      id: n.id, kind: n.kind, icon: n.kind === 'change' ? 'warning' : 'chat', title: n.title, unread: n.unread,
+      sub: n.when + ' · ' + (n.kind === 'team' && n.by ? n.by + ', ' + n.path.replace(/^From: /, '') : n.path),
+      aria: (n.kind === 'change' ? 'Change in your GDD: ' : 'Team note: ') + n.title + ', ' + n.path + ', ' + n.when + '. Review',
+    };
+  }
+  private sentRow(n: SentNote): Row {
+    return { id: n.id, kind: 'sent', icon: 'send', title: '“' + n.text + '”', sub: n.when + ' · To: ' + n.to, unread: false, aria: 'Sent to ' + n.to + ': ' + n.text + ', ' + n.when };
+  }
+  toggle(id: string): void {
+    this.store.notesCollapsed.update((c) => ({ ...c, [id]: !c[id] }));
+  }
+  open(it: Row): void {
+    if (it.kind === 'sent') { this.more(it); return; }
+    const n = this.store.data().notes.find((x) => x.id === it.id);
+    if (!n) return;
+    if (n.kind === 'change') { this.nav.go('/gdd/' + n.g + '/review/' + n.id); return; }
+    const dp = this.store.dept(this.store.gdd(n.g), n.dp);
+    this.nav.go(dp ? '/gdd/' + n.g + '/dept/' + dp.id : '/gdd/' + n.g);
+  }
+  more(it: Row): void {
+    const sent = this.store.data().sent.find((x) => x.id === it.id);
+    this.store.sheet.set({ k: 'note', kind: it.kind, id: it.id, title: sent ? 'To: ' + sent.to : it.title });
+  }
+  newNote(): void {
+    this.nav.go('/notes/new');
+  }
+}
+
+@Component({
+  selector: 'app-new-note',
+  imports: [IonHeader, IonContent, TopBarComponent],
+  template: `
+    <ion-header><app-top-bar title="New note" back="/notes" /></ion-header>
+    <ion-content>
+      @if (!store.data().gdds.length) {
+        <div class="empty">
+          <span class="ms">sticky_note_2</span>
+          <h2 class="t-headline-small">Create a GDD first</h2>
+          <p>Notes always point to a project, a department or a block.</p>
+          <button class="btn btn-filled m" type="button" (click)="nav.go('/new-gdd')"><span class="ms">add</span>New GDD</button>
+        </div>
+      } @else {
+        <form class="page with-nav" (submit)="$event.preventDefault(); send()" novalidate>
+          <div class="field" [class.error]="err()">
+            <div class="field-box">
+              <label for="nn-text">Note</label>
+              <textarea id="nn-text" [value]="text()" (input)="text.set($any($event.target).value); err.set(false)"></textarea>
+            </div>
+            @if (err()) { <span class="field-error">Write the note before sending it.</span> }
+          </div>
+          <h2 class="section-title" style="padding:0">Where does this note go?</h2>
+          <div class="field">
+            <div class="field-box">
+              <label for="nn-g">1 · Project</label>
+              <select id="nn-g" [value]="g()?.id" (change)="gid.set($any($event.target).value); dpid.set(null); bid.set(null)">
+                @for (o of store.data().gdds; track o.id) { <option [value]="o.id" [selected]="o.id === g()?.id">{{ o.name }}</option> }
+              </select>
+              <span class="ms sel-ic">arrow_drop_down</span>
+            </div>
+          </div>
+          <div class="field">
+            <div class="field-box">
+              <label for="nn-dp">2 · Department</label>
+              <select id="nn-dp" [disabled]="!dp()" (change)="dpid.set($any($event.target).value); bid.set(null)">
+                @if (!dp()) { <option>No departments yet</option> }
+                @for (o of g()?.depts ?? []; track o.id) { <option [value]="o.id" [selected]="o.id === dp()?.id">{{ o.name }}</option> }
+              </select>
+              <span class="ms sel-ic">arrow_drop_down</span>
+            </div>
+          </div>
+          <div class="field">
+            <div class="field-box">
+              <label for="nn-b">3 · Block</label>
+              <select id="nn-b" (change)="bid.set($any($event.target).value || null)">
+                <option value="" [selected]="!b()">Whole department</option>
+                @for (o of dp()?.blocks ?? []; track o.id) { <option [value]="o.id" [selected]="o.id === b()?.id">{{ o.name }}</option> }
+              </select>
+              <span class="ms sel-ic">arrow_drop_down</span>
+            </div>
+          </div>
+          <p class="where"><span class="ms s20">layers</span>{{ path() }}</p>
+          <h2 class="section-title" style="padding:0">Send to</h2>
+          <div class="chips">
+            <button class="chip" type="button" [class.on]="cTeam()" [attr.aria-pressed]="cTeam()" (click)="cTeam.set(!cTeam())">@if (cTeam()) { <span class="ms">check</span> }Whole team</button>
+            @if (dp(); as d) {
+              <button class="chip" type="button" [class.on]="cDep()" [attr.aria-pressed]="cDep()" (click)="cDep.set(!cDep())">@if (cDep()) { <span class="ms">check</span> }{{ d.name }}</button>
+            }
+          </div>
+          <button class="btn btn-filled m block" type="submit" [class.ok]="phase() === 'ok'" [attr.aria-busy]="!!phase()">
+            @switch (phase()) {
+              @case ('load') { <span class="spin"></span>Sending note }
+              @case ('ok') { <span class="ms">check</span>Note sent }
+              @default { Send note }
+            }
+          </button>
+        </form>
+      }
+    </ion-content>
+  `,
+})
+export class NewNotePage {
+  protected store = inject(StoreService);
+  protected nav = inject(NavService);
+  private d = this.store.takeDraft('newnote', { text: '', g: null as string | null, dp: null as string | null, b: null as string | null, err: false, sendError: false });
+  protected text = signal(this.d.text);
+  protected err = signal(this.d.err);
+  protected gid = signal(this.d.g);
+  protected dpid = signal(this.d.dp);
+  protected bid = signal(this.d.b);
+  protected cTeam = signal(true);
+  protected cDep = signal(true);
+  protected phase = signal<'' | 'load' | 'ok'>('');
+  protected g = computed(() => this.store.gdd(this.gid()) ?? this.store.data().gdds.at(0) ?? null);
+  protected dp = computed(() => this.store.dept(this.g(), this.dpid()) ?? this.g()?.depts.at(0) ?? null);
+  protected b = computed(() => this.dp()?.blocks.find((x) => x.id === this.bid()) ?? null);
+  protected path = computed(() => (this.g()?.name ?? '') + (this.dp() ? ' › ' + this.dp()!.name : '') + (this.b() ? ' › ' + this.b()!.name : ''));
+
+  constructor() {
+    // Estado «no se pudo enviar» (selector de pantallas): snackbar de error con Retry
+    if (this.d.sendError) {
+      setTimeout(() => this.store.toast('Your note couldn’t be sent. Check your connection.', { kind: 'err', action: { label: 'Retry', run: () => this.send() } }), 50);
+    }
+  }
+  send(): void {
+    const t = this.text().trim();
+    if (!t) { this.err.set(true); return; }
+    withLoading(this.store, this.phase, () => {
+      this.store.sendNote(t, this.g()!.id, this.dp()?.id ?? null, this.cTeam(), this.cDep());
+      this.nav.back('/notes');
+    });
+  }
+}
