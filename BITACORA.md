@@ -5,12 +5,13 @@ Cómo arrancar y cómo está organizado el proyecto: `CLAUDE.md`. Aquí va **lo 
 
 ---
 
-## Estado actual (actualizado 2026-11-23)
+## Estado actual (actualizado 2026-11-23, al terminar la sesión)
 
 - **Hecho:** copia local del diseño (`design/`), repositorio en GitHub y front completo en Ionic + Angular (`app/`) con las 56 pantallas del lienzo, revisadas en el navegador.
 - **Datos:** cuentas reales en MongoDB (base `my_gdd`) a través de la API NestJS (`api/`). En el Mac, MongoDB local; en Render, Atlas.
 - **Siguiente:** el usuario crea el servicio en Render (guía dada: Build `npm run build`, Start `npm start`, variables `MONGODB_URI`, `JWT_SECRET`, `NODE_ENV`). Luego Claude comprueba la dirección pública.
-- **Procesos corriendo** (los arrancó Claude; se apagan al cerrar la sesión): MongoDB local (27017), API (`npm run start:dev`, 3000) y web (`npx ionic serve`, 8100).
+- **Para retomar:** `RETOMAR.md` (prompt para pegar + guía de Render).
+- **Procesos corriendo:** ninguno al cerrar la sesión (MongoDB local, API y web los arrancó Claude y se apagan con ella).
 - **Control de versiones:** Git, rama `main`, remoto `origin` = GitHub `luisdanielcastano2000-prog/My_GDD` (**público**). Todo subido a GitHub hasta `e51342b` (push aprobado por el usuario, 2026-11-23).
 
 ---
@@ -107,3 +108,6 @@ Cómo arrancar y cómo está organizado el proyecto: `CLAUDE.md`. Aquí va **lo 
 
 **GitHub**
 - Push aprobado por el usuario: `9d815f1..e51342b` → `origin/main`. Comprobado con `git ls-remote`.
+
+**Pausa**
+- El usuario para hasta mañana. Creado `RETOMAR.md` con el prompt para retomar, la guía completa de Render y cómo arrancar la app en el Mac.

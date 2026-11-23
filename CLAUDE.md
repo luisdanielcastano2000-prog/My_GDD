@@ -38,4 +38,4 @@ La API sirve también la web compilada (`app/www`, con `@nestjs/serve-static`): 
 
 ## Bitácora
 
-`BITACORA.md` registra lo hecho y las decisiones. Leerla al empezar cada sesión y actualizarla después de cada paso o decisión (fechas AAAA-MM-DD; lo no verificado se marca como tal).
+`BITACORA.md` registra lo hecho y las decisiones; `RETOMAR.md`, cómo seguir tras una pausa. Leerla al empezar cada sesión y actualizarla después de cada paso o decisión (fechas AAAA-MM-DD; lo no verificado se marca como tal).
