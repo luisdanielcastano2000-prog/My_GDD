@@ -52,6 +52,10 @@ NestJS 12 + Mongoose, ESM (los `import` relativos acaban en `.js`). Base MongoDB
 
 La API sirve también la web compilada (`app/www`, con `@nestjs/serve-static`): una sola dirección, sin CORS. En la raíz, `npm run build` instala y compila `app/` y `api/`; `npm start` arranca la API. Probado en el Mac en modo producción.
 
+## Roadmap
+
+`ROADMAP.md`: lo que queda por hacer, por secciones numeradas, con su estado y las dudas pendientes del usuario. El usuario envía cada sección cuando quiere empezarla; al acabarla se marca ✅ (fecha y commit) y se apunta en la bitácora. Antes de empezar una sección ❓, resolver sus dudas con el usuario.
+
 ## Bitácora
 
 `BITACORA.md` registra lo hecho y las decisiones; `RETOMAR.md`, cómo seguir tras una pausa. Leerla al empezar cada sesión y actualizarla después de cada paso o decisión (fechas AAAA-MM-DD; lo no verificado se marca como tal).

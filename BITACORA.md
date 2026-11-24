@@ -180,3 +180,17 @@ Cómo arrancar y cómo está organizado el proyecto: `CLAUDE.md`. Aquí va **lo 
 - Al pasarlas salió un **riesgo real**: recargar o cerrar la pestaña justo después de escribir (antes de los 0,4 s en que la app guarda) perdía el cambio. Arreglo en `StoreService`: al salir de la pestaña guarda ya lo pendiente, y al cerrar o recargar con algo sin guardar el navegador pregunta antes (`beforeunload`).
 - En el Mac: **21/21** dos veces seguidas; unitarias 6/6 (app) y 7/7 (api); ESLint y tipos sin errores.
 - Contra la app publicada (`7fcd390`): `BASE_URL=https://my-gdd.onrender.com npm run test:e2e` → **21/21** (54 s). Cuentas de prueba borradas.
+
+**Nuevo encargo y roadmap (a petición del usuario)**
+- El usuario envía una lista: correo real (verificación al registrarse, cambio de contraseña, invitaciones), borrar la cuenta desde el perfil, invitar a proyectos concretos con roles por departamento, idiomas (catalán, español, japonés), color de acento, animaciones que faltan y una propuesta para «Out of date». Pide un roadmap: él irá enviando las secciones.
+- Creado **`ROADMAP.md`** (secciones 1–7 con estado, dudas y pasos). Comprobaciones hechas antes de escribirlo:
+  - **Borrar la cuenta ya existe** (*Profile › Personal info › Delete account*); probado por API y en las pruebas e2e. Duda: ¿acceso directo también en *Profile*?
+  - **El color de acento no funciona:** se guarda, pero la app siempre usa la paleta azul. El diseño lo aplaza («The accent color arrives with the color palette»), y `tokens.json` solo trae la paleta azul.
+  - **Animaciones que faltan** (README del sistema + prototipo): desintegración en cuadrados (hoy se encoge y se desvanece), reconstrucción al deshacer, reordenar arrastrando con pulsación larga y arranque de la app (splash). La aparición «palomitas» sí existe.
+  - **Idiomas:** unos 300 textos en la interfaz; el japonés necesita la fuente Noto Sans JP. Es abarcable (sección 6).
+- **Propuestas para «Out of date»** (pendiente de elegir):
+  - **A (recomendada):** «Note a change» con la elección de los bloques afectados; esos pasan a «Out of date» para todo el equipo hasta que alguien los revisa. Usa lo que ya existe (`aff`, `rvd`, `pend`, la pantalla de revisión) y sigue la guía del diseño («When the game changes, send a quick note… Review the blocks that are out of date»).
+  - **B:** dependencias entre bloques («Depends on»); al guardar uno, se marcan los que dependen de él.
+  - **C:** automático por la cadena de producción (departamentos posteriores); es fácil, pero ruidoso.
+  - Extra para A: el aviso «Saved» ofrece «Note a change».
+- Orden recomendado: 1 Out of date → 2 proyectos y roles → 3 correo → 4 acento → 5 animaciones → 6 idiomas → 7 pequeños.

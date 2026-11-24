@@ -1,4 +1,4 @@
-> **Actualización 2026-11-24:** la app está publicada en https://my-gdd.onrender.com, revisada a fondo y con los fallos encontrados corregidos. Hechos los puntos 2 y 3 (GDDs compartidos con Editor/Viewer e invitaciones que se aceptan). Lo siguiente: elegir entre las demás propuestas del final de `BITACORA.md` («Propuestas tras la revisión»); la recomendada es la 1 («Out of date»). La sección 3 queda como referencia.
+> **Actualización 2026-11-24:** la app está publicada en https://my-gdd.onrender.com, revisada a fondo y con los fallos encontrados corregidos. Hechos los puntos 2 y 3 (GDDs compartidos con Editor/Viewer e invitaciones que se aceptan). Lo siguiente está en **`ROADMAP.md`** (secciones 1–7, en orden recomendado). El usuario envía cada sección; las marcadas ❓ necesitan antes su decisión. La sección 3 queda como referencia.
 
 # Retomar My GDD (mañana)
 
