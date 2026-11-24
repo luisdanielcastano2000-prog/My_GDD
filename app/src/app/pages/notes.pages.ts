@@ -6,6 +6,7 @@ import type { Note, SentNote } from '../data/models';
 import { StoreService } from '../data/store.service';
 import { NavService } from '../shared/nav.service';
 import { TopBarComponent } from '../shared/ui';
+import { VerifyBannerComponent } from '../shared/verify-banner.component';
 
 import { withLoading } from './auth.pages';
 
@@ -13,7 +14,7 @@ interface Row { id: string; kind: 'change' | 'team' | 'sent'; icon: string; titl
 
 @Component({
   selector: 'app-notes',
-  imports: [IonHeader, IonContent, TopBarComponent],
+  imports: [IonHeader, IonContent, TopBarComponent, VerifyBannerComponent],
   template: `
     <ion-header class="cards">
       <app-top-bar title="Notes" />
@@ -24,6 +25,7 @@ interface Row { id: string; kind: 'change' | 'team' | 'sent'; icon: string; titl
     </ion-header>
     <ion-content class="page-cards">
       <div class="page with-fab" style="padding-left:12px;padding-right:12px;gap:12px">
+        @if (store.invitations().length) { <app-verify-banner /> }
         @if (tab() === 'r' && store.invitations().length) {
           <section class="nt-sec card" aria-label="Invitations">
             <div class="nt-head"><span class="name">Invitations<span class="new"> · {{ store.invitations().length }} new</span></span></div>

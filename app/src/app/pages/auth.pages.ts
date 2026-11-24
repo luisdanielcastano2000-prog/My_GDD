@@ -1,9 +1,9 @@
 // Acceso: Log in, Sign up, Reset password (formulario y «Check your email»).
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, inject, input, signal, type WritableSignal } from '@angular/core';
+import { Component, type OnInit, computed, inject, input, signal, type WritableSignal } from '@angular/core';
 import { IonContent, IonHeader } from '@ionic/angular';
 
-import { apiMessage } from '../data/api.service';
+import { ApiService, apiMessage } from '../data/api.service';
 import { StoreService } from '../data/store.service';
 import { NavService } from '../shared/nav.service';
 import { BrandComponent, TopBarComponent } from '../shared/ui';
@@ -218,6 +218,7 @@ export class SignupPage {
 export class ForgotPage {
   private store = inject(StoreService);
   private nav = inject(NavService);
+  private api = inject(ApiService);
   protected email = signal(this.store.takeDraft('forgot', { email: '' }).email);
   protected err = signal(false);
   protected phase = signal<'' | 'load' | 'ok'>('');
@@ -225,7 +226,16 @@ export class ForgotPage {
   send(): void {
     const em = this.email().trim();
     if (!validEmail(em)) { this.err.set(true); return; }
-    withLoading(this.store, this.phase, () => this.nav.replace('/forgot/sent?email=' + encodeURIComponent(em)));
+    if (this.phase()) return;
+    this.phase.set('load');
+    // El servidor manda el enlace (si la cuenta existe; responde igual si no, para no decir qué cuentas hay)
+    this.api.forgot(em).then(
+      (r) => {
+        if (!r.mail) { this.phase.set(''); this.store.toast('Email isn’t set up in this app yet, so we can’t send the link.', { kind: 'err' }); return; }
+        withLoading(this.store, this.phase, () => this.nav.replace('/forgot/sent?email=' + encodeURIComponent(em)), true);
+      },
+      (e: unknown) => { this.phase.set(''); this.store.toast(apiMessage(e), { kind: 'err' }); },
+    );
   }
 }
 
@@ -240,7 +250,7 @@ export class ForgotPage {
         <h2 class="t-headline-small">Check your email</h2>
         <p class="intro">We sent a link to {{ email() || 'your email' }}. It can take a few minutes.</p>
         <button class="btn btn-filled m block" type="button" (click)="nav.root('/login')">Back to log in</button>
-        <button class="btn btn-text" type="button" (click)="store.toast('We sent the link again')">Send the link again</button>
+        <button class="btn btn-text" type="button" (click)="again()">Send the link again</button>
       </div>
     </ion-content>
   `,
@@ -248,5 +258,127 @@ export class ForgotPage {
 export class ForgotSentPage {
   protected store = inject(StoreService);
   protected nav = inject(NavService);
+  private api = inject(ApiService);
   readonly email = input(''); // viene de ?email= (withComponentInputBinding)
+  again(): void {
+    if (!validEmail(this.email())) { this.store.toast('We sent the link again'); return; } // selector de pantallas
+    this.api.forgot(this.email()).then(
+      () => this.store.toast('We sent the link again'),
+      (e: unknown) => this.store.toast(apiMessage(e), { kind: 'err' }),
+    );
+  }
+}
+
+/** /verify?token= : el enlace de los correos (verificar la cuenta o confirmar un email nuevo). */
+@Component({
+  selector: 'app-verify',
+  imports: [IonHeader, IonContent, TopBarComponent],
+  template: `
+    <ion-header><app-top-bar title="My GDD" [profile]="false" /></ion-header>
+    <ion-content>
+      <div class="sent-msg">
+        @switch (state()) {
+          @case ('load') { <span class="spin" aria-label="Checking the link"></span> }
+          @case ('ok') {
+            <span class="ms ic-ok">mark_email_read</span>
+            <h2 class="t-headline-small">{{ kind() === 'email' ? 'New email confirmed' : 'Email verified' }}</h2>
+            <p class="intro">{{ kind() === 'email' ? 'Your account now uses ' + email() + '.' : 'You can now invite people and join teams.' }}</p>
+            <button class="btn btn-filled m block" type="button" (click)="go()">{{ logged() ? 'Continue' : 'Log in' }}</button>
+          }
+          @default {
+            <span class="ms">link_off</span>
+            <h2 class="t-headline-small">This link doesn’t work</h2>
+            <p class="intro">{{ error() }}</p>
+            <button class="btn btn-filled m block" type="button" (click)="go()">{{ logged() ? 'Go to Home' : 'Log in' }}</button>
+          }
+        }
+      </div>
+    </ion-content>
+  `,
+})
+export class VerifyPage implements OnInit {
+  private store = inject(StoreService);
+  private api = inject(ApiService);
+  private nav = inject(NavService);
+  readonly token = input(''); // ?token=
+  protected state = signal<'load' | 'ok' | 'err'>('load');
+  protected kind = signal<'verify' | 'email'>('verify');
+  protected email = signal('');
+  protected error = signal('');
+  protected logged = computed(() => !!this.api.token);
+  ngOnInit(): void {
+    this.api.verify(this.token()).then(
+      async (r) => {
+        this.kind.set(r.kind);
+        this.email.set(r.email);
+        this.state.set('ok');
+        if (this.api.token) await this.store.load(); // con sesión abierta: ya verificado / email nuevo en pantalla
+      },
+      (e: unknown) => { this.error.set(apiMessage(e)); this.state.set('err'); },
+    );
+  }
+  go(): void {
+    this.nav.root(this.api.token ? '/home' : '/login');
+  }
+}
+
+/** /reset?token= : crear una contraseña nueva con el enlace del correo. */
+@Component({
+  selector: 'app-reset',
+  imports: [IonHeader, IonContent, TopBarComponent],
+  template: `
+    <ion-header><app-top-bar title="New password" back="/login" [profile]="false" /></ion-header>
+    <ion-content>
+      <form class="page" (submit)="$event.preventDefault(); save()" novalidate>
+        <p class="intro">Create a new password for your account. You’ll be logged out of all your devices.</p>
+        <div class="field" [class.error]="err() === 'pw'">
+          <div class="field-box">
+            <label for="rs-pw">New password</label>
+            <input id="rs-pw" [type]="show() ? 'text' : 'password'" autocomplete="new-password" [value]="pw()" (input)="pw.set($any($event.target).value); err.set('')" />
+            <button class="icon-btn trail" type="button" [attr.aria-label]="show() ? 'Hide password' : 'Show password'" (click)="show.set(!show())"><span class="ms">{{ show() ? 'visibility_off' : 'visibility' }}</span></button>
+          </div>
+          @if (err() === 'pw') { <span class="field-error">The password needs at least 8 characters.</span> } @else { <span class="field-help">At least 8 characters.</span> }
+        </div>
+        <div class="field" [class.error]="err() === 'cf'">
+          <div class="field-box">
+            <label for="rs-cf">Confirm new password</label>
+            <input id="rs-cf" [type]="show() ? 'text' : 'password'" autocomplete="new-password" [value]="cf()" (input)="cf.set($any($event.target).value); err.set('')" />
+          </div>
+          @if (err() === 'cf') { <span class="field-error">The passwords don’t match.</span> }
+        </div>
+        <button class="btn btn-filled m block" type="submit" [class.ok]="phase() === 'ok'" [attr.aria-busy]="!!phase()">
+          @switch (phase()) {
+            @case ('load') { <span class="spin"></span>Saving }
+            @case ('ok') { <span class="ms">check</span>Password saved }
+            @default { Save password }
+          }
+        </button>
+      </form>
+    </ion-content>
+  `,
+})
+export class ResetPage {
+  private store = inject(StoreService);
+  private api = inject(ApiService);
+  private nav = inject(NavService);
+  readonly token = input(''); // ?token=
+  protected pw = signal('');
+  protected cf = signal('');
+  protected show = signal(false);
+  protected err = signal<'' | 'pw' | 'cf'>('');
+  protected phase = signal<'' | 'load' | 'ok'>('');
+  save(): void {
+    if (this.pw().length < 8) { this.err.set('pw'); return; }
+    if (this.pw() !== this.cf()) { this.err.set('cf'); return; }
+    if (this.phase()) return;
+    this.phase.set('load');
+    this.api.resetPassword(this.token(), this.pw()).then(
+      () => withLoading(this.store, this.phase, () => {
+        if (this.api.token) this.store.logout(); // la sesión de este aparato también se cerró
+        this.nav.root('/login');
+        this.store.toast('Password changed. Log in with your new password.', { kind: 'ok' });
+      }, true),
+      (e: unknown) => { this.phase.set(''); this.store.toast(apiMessage(e), { kind: 'err' }); },
+    );
+  }
 }

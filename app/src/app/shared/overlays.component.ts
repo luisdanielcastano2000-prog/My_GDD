@@ -266,6 +266,7 @@ export class OverlaysComponent {
     const em = sh.email.trim();
     if (em.indexOf('@') < 1) { this.store.sheet.set({ ...sh, err: true }); return; }
     if (sh.busy) return;
+    if (this.store.needVerify('invite people')) return;
     const t = this.store.data().team, low = em.toLowerCase();
     if (low === this.store.data().user.email.toLowerCase()) { this.store.toast('That’s your own email.'); return; }
     if (t.members.some((m) => m.email.toLowerCase() === low)) { this.store.toast(em + ' is already in your team.'); return; }

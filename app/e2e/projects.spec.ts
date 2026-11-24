@@ -2,7 +2,7 @@
 // Ana (dueña de dos GDDs), Bea (Editor solo de Art en el GDD 1), Cris (Viewer con Audio) y Dani (Editor de todo el GDD 1).
 import { type Browser, type Page, expect, test } from '@playwright/test';
 
-import { api, deleteAccount, email, runId, signupUi } from './helpers';
+import { api, deleteAccount, email, runId, signupUi, skipIfCannotVerify } from './helpers';
 
 test.describe.configure({ mode: 'serial' });
 
@@ -27,6 +27,7 @@ test.beforeAll(async ({ browser }) => {
   await signupUi(Bp, 'bea', run);
   await signupUi(C, 'cris', run);
   await signupUi(D, 'dani', run);
+  await skipIfCannotVerify(A); // con correo de verdad (app publicada), las cuentas de prueba no pueden invitar
   await api(A, `/api/gdds/${G1}`, { method: 'PUT', body: { name: 'Juego 1', order: 0, depts } });
   await api(A, `/api/gdds/${G2}`, { method: 'PUT', body: { name: 'Juego 2', order: 1, depts } });
 });

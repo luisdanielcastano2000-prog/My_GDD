@@ -74,6 +74,11 @@ export class StoreService {
   readonly invitations = signal<Invitation[]>([]);
   /** Equipos de otras personas en los que estás. */
   readonly teams = signal<TeamRef[]>([]);
+  /** Correo: si hay servicio, hay que verificar el email para invitar y aceptar invitaciones. */
+  readonly mailOn = signal(false);
+  readonly emailVerified = signal(true);
+  readonly pendingEmail = signal<string | null>(null);
+  readonly verifyRequired = computed(() => this.live() && this.mailOn() && !this.emailVerified());
   readonly unread = computed(() => this.data().notes.filter((n) => n.unread).length + this.invitations().length);
 
   constructor() {
@@ -142,6 +147,9 @@ export class StoreService {
     this.data.set(d);
     this.since.set(r.since ? Date.parse(r.since) : null);
     this.invitations.set(r.invitations ?? []);
+    this.mailOn.set(!!r.mail);
+    this.emailVerified.set(r.emailVerified ?? true);
+    this.pendingEmail.set(r.pendingEmail ?? null);
     this.teams.set(r.teams ?? []);
     this.snapshot = structuredClone(d);
     this.homeIndex.set(Math.max(0, Math.min(this.homeIndex(), d.gdds.length - 1)));
@@ -661,17 +669,28 @@ export class StoreService {
 
   // ---------- perfil y equipo ----------
   saveProfile(name: string, user: string, email: string, theme: 'Light' | 'Dark' | 'System', accent: string): void {
-    const changed = email !== this.data().user.email;
+    const changed = email.trim().toLowerCase() !== this.data().user.email.toLowerCase();
+    const live = this.live();
     this.mutate((d) => {
       d.user.name = name;
       d.user.user = user.trim().replace(/^@/, '') || d.user.user;
-      d.user.email = email;
       d.user.theme = theme;
       d.user.accent = accent;
+      if (!live) d.user.email = email; // con cuenta real, el email se cambia aparte (hay que confirmarlo)
       const me = d.team.members.find((x) => x.you);
-      if (me) { me.name = name; me.email = email; }
+      if (me) { me.name = name; if (!live) me.email = email; }
     });
-    this.toast(changed ? 'Changes saved. Check ' + email + ' to confirm your new email.' : 'Changes saved');
+    if (!changed || !live) { this.toast(changed ? 'Changes saved. Check ' + email + ' to confirm your new email.' : 'Changes saved'); return; }
+    void (async () => {
+      try {
+        await this.settle();
+        const r = await this.api.changeEmail(email.trim());
+        if (r.pending) { this.pendingEmail.set(r.email); this.toast('Changes saved. Check ' + r.email + ' to confirm your new email.'); }
+        else { await this.load(); this.toast('Changes saved'); } // sin servicio de correo: cambiado al momento
+      } catch (e) {
+        this.toast(apiMessage(e), { kind: 'err' });
+      }
+    })();
   }
   setTheme(theme: 'Light' | 'Dark' | 'System'): void {
     this.mutate((d) => (d.user.theme = theme));
@@ -726,8 +745,32 @@ export class StoreService {
     this.sheet.set(null);
     this.toast(name ? name + '’s access was saved' : 'Saved');
   }
+  /** Aviso si hay que verificar el email antes de invitar o aceptar (true = parar). */
+  needVerify(what: string): boolean {
+    if (!this.verifyRequired()) return false;
+    this.toast('Verify your email to ' + what + '. Check ' + this.data().user.email + '.', { action: { label: 'Send link', run: () => void this.resendVerify() } });
+    return true;
+  }
+  async resendVerify(): Promise<void> {
+    try {
+      await this.api.resendVerify();
+      this.toast('We sent a new link to ' + this.data().user.email);
+    } catch (e) {
+      this.toast(apiMessage(e), { kind: 'err' });
+    }
+  }
+  async resendInvite(email: string): Promise<void> {
+    if (!this.live()) { this.toast('Invitation sent again to ' + email); return; } // selector de pantallas
+    try {
+      const r = await this.api.resendInvite(email);
+      this.toast(r.sent ? 'Invitation sent again to ' + email : email + ' will see your invitation in Notes when they log in.');
+    } catch (e) {
+      this.toast(apiMessage(e), { kind: 'err' });
+    }
+  }
   /** Aceptar o rechazar una invitación a un equipo. Al aceptar, aparecen sus GDDs. */
   async answerInvite(inv: Invitation, accept: boolean): Promise<void> {
+    if (accept && this.needVerify('accept invitations')) return;
     try {
       await this.settle();
       await this.api.teamAction(inv.owner, accept ? 'accept' : 'decline');
@@ -764,6 +807,9 @@ export class StoreService {
     this.data.set(d);
     this.invitations.set([]);
     this.teams.set([]);
+    this.mailOn.set(false);
+    this.emailVerified.set(true);
+    this.pendingEmail.set(null);
     this.loadErr.set(false);
     this.sheet.set(null);
     this.dialog.set(null);

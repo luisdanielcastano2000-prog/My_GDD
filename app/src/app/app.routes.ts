@@ -18,6 +18,9 @@ export const routes: Routes = [
   { path: 'signup', canActivate: [guestGuard], loadComponent: () => auth().then((m) => m.SignupPage) },
   { path: 'forgot', canActivate: [guestGuard], loadComponent: () => auth().then((m) => m.ForgotPage) },
   { path: 'forgot/sent', canActivate: [guestGuard], loadComponent: () => auth().then((m) => m.ForgotSentPage) },
+  // Enlaces de los correos (con o sin sesión abierta)
+  { path: 'verify', loadComponent: () => auth().then((m) => m.VerifyPage) },
+  { path: 'reset', loadComponent: () => auth().then((m) => m.ResetPage) },
   // GDDs
   { path: 'home', canActivate: [authGuard], loadComponent: () => home().then((m) => m.HomePage) },
   { path: 'new-gdd', canActivate: [authGuard], loadComponent: () => home().then((m) => m.NewGddPage) },

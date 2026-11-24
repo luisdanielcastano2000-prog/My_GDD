@@ -9,7 +9,9 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { AuthController } from './auth/auth.controller.js';
 import { AuthGuard } from './auth/auth.guard.js';
 import { GddsController, MeController, NotesController, TeamsController } from './data/data.controller.js';
-import { Feedback, FeedbackSchema, Gdd, GddSchema, Note, NoteSchema, User, UserSchema } from './data/schemas.js';
+import { Feedback, FeedbackSchema, Gdd, GddSchema, MailToken, MailTokenSchema, Note, NoteSchema, Outbox, OutboxSchema, User, UserSchema } from './data/schemas.js';
+import { DevController } from './dev.controller.js';
+import { MailService } from './mail/mail.service.js';
 
 // Ajustes que da el servidor al arrancar (variables de entorno). Si faltan, valores para el Mac:
 // - MONGODB_URI: dirección de MongoDB (en Render: la cadena de Atlas, con la contraseña; nunca en el código).
@@ -26,6 +28,8 @@ if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) throw new 
       { name: Gdd.name, schema: GddSchema },
       { name: Note.name, schema: NoteSchema },
       { name: Feedback.name, schema: FeedbackSchema },
+      { name: MailToken.name, schema: MailTokenSchema },
+      { name: Outbox.name, schema: OutboxSchema },
     ]),
     // Límite de intentos en Log in / Sign up (contra quien prueba contraseñas): 10 por minuto y dirección IP
     ThrottlerModule.forRoot({ throttlers: [{ ttl: 60_000, limit: 10 }], errorMessage: 'Too many attempts. Wait a minute and try again.' }),
@@ -33,7 +37,7 @@ if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) throw new 
     // La web compilada (app/www) se sirve desde el mismo servidor: una sola dirección, sin CORS.
     ServeStaticModule.forRoot({ rootPath: join(import.meta.dirname, '..', '..', 'app', 'www'), exclude: ['/api/{*any}'] }),
   ],
-  controllers: [AuthController, MeController, TeamsController, GddsController, NotesController],
-  providers: [AuthGuard],
+  controllers: [AuthController, MeController, TeamsController, GddsController, NotesController, DevController],
+  providers: [AuthGuard, MailService],
 })
 export class AppModule {}

@@ -21,6 +21,8 @@ export class User {
   /** Ajustes de accesibilidad (tamaño de texto, alto contraste, menos movimiento…). */
   @Prop({ type: Object, default: {} }) settings: Record<string, unknown>;
   /** Equipo: personas (members) e invitaciones pendientes (invites). */
+  /** El email está verificado (enlace del correo de bienvenida). */
+  @Prop({ default: false }) emailVerified: boolean;
   /** Versión de sesión: al subirla, los tokens antiguos dejan de valer (cambiar contraseña, «Log out of other devices»). */
   @Prop({ default: 0 }) tv: number;
   @Prop({ type: Object, default: () => ({ members: [], invites: [] }) }) team: { members: Record<string, unknown>[]; invites: Record<string, unknown>[] };
@@ -66,3 +68,27 @@ export class Feedback {
   @Prop({ default: true }) reply: boolean;
 }
 export const FeedbackSchema = SchemaFactory.createForClass(Feedback);
+
+/**
+ * Enlaces de un solo uso que se mandan por email (verificar la cuenta, crear una contraseña nueva,
+ * confirmar un email nuevo). Se guarda el sha256 del enlace, nunca el enlace. Mongo borra los caducados solo.
+ */
+@Schema({ collection: 'tokens', versionKey: false })
+export class MailToken {
+  @Prop({ type: String, required: true }) _id: string; // sha256 del token
+  @Prop({ required: true, index: true }) uid: string;
+  @Prop({ required: true, enum: ['verify', 'reset', 'email'] }) kind: string;
+  @Prop() email?: string; // el email nuevo (kind 'email')
+  @Prop({ required: true, expires: 0 }) exp: Date; // índice TTL: se borra al caducar
+}
+export const MailTokenSchema = SchemaFactory.createForClass(MailToken);
+
+/** Correos «enviados» cuando no hay servicio de correo (solo en el Mac y en las pruebas). */
+@Schema({ collection: 'outbox', timestamps: true, versionKey: false })
+export class Outbox {
+  @Prop({ required: true, index: true }) to: string;
+  @Prop({ required: true }) subject: string;
+  @Prop({ required: true }) text: string;
+  @Prop() link?: string;
+}
+export const OutboxSchema = SchemaFactory.createForClass(Outbox);

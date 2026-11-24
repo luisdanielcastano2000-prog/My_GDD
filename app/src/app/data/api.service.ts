@@ -17,6 +17,9 @@ export interface MeResponse {
   since?: string; // fecha de alta de la cuenta
   teams?: TeamRef[]; // equipos de otras personas en los que estás
   invitations?: Invitation[]; // invitaciones que esperan respuesta
+  mail?: boolean; // hay servicio de correo (si no, no se pide verificar el email)
+  emailVerified?: boolean;
+  pendingEmail?: string; // email nuevo esperando confirmación
 }
 
 /** Mensaje de error de la API en lenguaje del diseño (o uno genérico si no hay conexión). */
@@ -86,6 +89,26 @@ export class ApiService {
   /** Guarda «My team»; el servidor devuelve el equipo tal como queda (solo entra quien acepta). */
   saveTeam(team: AppData['team']): Promise<{ team: AppData['team'] }> {
     return this.run(this.http.put<{ team: AppData['team'] }>('/api/me/team', team));
+  }
+  // ---------- correo ----------
+  forgot(email: string): Promise<{ mail: boolean }> {
+    return this.run(this.http.post<{ mail: boolean }>('/api/auth/forgot', { email }));
+  }
+  resetPassword(token: string, password: string): Promise<unknown> {
+    return this.run(this.http.post('/api/auth/reset', { token, password }));
+  }
+  /** Enlace de un correo: verificar la cuenta o confirmar un email nuevo. */
+  verify(token: string): Promise<{ kind: 'verify' | 'email'; email: string }> {
+    return this.run(this.http.post<{ kind: 'verify' | 'email'; email: string }>('/api/auth/verify', { token }));
+  }
+  resendVerify(): Promise<{ sent: boolean }> {
+    return this.run(this.http.post<{ sent: boolean }>('/api/me/verify/resend', {}));
+  }
+  changeEmail(email: string): Promise<{ pending: boolean; email: string }> {
+    return this.run(this.http.post<{ pending: boolean; email: string }>('/api/me/email', { email }));
+  }
+  resendInvite(email: string): Promise<{ sent: boolean }> {
+    return this.run(this.http.post<{ sent: boolean }>('/api/me/team/resend', { email }));
   }
   /** Responder a una invitación o salir de un equipo (owner = id de la cuenta dueña). */
   teamAction(owner: string, action: 'accept' | 'decline' | 'leave'): Promise<unknown> {

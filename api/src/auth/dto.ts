@@ -7,6 +7,19 @@ export class SignupDto {
   @IsString() @MinLength(8, { message: 'The password needs at least 8 characters.' }) @MaxLength(200) password: string;
 }
 
+export class EmailDto {
+  @IsEmail({}, { message: 'Enter an email address, for example name@example.com.' }) email: string;
+}
+
+export class TokenDto {
+  @IsString() @MinLength(10) @MaxLength(200) token: string;
+}
+
+export class ResetDto {
+  @IsString() @MinLength(10) @MaxLength(200) token: string;
+  @IsString() @MinLength(8, { message: 'The password needs at least 8 characters.' }) @MaxLength(200) password: string;
+}
+
 export class LoginDto {
   @IsString() email: string;
   @IsString() password: string;

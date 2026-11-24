@@ -8,15 +8,17 @@ import { CATALOG, TEMPLATE_DEPTS, type Template } from '../data/sample';
 import { StoreService } from '../data/store.service';
 import { NavService } from '../shared/nav.service';
 import { StatusComponent, TopBarComponent } from '../shared/ui';
+import { VerifyBannerComponent } from '../shared/verify-banner.component';
 
 const CARD_STEP = 294; // ancho de tarjeta (286) + separación (8)
 
 @Component({
   selector: 'app-home',
-  imports: [IonHeader, IonContent, TopBarComponent, StatusComponent],
+  imports: [IonHeader, IonContent, TopBarComponent, StatusComponent, VerifyBannerComponent],
   template: `
     <ion-header class="cards"><app-top-bar [brand]="true" /></ion-header>
     <ion-content class="page-cards">
+      <app-verify-banner />
       @if (store.loadErr()) {
         <div class="empty">
           <span class="ms">info</span>

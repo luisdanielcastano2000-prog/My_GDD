@@ -2,7 +2,7 @@
 // Ana (dueña), Bea (Editor) y Cris (Viewer).
 import { type Browser, type Page, expect, test } from '@playwright/test';
 
-import { api, deleteAccount, email, runId, signupUi } from './helpers';
+import { api, deleteAccount, email, runId, signupUi, skipIfCannotVerify } from './helpers';
 
 test.describe.configure({ mode: 'serial' });
 
@@ -25,6 +25,7 @@ test.beforeAll(async ({ browser }) => {
   await signupUi(A, 'ana', run);
   await signupUi(Bp, 'bea', run);
   await signupUi(C, 'cris', run);
+  await skipIfCannotVerify(A); // con correo de verdad (app publicada), las cuentas de prueba no pueden invitar
   await A.goto('/new-gdd');
   await A.fill('#ng-name', 'Juego de Ana');
   await A.getByRole('radio', { name: /Minimal/ }).click();

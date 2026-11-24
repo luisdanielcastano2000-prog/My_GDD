@@ -10,7 +10,10 @@ import { IsArray, IsBoolean, IsIn, IsNumber, IsObject, IsOptional, IsString, Max
 import type { Model } from 'mongoose';
 
 import { AuthGuard, UserId } from '../auth/auth.guard.js';
-import { PasswordDto, ProfileDto } from '../auth/dto.js';
+import { EmailDto, PasswordDto, ProfileDto } from '../auth/dto.js';
+import { IpThrottlerGuard } from '../auth/ip-throttler.guard.js';
+import { MailService } from '../mail/mail.service.js';
+import { emailChangeMail, inviteMail, passwordChangedMail, verifyMail } from '../mail/templates.js';
 import { Feedback, Gdd, Note, User } from './schemas.js';
 import { type Member, type Team, accessIn, cleanGrants, cleanTeam, deptEditAllowed, markOutOfDate, recipients, roleIn } from './team.js';
 
@@ -54,6 +57,7 @@ export class MeController {
     @InjectModel(Note.name) private readonly notes: Model<Note>,
     @InjectModel(Feedback.name) private readonly feedback: Model<Feedback>,
     private readonly jwt: JwtService,
+    private readonly mail: MailService,
   ) {}
 
   /** Nuevo token para ESTE aparato tras subir la versión de sesión (los demás quedan fuera). */
@@ -100,6 +104,10 @@ export class MeController {
       notes: notes.filter((n) => n.box === 'received').map((n) => ({ ...n.data, ...(n.data['g'] && !seen.has(n.data['g'] as string) ? { g: null } : {}), id: n._id })),
       sent: notes.filter((n) => n.box === 'sent').map((n) => ({ ...n.data, id: n._id })),
       since: (u as { createdAt?: Date }).createdAt,
+      // Correo: si está activo, hay que verificar el email para invitar y aceptar invitaciones
+      mail: this.mail.enabled,
+      emailVerified: !!u.emailVerified,
+      pendingEmail: this.mail.enabled ? ((await this.users.db.collection('tokens').findOne({ uid: id, kind: 'email', exp: { $gt: new Date() } }))?.['email'] as string | undefined) : undefined,
       teams,
       // Invitaciones: de quién, con qué rol y a qué proyectos (sin grants = a todos)
       invitations: inviters.flatMap((o) =>
@@ -114,16 +122,11 @@ export class MeController {
 
   @Patch()
   async profile(@UserId() id: string, @Body() dto: ProfileDto): Promise<{ ok: true }> {
-    if (dto.email) {
-      const email = dto.email.trim().toLowerCase();
-      if (await this.users.exists({ email, _id: { $ne: id } })) throw new BadRequestException('This email already has an account.');
-      dto.email = email;
-    }
+    delete dto.email; // el email se cambia con POST /api/me/email (hay que confirmarlo)
     await this.users.updateOne({ _id: id }, { $set: dto });
     // En los equipos donde estás, tu nombre y email se ven actualizados
     const set: Record<string, string> = {};
     if (dto.name) set['team.members.$[m].name'] = dto.name;
-    if (dto.email) set['team.members.$[m].email'] = dto.email;
     if (Object.keys(set).length) await this.users.updateMany({ 'team.members.uid': id }, { $set: set }, { arrayFilters: [{ 'm.uid': id }] });
     return { ok: true };
   }
@@ -134,7 +137,41 @@ export class MeController {
     if (!u || !(await bcrypt.compare(dto.current, u.passwordHash))) throw new BadRequestException('The current password is incorrect.');
     u.passwordHash = await bcrypt.hash(dto.next, 10);
     await u.save();
+    await this.mail.send(u.email, passwordChangedMail(u.name)); // aviso por correo
     return { ok: true, token: await this.bump(id) }; // las sesiones de otros aparatos se cierran
+  }
+
+  /**
+   * Cambiar el email. Con correo: se manda un enlace al email nuevo y la cuenta sigue con el viejo hasta
+   * confirmarlo. Sin correo: se cambia al momento (como antes).
+   */
+  @Post('email')
+  @HttpCode(200)
+  @UseGuards(IpThrottlerGuard)
+  async changeEmail(@UserId() id: string, @Body() dto: EmailDto): Promise<{ ok: true; pending: boolean; email: string }> {
+    const email = dto.email.trim().toLowerCase();
+    const u = await this.users.findById(id, { name: 1, email: 1 }).lean();
+    if (!u) throw new NotFoundException('This account no longer exists.');
+    if (email === u.email) return { ok: true, pending: false, email };
+    if (await this.users.exists({ email, _id: { $ne: id } })) throw new BadRequestException('This email already has an account.');
+    if (this.mail.enabled) {
+      await this.mail.send(email, emailChangeMail(u.name, this.mail.link('/verify', await this.mail.newToken(id, 'email', 48, email))));
+      return { ok: true, pending: true, email };
+    }
+    await this.users.updateOne({ _id: id }, { $set: { email } });
+    await this.users.updateMany({ 'team.members.uid': id }, { $set: { 'team.members.$[m].email': email } }, { arrayFilters: [{ 'm.uid': id }] });
+    await this.users.updateOne({ _id: id }, { $set: { 'team.members.$[m].email': email } }, { arrayFilters: [{ 'm.you': true }] });
+    return { ok: true, pending: false, email };
+  }
+
+  /** Volver a mandar el correo para verificar el email. */
+  @Post('verify/resend')
+  @HttpCode(200)
+  @UseGuards(IpThrottlerGuard)
+  async resendVerify(@UserId() id: string): Promise<{ ok: true; sent: boolean }> {
+    const u = await this.users.findById(id, { name: 1, email: 1, emailVerified: 1 }).lean();
+    if (!u || u.emailVerified || !this.mail.enabled) return { ok: true, sent: false };
+    return { ok: true, sent: await this.mail.send(u.email, verifyMail(u.name, this.mail.link('/verify', await this.mail.newToken(id, 'verify', 48)))) };
   }
 
   /** «Log out of other devices»: los tokens anteriores dejan de valer; este aparato recibe uno nuevo. */
@@ -156,12 +193,29 @@ export class MeController {
   /** Guarda «My team»: quitar personas, cambiar roles, invitar y cancelar invitaciones (ver cleanTeam). */
   @Put('team')
   async team(@UserId() id: string, @Body() dto: TeamDto): Promise<{ ok: true; team: Team }> {
-    const u = await this.users.findById(id, { team: 1, email: 1 }).lean();
+    const u = await this.users.findById(id, { team: 1, email: 1, name: 1, emailVerified: 1 }).lean();
     if (!u) throw new NotFoundException('This account no longer exists.');
-    const own = new Set((await this.gdds.find({ owner: id }, { _id: 1 }).lean<GddLean[]>()).map((g) => g._id));
-    const team = cleanTeam(teamOf(u), dto, u.email, own);
+    const ownList = await this.gdds.find({ owner: id }, { _id: 1, name: 1 }).lean<GddLean[]>();
+    const team = cleanTeam(teamOf(u), dto, u.email, new Set(ownList.map((g) => g._id)));
+    const before = new Set(teamOf(u).invites.map((v) => v.email));
+    const added = team.invites.filter((v) => !before.has(v.email));
+    if (added.length && this.mail.enabled && !u.emailVerified) throw new ForbiddenException('Verify your email to invite people.');
     await this.users.updateOne({ _id: id }, { $set: { team } });
+    // Invitación por correo a cada email nuevo
+    for (const v of added) await this.mail.send(v.email, inviteMail(u.name, ownList.filter((g) => !v.grants || v.grants.some((x) => x.g === g._id)).map((g) => g.name), this.mail.appUrl + '/login'));
     return { ok: true, team };
+  }
+
+  /** «Resend invitation»: vuelve a mandar el correo de una invitación pendiente. */
+  @Post('team/resend')
+  @HttpCode(200)
+  @UseGuards(IpThrottlerGuard)
+  async resendInvite(@UserId() id: string, @Body() dto: EmailDto): Promise<{ ok: true; sent: boolean }> {
+    const u = await this.users.findById(id, { team: 1, name: 1 }).lean();
+    const v = teamOf(u).invites.find((x) => x.email === dto.email.trim().toLowerCase());
+    if (!u || !v) throw new NotFoundException('This invitation is no longer available.');
+    const ownList = await this.gdds.find({ owner: id }, { _id: 1, name: 1 }).lean<GddLean[]>();
+    return { ok: true, sent: await this.mail.send(v.email, inviteMail(u.name, ownList.filter((g) => !v.grants || v.grants.some((x) => x.g === g._id)).map((g) => g.name), this.mail.appUrl + '/login')) };
   }
 
   /** Borra la cuenta y TODOS sus datos (y la saca de los equipos en los que estaba). */
@@ -182,12 +236,16 @@ export class MeController {
 @Controller('teams')
 @UseGuards(AuthGuard)
 export class TeamsController {
-  constructor(@InjectModel(User.name) private readonly users: Model<User>) {}
+  constructor(
+    @InjectModel(User.name) private readonly users: Model<User>,
+    private readonly mail: MailService,
+  ) {}
 
   @Post(':owner/accept')
   @HttpCode(200)
   async accept(@UserId() id: string, @Param('owner') owner: string): Promise<{ ok: true }> {
-    const me = await this.users.findById(id, { name: 1, email: 1 }).lean();
+    const me = await this.users.findById(id, { name: 1, email: 1, emailVerified: 1 }).lean();
+    if (me && this.mail.enabled && !me.emailVerified) throw new ForbiddenException('Verify your email to accept invitations.');
     const o = owner === id ? null : await this.users.findById(owner, { team: 1 }).lean().catch(() => null);
     const inv = o ? teamOf(o).invites.find((v) => v.email === me?.email) : undefined;
     if (!me || !o || !inv) throw new NotFoundException('This invitation is no longer available.');

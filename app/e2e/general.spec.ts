@@ -3,7 +3,7 @@ import { type Browser, type Page, expect, test } from '@playwright/test';
 import fs from 'node:fs';
 
 
-import { PASSWORD, api, deleteAccount, email, runId, screenText, signupUi } from './helpers';
+import { api, deleteAccount, email, PASSWORD, runId, screenText, signupUi, skipIfCannotVerify } from './helpers';
 
 test.describe.configure({ mode: 'serial' });
 
@@ -76,6 +76,7 @@ test('«Send feedback» se guarda', async () => {
 });
 
 test('nota al equipo: solo tras aceptar, y sin «Ana, Ana»', async () => {
+  await skipIfCannotVerify(A);
   const team = await api<{ members: unknown[]; invites: unknown[] }>(A, '/api/me').then((d) => (d as unknown as { team: { members: unknown[]; invites: unknown[] } }).team);
   team.invites = [{ id: 'i', email: email('bea', run), role: 'Editor' }];
   await api(A, '/api/me/team', { method: 'PUT', body: team });

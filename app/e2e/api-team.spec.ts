@@ -24,6 +24,8 @@ test.beforeAll(async ({ playwright, baseURL }) => {
   ana = await signupApi(rq, 'ana', run);
   bea = await signupApi(rq, 'bea', run);
   cris = await signupApi(rq, 'cris', run);
+  const m = await me(ana);
+  test.skip(!!m['mail'] && !m['emailVerified'], 'La app publicada envía correos de verdad: las cuentas @example.com no se pueden verificar, así que no pueden invitar.');
 });
 test.afterAll(async () => {
   for (const t of [ana, bea, cris]) await call(t, 'DELETE', '/api/me').catch(() => null);

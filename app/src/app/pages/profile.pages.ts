@@ -8,6 +8,7 @@ import { StoreService, type Settings } from '../data/store.service';
 import { accessText } from '../shared/grants.component';
 import { NavService } from '../shared/nav.service';
 import { SegComponent, SwitchComponent, TopBarComponent } from '../shared/ui';
+import { VerifyBannerComponent } from '../shared/verify-banner.component';
 
 @Component({
   selector: 'app-profile',
@@ -177,7 +178,7 @@ export class PersonalPage {
     return [
       { k: 'Name', v: u.name, run: edit },
       { k: 'User name', v: '@' + u.user, run: edit },
-      { k: 'Email', v: u.email, run: edit },
+      { k: 'Email', v: this.store.pendingEmail() ? u.email + ' · Waiting for you to confirm ' + this.store.pendingEmail() : u.email, run: edit },
       { k: 'Phone', v: u.phone || 'Not added', run: field('phone', 'Phone') },
       { k: 'Country or region', v: u.country || 'Not added', run: field('country', 'Country or region') },
       { k: 'Time zone', v: u.tz || 'Not added', run: field('tz', 'Time zone') },
@@ -204,7 +205,7 @@ export class PersonalPage {
           </div>
         }
         <button class="btn btn-filled m block" type="submit">Update password</button>
-        <button class="btn btn-text" type="button" style="align-self:center" (click)="store.toast('We sent a reset link to ' + store.data().user.email + '.')">Forgot your current password?</button>
+        <button class="btn btn-text" type="button" style="align-self:center" (click)="forgot()">Forgot your current password?</button>
         <h2 class="section-title">Security</h2>
         <ul class="list card">
           <li class="setting"><span class="li-text"><span class="li-title">Two-step verification</span><span class="li-sub">Ask for a code when you log in on a new device.</span></span><app-switch label="Two-step verification" [(on)]="tfa" /></li>
@@ -216,6 +217,15 @@ export class PersonalPage {
 })
 export class PasswordPage {
   protected store = inject(StoreService);
+  /** «Forgot your current password?»: manda el enlace para crear una nueva. */
+  forgot(): void {
+    const em = this.store.data().user.email;
+    if (!this.store.live()) { this.store.toast('We sent a reset link to ' + em + '.'); return; } // selector de pantallas
+    this.api.forgot(em).then(
+      (r) => this.store.toast(r.mail ? 'We sent a reset link to ' + em + '.' : 'Email isn’t set up in this app yet, so we can’t send the link.', r.mail ? {} : { kind: 'err' }),
+      (e: unknown) => this.store.toast(apiMessage(e), { kind: 'err' }),
+    );
+  }
   protected fields: { key: 'cur' | 'nw' | 'cf'; label: string; err: string }[] = [
     { key: 'cur', label: 'Current password', err: 'Enter your current password.' },
     { key: 'nw', label: 'New password', err: 'The new password needs at least 8 characters.' },
@@ -244,10 +254,11 @@ export class PasswordPage {
 
 @Component({
   selector: 'app-team',
-  imports: [IonHeader, IonContent, TopBarComponent],
+  imports: [IonHeader, IonContent, TopBarComponent, VerifyBannerComponent],
   template: `
     <ion-header><app-top-bar title="My team" back="/profile" [profile]="false" /></ion-header>
     <ion-content>
+      <app-verify-banner />
       <div class="page with-fab">
         <p class="intro">People who can see your GDDs and get your notes.</p>
         <h2 class="section-title">Members · {{ team().members.length }}</h2>
@@ -267,7 +278,7 @@ export class PasswordPage {
               <li class="setting">
                 <span class="ms ic-muted">send</span>
                 <span class="li-text"><span class="li-title">{{ v.email }}</span><span class="li-sub">{{ access(v.role, v.grants) }} · Waiting for them to accept</span></span>
-                <button class="icon-btn" type="button" [attr.aria-label]="'Resend invitation to ' + v.email" (click)="store.toast(v.email + ' will see your invitation in Notes when they log in.')"><span class="ms">refresh</span></button>
+                <button class="icon-btn" type="button" [attr.aria-label]="'Resend invitation to ' + v.email" (click)="store.resendInvite(v.email)"><span class="ms">refresh</span></button>
                 <button class="icon-btn" type="button" [attr.aria-label]="'Cancel invitation to ' + v.email" (click)="store.cancelInvite(v.id)"><span class="ms">close</span></button>
               </li>
             }

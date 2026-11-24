@@ -22,7 +22,7 @@ Orden recomendado: **1 → 2 → 3 → 4 → 5 → 6 → 7**. Primero lo que cam
 
 Pasos (con A): 1.1 elegir los bloques en «New note» · 1.2 crear el aviso de cambio y marcar los bloques (servidor: para todo el equipo del GDD) · 1.3 revisar y marcar como revisado para todos · 1.4 pruebas e2e.
 
-## 2. Invitar a proyectos concretos y con roles por departamento ✅ 2026-11-24
+## 2. Invitar a proyectos concretos y con roles por departamento ✅ 2026-11-24 (`1baad56`, comprobado en línea)
 
 > **Decisión del usuario (2026-11-24): sí a todo** — elegir GDDs al invitar (y cambiarlos en *Manage*); por GDD: Viewer / Editor / Editor de departamentos; las notas a un departamento llegan solo a quien lo tiene.
 
@@ -35,7 +35,7 @@ Pasos (con A): 1.1 elegir los bloques en «New note» · 1.2 crear el aviso de c
 
 Pasos: 2.1 modelo de acceso por GDD y por departamento (servidor + pruebas) · 2.2 hoja «Invite» y «Manage» con proyectos y departamentos · 2.3 permisos en pantallas (solo lectura por departamento) · 2.4 notas por departamento · 2.5 pasar las personas de hoy al modelo nuevo · 2.6 pruebas.
 
-## 3. Correo real ⬜ (necesita una cuenta del usuario)
+## 3. Correo real ✅ 2026-11-24 en el código · ⏳ falta que el usuario active Brevo (pasos abajo)
 
 > **Decisión del usuario (2026-11-24): Brevo.** Se puede entrar sin verificar (con aviso), pero no invitar ni aceptar invitaciones hasta verificar.
 
@@ -47,6 +47,23 @@ Pasos: 2.1 modelo de acceso por GDD y por departamento (servidor + pruebas) · 2
 - La clave del servicio la pones **tú** en Render (*Environment*). **Nunca en el chat.**
 
 Pasos: 3.1 cuenta y clave en Render (usuario) · 3.2 envío de correos en la API (`@nestjs/mail` o similar) y plantillas · 3.3 verificación al registrarse · 3.4 «Forgot password» con enlace de un solo uso y caducidad · 3.5 aviso al cambiar la contraseña · 3.6 invitaciones por email (enlace que lleva a *Sign up* o *Log in*) · 3.7 confirmar el cambio de email · 3.8 pruebas (en local, los correos se guardan sin enviarse).
+
+### Activar Brevo (lo hace el usuario; nunca pegar la clave en el chat)
+
+1. Crear una cuenta gratis en https://www.brevo.com (pide nombre y algún dato de la empresa: vale poner «My GDD» / uso personal).
+2. **Remitente:** menú de la cuenta → *Senders, Domains & Dedicated IPs* → *Senders* → *Add a sender*. Nombre: `My GDD`; email: el tuyo (p. ej. tu Gmail). Brevo te manda un correo: ábrelo y confírmalo.
+3. **Clave:** menú de la cuenta → *SMTP & API* → pestaña *API Keys* → *Generate a new API key* → nombre `my-gdd` → copia la clave (solo se ve una vez).
+4. **Render:** servicio `my-gdd` → *Environment* → *Add Environment Variable*, tres veces:
+   - `BREVO_API_KEY` = la clave del paso 3
+   - `MAIL_FROM` = el email del paso 2
+   - `APP_URL` = `https://my-gdd.onrender.com`
+   Luego *Save, rebuild and deploy*.
+5. Decirle a Claude «Brevo activado». Prueba: crear una cuenta con **tu** email y comprobar que llega «Verify your email» (mira también en *Spam*).
+
+A tener en cuenta:
+- Con un remitente Gmail (sin dominio propio), algunos correos pueden llegar a *Spam*. Para mejorarlo, más adelante se puede usar un dominio propio en Brevo.
+- Al activarlo, las cuentas que ya existen aparecen **sin verificar**: verán el aviso y tendrán que pulsar *Send link* una vez para poder invitar o aceptar.
+- Plan gratis: 300 correos al día.
 
 ## 4. Color de acento ⬜
 
