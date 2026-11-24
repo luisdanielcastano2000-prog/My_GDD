@@ -6,12 +6,14 @@ import { filter } from 'rxjs';
 
 import { AVATAR_ICON } from '../data/models';
 import { StoreService, type StatusKind } from '../data/store.service';
+import { TPipe } from '../i18n/i18n';
 
 import { NavService } from './nav.service';
 
 /** Logotipo: icono de la cruceta + «My GDD.» */
 @Component({
   selector: 'app-brand',
+  imports: [TPipe],
   template: `
     <span class="brand">
       @if (icon()) {
@@ -58,18 +60,18 @@ export const statusKind = (s: string): StatusKind => (s === 'Out of date' || s =
 /** Top app bar: atrás, título (o logo en Home), subtítulo, buscar y avatar. */
 @Component({
   selector: 'app-top-bar',
-  imports: [BrandComponent],
+  imports: [TPipe, BrandComponent],
   template: `
     <div class="top-bar">
       @if (searching()) {
-        <button class="icon-btn" type="button" aria-label="Close search" (click)="closeSearch()"><span class="ms">arrow_back</span></button>
+        <button class="icon-btn" type="button" [attr.aria-label]="'Close search' | t" (click)="closeSearch()"><span class="ms">arrow_back</span></button>
         <input #q class="search" type="search" [placeholder]="searchLabel()" [attr.aria-label]="searchLabel()" [value]="query()" (input)="query.set($any($event.target).value)" />
         @if (query()) {
-          <button class="icon-btn" type="button" aria-label="Clear search" (click)="query.set(''); q.focus()"><span class="ms">close</span></button>
+          <button class="icon-btn" type="button" [attr.aria-label]="'Clear search' | t" (click)="query.set(''); q.focus()"><span class="ms">close</span></button>
         }
       } @else {
         @if (back() !== null) {
-          <button class="icon-btn" type="button" aria-label="Back" (click)="goBack()"><span class="ms">arrow_back</span></button>
+          <button class="icon-btn" type="button" [attr.aria-label]="'Back' | t" (click)="goBack()"><span class="ms">arrow_back</span></button>
         }
         <div class="titles" [class.with-back]="back() !== null">
           @if (brand()) {
@@ -83,7 +85,7 @@ export const statusKind = (s: string): StatusKind => (s === 'Out of date' || s =
           <button class="icon-btn" type="button" [attr.aria-label]="searchLabel()" (click)="openSearch()"><span class="ms">search</span></button>
         }
         @if (profile()) {
-          <button class="icon-btn avatar" type="button" aria-label="Profile" (click)="nav.go('/profile')"><span class="ms">{{ avatar() }}</span></button>
+          <button class="icon-btn avatar" type="button" [attr.aria-label]="'Profile' | t" (click)="nav.go('/profile')"><span class="ms">{{ avatar() }}</span></button>
         }
       }
     </div>
@@ -115,19 +117,20 @@ export class TopBarComponent {
 /** Barra de navegación inferior: Home, Notes (con aviso de no leídas) y Help. */
 @Component({
   selector: 'app-nav-bar',
+  imports: [TPipe],
   template: `
     @if (visible()) {
-      <nav class="nav-bar" aria-label="Main">
+      <nav class="nav-bar" [attr.aria-label]="'Main' | t">
         <button type="button" [class.on]="tab() === 'home'" [attr.aria-current]="tab() === 'home' ? 'page' : null" (click)="go('home')">
-          <span class="pill"><span class="ms">home</span></span>Home
+          <span class="pill"><span class="ms">home</span></span>{{ 'Home' | t }}
         </button>
         <button type="button" [class.on]="tab() === 'notes'" [attr.aria-current]="tab() === 'notes' ? 'page' : null" (click)="go('notes')">
           <span class="pill"><span class="ms">sticky_note_2</span>
             @if (store.unread()) { <span class="badge" [attr.aria-label]="store.unread() + ' new'">{{ store.unread() }}<span class="ring"></span></span> }
-          </span>Notes
+          </span>{{ 'Notes' | t }}
         </button>
         <button type="button" [class.on]="tab() === 'help'" [attr.aria-current]="tab() === 'help' ? 'page' : null" (click)="go('help')">
-          <span class="pill"><span class="ms">help</span></span>Help
+          <span class="pill"><span class="ms">help</span></span>{{ 'Help' | t }}
         </button>
       </nav>
     }
@@ -174,11 +177,12 @@ export class SwitchComponent {
 /** Button group (una opción elegida). */
 @Component({
   selector: 'app-seg',
+  imports: [TPipe],
   template: `
     <div class="seg" role="radiogroup" [attr.aria-label]="label()">
       @for (o of options(); track o) {
         <button type="button" role="radio" [class.on]="value() === o" [attr.aria-checked]="value() === o" (click)="value.set(o)">
-          @if (value() === o) { <span class="ms s18">check</span> }{{ o }}
+          @if (value() === o) { <span class="ms s18">check</span> }{{ o | t }}
         </button>
       }
     </div>

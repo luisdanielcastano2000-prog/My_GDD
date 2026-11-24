@@ -370,3 +370,6 @@ dl.gloss dd { margin: 2px 0 0; color: var(--gdd-on-surface-variant); }
 @keyframes spPop { 0% { transform: translateY(20px) scale(0) rotate(-25deg); opacity: 0; } 12% { opacity: 1; } 40% { transform: translateY(-34px) scale(1.25) rotate(10deg); } 65% { transform: translateY(0) scale(.88) rotate(-4deg); } 82% { transform: translateY(-6px) scale(1.05) rotate(2deg); } 100% { transform: none; opacity: 1; } }
 @keyframes spLap { from { transform: rotate(0); } to { transform: rotate(360deg); } }
 @keyframes spSpi { from { transform: translate(calc(var(--x) * 1.5px), calc(var(--y) * 1.5px)); } to { transform: translate(calc(var(--x) * 1px), calc(var(--y) * 1px)); } }
+
+/* Language: idiomas sin traducción todavía */
+.li.soon .li-title { color: var(--gdd-on-surface-variant); }

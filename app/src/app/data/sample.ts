@@ -36,14 +36,18 @@ export function mkBlock(name: string, purpose = ''): Block {
   return { id: nid(), name, purpose, status: 'Empty', pend: false, rem: null, secs: [mkSection()] };
 }
 
-/** Crea un GDD a partir de una plantilla y de los departamentos elegidos. */
-export function buildGdd(name: string, tpl: Template, on: number[]): Gdd {
+/**
+ * Crea un GDD a partir de una plantilla y de los departamentos elegidos. tr traduce los nombres y el «para qué
+ * sirve» de la plantilla al idioma de la app (son contenido del GDD desde ese momento). Los datos de ejemplo
+ * (selector de pantallas) no traducen: buscan sus bloques por el nombre en inglés.
+ */
+export function buildGdd(name: string, tpl: Template, on: number[], tr: (s: string) => string = (s) => s): Gdd {
   return {
     id: nid(), name, desc: tpl + ' template', updated: 'Created today',
     depts: on.map((i): Dept => {
       const c = CATALOG[i];
       const bl = tpl === 'Detailed' ? c[2] : tpl === 'Minimal' ? c[2].slice(0, c[1]) : [];
-      return { id: nid(), name: c[0], blocks: bl.map((x) => mkBlock(x[0], x[1])) };
+      return { id: nid(), name: tr(c[0]), blocks: bl.map((x) => mkBlock(tr(x[0]), tr(x[1]))) };
     }),
   };
 }

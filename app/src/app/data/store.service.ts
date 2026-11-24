@@ -1,6 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable, computed, effect, inject, signal } from '@angular/core';
 
+import { LANGS, applyLang, t, t as tr, tn } from '../i18n/i18n';
 import { flipCapture, flipPlay, mvK } from '../shared/motion';
 
 import { ApiService, type MeResponse, apiMessage } from './api.service';
@@ -120,6 +121,11 @@ export class StoreService {
       const ts = s.textSize === 'Larger' ? 1.4 : s.textSize === 'Large' ? 1.2 : 1;
       root.style.setProperty('--gdd-ts', String(ts));
       if (ts > 1) root.classList.add(ts > 1.3 ? 'ts-larger' : 'ts-large');
+    });
+    // Idioma de la cuenta (si no tiene traducción, se queda el que haya)
+    effect(() => {
+      const code = LANGS[this.data().user.lang];
+      if (this.live() && code) applyLang(code);
     });
     // Color de acento: clase accent-<color> en <html> (botones, enlaces, selección; ver theme/accents.css)
     effect(() => {
@@ -277,11 +283,11 @@ export class StoreService {
         if (team && same(d.team, cur.team)) d.team = team;
         this.data.set(d);
       }
-      if (conflicts.size) { this.syncAgain = true; this.toast('Someone in your team changed this GDD too. Both changes were kept.'); }
+      if (conflicts.size) { this.syncAgain = true; this.toast(t('Someone in your team changed this GDD too. Both changes were kept.')); }
     } catch (e) {
       if (e instanceof HttpErrorResponse && e.status === 401) { this.logout(); location.assign('/login'); return; }
       const shown = e instanceof HttpErrorResponse && [400, 403, 404].includes(e.status);
-      this.toast(shown ? apiMessage(e) : 'Your change couldn’t be saved.', { kind: 'err', action: { label: 'Retry', run: () => void this.sync() } });
+      this.toast(shown ? apiMessage(e) : t('Your change couldn’t be saved.'), { kind: 'err', action: { label: t('Retry'), run: () => void this.sync() } });
     } finally {
       this.syncing = false;
       if (this.syncAgain) { this.syncAgain = false; void this.sync(); }
@@ -303,8 +309,8 @@ export class StoreService {
   /** «Updated yesterday», «Created today»… (o el texto fijo de los datos de ejemplo). */
   gUpdated(g: Gdd): string {
     const now = this.now();
-    if (isReal(g.uts)) return 'Updated ' + dayAgo(g.uts, now);
-    if (isReal(g.cts)) return 'Created ' + dayAgo(g.cts, now);
+    if (isReal(g.uts)) return t('Updated {when}', { when: dayAgo(g.uts, now) });
+    if (isReal(g.cts)) return t('Created {when}', { when: dayAgo(g.cts, now) });
     return g.updated;
   }
   /** «Just now», «5 min ago»… para una nota (o su texto fijo si es de ejemplo). */
@@ -346,7 +352,7 @@ export class StoreService {
     if (!g?.share) return false;
     const ok = need === 'owner' ? false : need === 'depts' ? this.canManageDepts(gid) : this.canEditDept(gid, dpid);
     if (ok) return false;
-    this.toast(need === 'owner' ? 'Only ' + g.share.name + ' can do this.' : g.share.role === 'Viewer' ? 'You can only read this GDD.' : need === 'depts' ? 'Only editors of the whole GDD can change its departments.' : 'You can only edit your departments.');
+    this.toast(need === 'owner' ? t('Only {name} can do this.', { name: g.share.name }) : t(g.share.role === 'Viewer' ? 'You can only read this GDD.' : need === 'depts' ? 'Only editors of the whole GDD can change its departments.' : 'You can only edit your departments.'));
     return true;
   }
   /** deny() para un bloque (busca su GDD y departamento). */
@@ -358,18 +364,18 @@ export class StoreService {
   gStat(g: Gdd): { t: string; k: StatusKind; n: number } {
     let old = 0, has = 0, total = 0;
     g.depts.forEach((x) => x.blocks.forEach((y) => { total++; if (y.status === 'Out of date') old++; if (y.status !== 'Empty') has++; }));
-    if (old) return { t: old + (old === 1 ? ' block' : ' blocks') + ' out of date', k: 'old', n: old };
-    if (has) return { t: 'Up to date', k: 'ok', n: 0 };
-    return { t: total ? total + (total === 1 ? ' block' : ' blocks') + ' to write' : 'No departments yet', k: 'empty', n: 0 };
+    if (old) return { t: tn(old, '{n} block out of date', '{n} blocks out of date'), k: 'old', n: old };
+    if (has) return { t: t('Up to date'), k: 'ok', n: 0 };
+    return { t: total ? tn(total, '{n} block to write', '{n} blocks to write') : t('No departments yet'), k: 'empty', n: 0 };
   }
   dStat(dp: Dept): { t: string; k: StatusKind; nb: string; old: number } {
     const n = dp.blocks.length;
-    const nb = n + (n === 1 ? ' block' : ' blocks');
-    if (!n) return { t: 'No blocks yet', k: 'empty', nb, old: 0 };
+    const nb = tn(n, '{n} block', '{n} blocks');
+    if (!n) return { t: t('No blocks yet'), k: 'empty', nb, old: 0 };
     const old = dp.blocks.filter((y) => y.status === 'Out of date').length;
-    if (old) return { t: nb + ' · ' + old + ' out of date', k: 'old', nb, old };
-    if (dp.blocks.some((y) => y.status !== 'Empty')) return { t: nb + ' · Up to date', k: 'ok', nb, old: 0 };
-    return { t: nb + ' · Empty', k: 'empty', nb, old: 0 };
+    if (old) return { t: nb + ' · ' + t('{n} out of date', { n: old }), k: 'old', nb, old };
+    if (dp.blocks.some((y) => y.status !== 'Empty')) return { t: nb + ' · ' + t('Up to date'), k: 'ok', nb, old: 0 };
+    return { t: nb + ' · ' + t('Empty'), k: 'empty', nb, old: 0 };
   }
   deptColor(g: Gdd, dp: Dept): string {
     return 'var(--gdd-bkc-' + (dp.col ?? (g.depts.indexOf(dp) % 6) + 1) + ')';
@@ -452,7 +458,7 @@ export class StoreService {
   async signup(user: string, email: string, password: string): Promise<void> {
     await this.api.signup(user, email, password);
     await this.load();
-    this.toast('Account created. Welcome, ' + this.data().user.name + '!');
+    this.toast(t('Account created. Welcome, {name}!', { name: this.data().user.name }));
   }
   async login(email: string, password: string): Promise<void> {
     await this.api.login(email, password);
@@ -462,12 +468,12 @@ export class StoreService {
 
   // ---------- crear ----------
   createGdd(name: string, tpl: Template, on: number[]): Gdd {
-    const g = buildGdd(name, tpl, [...on].sort((a, b) => a - b));
+    const g = buildGdd(name, tpl, [...on].sort((a, b) => a - b), t); // la plantilla, en el idioma de la app
     g.cts = Date.now();
     this.mutate((d) => d.gdds.unshift(g));
     this.homeIndex.set(0);
     this.pop(g.id);
-    this.toast(name + ' created');
+    this.toast(t('{name} created', { name }));
     return g;
   }
   private uniq(base: string, names: string[]): string {
@@ -480,7 +486,7 @@ export class StoreService {
     if (this.deny(gid, 'depts')) return;
     const g0 = this.gdd(gid);
     if (!g0) return;
-    const name = this.uniq('New department', g0.depts.map((x) => x.name));
+    const name = this.uniq(t('New department'), g0.depts.map((x) => x.name));
     const last = g0.depts[g0.depts.length - 1];
     const lc = last ? last.col ?? ((g0.depts.length - 1) % 6) + 1 : 0;
     const nd: Dept = { id: nid(), name, blocks: [], col: (lc % 6) + 1 };
@@ -492,7 +498,7 @@ export class StoreService {
     if (this.deny(gid, 'dept', dpid)) return;
     const dp0 = this.dept(this.gdd(gid), dpid);
     if (!dp0) return;
-    const name = this.uniq('New block', dp0.blocks.map((x) => x.name));
+    const name = this.uniq(t('New block'), dp0.blocks.map((x) => x.name));
     const nb = mkBlock(name, '');
     this.mutate((d) => { const g = d.gdds.find((x) => x.id === gid)!; g.depts.find((x) => x.id === dpid)!.blocks.push(nb); touch(g); });
     this.pop(nb.id);
@@ -500,21 +506,23 @@ export class StoreService {
   }
   useTemplate(gid: string): void {
     if (this.deny(gid, 'depts')) return;
-    const t = buildGdd('x', 'Minimal', [0, 2, 3, 5]);
-    this.mutate((d) => { const g = d.gdds.find((x) => x.id === gid)!; g.depts = g.depts.concat(t.depts); touch(g); });
-    this.toast('Minimal template added: 4 departments');
+    const tpl = buildGdd('x', 'Minimal', [0, 2, 3, 5], t);
+    this.mutate((d) => { const g = d.gdds.find((x) => x.id === gid)!; g.depts = g.depts.concat(tpl.depts); touch(g); });
+    this.toast(t('Minimal template added: 4 departments'));
   }
   suggest(gid: string, dpid: string): void {
     if (this.deny(gid, 'dept', dpid)) return;
     let n = 0;
     this.mutate((d) => {
       const dp = d.gdds.find((x) => x.id === gid)!.depts.find((x) => x.id === dpid)!;
-      const c = CATALOG.find((x) => x[0].toLowerCase() === dp.name.toLowerCase());
+      // El departamento puede llamarse como en el catálogo en inglés o en el idioma de la app
+      const name = dp.name.toLowerCase();
+      const c = CATALOG.find((x) => x[0].toLowerCase() === name || t(x[0]).toLowerCase() === name);
       const list: [string, string][] = c ? c[2] : [['Overview', 'What this department does and its goals.'], ['Tasks', 'The work to do, in order.'], ['References', 'Links, images and examples to follow.']];
-      dp.blocks = dp.blocks.concat(list.map((x) => mkBlock(x[0], x[1])));
+      dp.blocks = dp.blocks.concat(list.map((x) => mkBlock(t(x[0]), t(x[1]))));
       n = list.length;
     });
-    this.toast(n + ' suggested blocks added');
+    this.toast(tn(n, '{n} suggested block added', '{n} suggested blocks added'));
   }
 
   // ---------- editor ----------
@@ -592,7 +600,7 @@ export class StoreService {
       if (dl.what === 'field' && dl.key) d.user[dl.key] = v;
     });
     this.dialog.set(null);
-    this.toast(dl.what === 'field' ? dl.label + ' saved' : 'Name changed');
+    this.toast(dl.what === 'field' ? t('{name} saved', { name: t(dl.label ?? '') }) : t('Name changed'));
     return true;
   }
   /** Lista donde está el elemento de una hoja de acciones (para mover y borrar). En Home se ordenan solo los GDDs tuyos. */
@@ -633,7 +641,7 @@ export class StoreService {
       n = arr.length;
       touch(g);
     });
-    if (name) this.toast(name + ' moved to position ' + (to + 1) + ' of ' + n);
+    if (name) this.toast(t('{name} moved to position {pos} of {total}', { name, pos: to + 1, total: n }));
   }
   /** Animación de una tarjeta: 'out' se desintegra (al borrar) · 'in' se reconstruye (Undo). */
   tile(id: string): 'out' | 'in' | null {
@@ -651,7 +659,7 @@ export class StoreService {
     if (!w || this.deny(w.g.id, 'dept', w.dp.id)) return;
     this.afterDissolve(bid, () => {
       this.mutate((d) => { const x = this.where(bid, d)!; x.dp.blocks = x.dp.blocks.filter((b) => b.id !== bid); touch(x.g); }, true);
-      this.toast(w.b.name + ' deleted', { undo: true });
+      this.toast(t('{name} deleted', { name: w.b.name }), { undo: true });
     });
   }
   deleteDept(did: string, gid: string): void {
@@ -659,14 +667,14 @@ export class StoreService {
     if (!dp || this.deny(gid, 'depts')) return;
     this.afterDissolve(did, () => {
       this.mutate((d) => { const g = d.gdds.find((x) => x.id === gid)!; g.depts = g.depts.filter((x) => x.id !== did); touch(g); }, true);
-      this.toast(dp.name + ' deleted', { undo: true });
+      this.toast(t('{name} deleted', { name: dp.name }), { undo: true });
     });
   }
   /** Confirmación del diálogo «Delete …?» (proyecto, persona del equipo o cuenta). */
   confirmDelete(dl: Extract<Dialog, { k: 'del' }>): 'account' | void {
     this.dialog.set(null);
     if (dl.what === 'account') {
-      const done = () => { this.logout(); this.toast('Your account was deleted'); };
+      const done = () => { this.logout(); this.toast(t('Your account was deleted')); };
       if (this.live()) this.api.deleteAccount().then(done, (e: unknown) => this.toast(apiMessage(e), { kind: 'err' }));
       else done();
       return 'account';
@@ -676,14 +684,14 @@ export class StoreService {
       this.afterDissolve(dl.id!, () => {
         this.mutate((d) => { d.gdds = d.gdds.filter((x) => x.id !== dl.id); d.notes = d.notes.filter((n) => n.g !== dl.id); }); // solo el dueño llega aquí
         this.homeIndex.set(Math.max(0, Math.min(this.homeIndex(), this.data().gdds.length - 1)));
-        this.toast(name + ' deleted');
+        this.toast(t('{name} deleted', { name }));
       });
     }
     if (dl.what === 'member') {
       const name = this.data().team.members.find((x) => x.id === dl.id)?.name ?? '';
       this.afterDissolve(dl.id!, () => {
         this.mutate((d) => { d.team.members = d.team.members.filter((x) => x.id !== dl.id); });
-        this.toast(name + ' was removed from your team');
+        this.toast(t('{name} was removed from your team', { name }));
       });
     }
   }
@@ -696,7 +704,7 @@ export class StoreService {
     this.sheet.set(null);
     this.afterDissolve(id, () => {
       this.mutate((d) => { if (sent) d.sent = d.sent.filter((n) => n.id !== id); else d.notes = d.notes.filter((n) => n.id !== id); }, true);
-      this.toast('Note deleted', { undo: true });
+      this.toast(t('Note deleted'), { undo: true });
     });
   }
   /**
@@ -717,11 +725,11 @@ export class StoreService {
     });
     if (aff.length && this.live()) this.refreshAfterSync = true; // los bloques los marca el servidor: traerlos al acabar
     this.notesTab.set('s');
-    this.toast(aff.length ? 'Note sent · ' + aff.length + (aff.length === 1 ? ' block' : ' blocks') + ' marked out of date' : 'Note sent', { kind: 'ok' });
+    this.toast(aff.length ? tn(aff.length, 'Note sent · {n} block marked out of date', 'Note sent · {n} blocks marked out of date') : t('Note sent'), { kind: 'ok' });
   }
   notify(n: Note | null): void {
-    this.mutate((d) => d.sent.push({ id: nid(), g: n?.g, text: 'Please review: ' + (n ? n.title : 'the latest change'), to: 'Whole team', when: 'Just now', ts: Date.now() }));
-    this.toast('Team notified');
+    this.mutate((d) => d.sent.push({ id: nid(), g: n?.g, text: n ? t('Please review: {title}', { title: n.title }) : t('Please review the latest change'), to: 'Whole team', when: 'Just now', ts: Date.now() }));
+    this.toast(t('Team notified'));
   }
 
   // ---------- perfil y equipo ----------
@@ -737,13 +745,13 @@ export class StoreService {
       const me = d.team.members.find((x) => x.you);
       if (me) { me.name = name; if (!live) me.email = email; }
     });
-    if (!changed || !live) { this.toast(changed ? 'Changes saved. Check ' + email + ' to confirm your new email.' : 'Changes saved'); return; }
+    if (!changed || !live) { this.toast(changed ? t('Changes saved. Check {email} to confirm your new email.', { email }) : t('Changes saved')); return; }
     void (async () => {
       try {
         await this.settle();
         const r = await this.api.changeEmail(email.trim());
-        if (r.pending) { this.pendingEmail.set(r.email); this.toast('Changes saved. Check ' + r.email + ' to confirm your new email.'); }
-        else { await this.load(); this.toast('Changes saved'); } // sin servicio de correo: cambiado al momento
+        if (r.pending) { this.pendingEmail.set(r.email); this.toast(t('Changes saved. Check {email} to confirm your new email.', { email: r.email })); }
+        else { await this.load(); this.toast(t('Changes saved')); } // sin servicio de correo: cambiado al momento
       } catch (e) {
         this.toast(apiMessage(e), { kind: 'err' });
       }
@@ -754,11 +762,14 @@ export class StoreService {
   }
   setAvatar(av: AppData['user']['av']): void {
     this.mutate((d) => (d.user.av = av));
-    this.toast('Profile photo updated');
+    this.toast(t('Profile photo updated'));
   }
-  setLang(lang: string): void {
-    this.mutate((d) => (d.user.lang = lang));
-    this.toast(lang === 'English' ? 'Language changed to English.' : 'Language changed to ' + lang + '. This prototype is only in English.');
+  /** Cambia el idioma de la app (inglés, español o catalán; el resto llega más adelante). */
+  setLang(name: string): void {
+    if (!(name in LANGS)) { this.toast(t('{lang} isn’t available yet. It’s coming soon.', { lang: name })); return; }
+    this.mutate((d) => (d.user.lang = name));
+    applyLang(LANGS[name]); // ya, para que el aviso salga en el idioma nuevo
+    this.toast(t('Language changed to {lang}.', { lang: name }));
   }
   /** «Download my data»: descarga un archivo JSON con todo lo de la cuenta (sin la contraseña). */
   downloadData(): void {
@@ -770,14 +781,14 @@ export class StoreService {
     a.download = 'my-gdd-data-' + new Date().toISOString().slice(0, 10) + '.json';
     a.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
-    this.toast('Your data was downloaded');
+    this.toast(t('Your data was downloaded'));
   }
   /** «Log out of other devices» (de verdad: el servidor invalida los demás tokens). */
   async logoutOthers(): Promise<void> {
-    if (!this.live()) { this.toast('You’re logged out of all other devices.'); return; } // selector de pantallas
+    if (!this.live()) { this.toast(t('You’re logged out of all other devices.')); return; } // selector de pantallas
     try {
       await this.api.logoutOthers();
-      this.toast('You’re logged out of all other devices.');
+      this.toast(t('You’re logged out of all other devices.'));
     } catch (e) {
       this.toast(apiMessage(e), { kind: 'err' });
     }
@@ -793,34 +804,34 @@ export class StoreService {
   invite(email: string, grants: Grant[]): void {
     const role = grants.some((x) => x.role === 'Editor') ? 'Editor' : 'Viewer';
     this.mutate((d) => d.team.invites.push({ id: nid(), email, role, grants }));
-    this.toast('Invitation sent to ' + email);
+    this.toast(t('Invitation sent to {email}', { email }));
   }
   /** Guarda a qué proyectos entra una persona del equipo, con qué rol y departamentos. */
   saveAccess(id: string, grants: Grant[]): void {
     let name = '';
     this.mutate((d) => { const m = d.team.members.find((x) => x.id === id); if (m) { m.grants = grants; m.role = grants.some((x) => x.role === 'Editor') ? 'Editor' : 'Viewer'; name = m.name; } });
     this.sheet.set(null);
-    this.toast(name ? name + '’s access was saved' : 'Saved');
+    this.toast(name ? t('{name}’s access was saved', { name }) : t('Saved'));
   }
   /** Aviso si hay que verificar el email antes de invitar o aceptar (true = parar). */
   needVerify(what: string): boolean {
     if (!this.verifyRequired()) return false;
-    this.toast('Verify your email to ' + what + '. Check ' + this.data().user.email + '.', { action: { label: 'Send link', run: () => void this.resendVerify() } });
+    this.toast(t(what === 'invite people' ? 'Verify your email to invite people. Check {email}.' : 'Verify your email to accept invitations. Check {email}.', { email: this.data().user.email }), { action: { label: t('Send link'), run: () => void this.resendVerify() } });
     return true;
   }
   async resendVerify(): Promise<void> {
     try {
       await this.api.resendVerify();
-      this.toast('We sent a new link to ' + this.data().user.email);
+      this.toast(t('We sent a new link to {email}', { email: this.data().user.email }));
     } catch (e) {
       this.toast(apiMessage(e), { kind: 'err' });
     }
   }
   async resendInvite(email: string): Promise<void> {
-    if (!this.live()) { this.toast('Invitation sent again to ' + email); return; } // selector de pantallas
+    if (!this.live()) { this.toast(t('Invitation sent again to {email}', { email })); return; } // selector de pantallas
     try {
       const r = await this.api.resendInvite(email);
-      this.toast(r.sent ? 'Invitation sent again to ' + email : email + ' will see your invitation in Notes when they log in.');
+      this.toast(t(r.sent ? 'Invitation sent again to {email}' : '{email} will see your invitation in Notes when they log in.', { email }));
     } catch (e) {
       this.toast(apiMessage(e), { kind: 'err' });
     }
@@ -832,7 +843,7 @@ export class StoreService {
       await this.settle();
       await this.api.teamAction(inv.owner, accept ? 'accept' : 'decline');
       await this.load();
-      this.toast(accept ? 'You joined ' + inv.name + '’s team' : 'Invitation declined', accept ? { kind: 'ok' } : {});
+      this.toast(accept ? t('You joined {name}’s team', { name: inv.name }) : t('Invitation declined'), accept ? { kind: 'ok' } : {});
     } catch (e) {
       this.toast(apiMessage(e), { kind: 'err' });
       void this.load(); // la invitación pudo dejar de existir: se vuelve a mirar
@@ -844,7 +855,7 @@ export class StoreService {
       await this.settle();
       await this.api.teamAction(t.owner, 'leave');
       await this.load();
-      this.toast('You left ' + t.name + '’s team');
+      this.toast(tr('You left {name}’s team', { name: t.name }));
     } catch (e) {
       this.toast(apiMessage(e), { kind: 'err' });
     }
@@ -852,7 +863,7 @@ export class StoreService {
   cancelInvite(id: string): void {
     const v = this.data().team.invites.find((x) => x.id === id);
     this.mutate((d) => (d.team.invites = d.team.invites.filter((x) => x.id !== id)), true);
-    this.toast('Invitation to ' + (v?.email ?? '') + ' canceled', { undo: true });
+    this.toast(t('Invitation to {email} canceled', { email: v?.email ?? '' }), { undo: true });
   }
 
   /** Vuelve a los datos de ejemplo (lo usa el selector de pantallas). */

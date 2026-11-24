@@ -4,6 +4,7 @@ import { IonContent, IonHeader } from '@ionic/angular';
 
 import { ApiService, apiMessage } from '../data/api.service';
 import { StoreService } from '../data/store.service';
+import { t, TPipe } from '../i18n/i18n';
 import { NavService } from '../shared/nav.service';
 import { SegComponent, SwitchComponent, TopBarComponent } from '../shared/ui';
 
@@ -11,15 +12,15 @@ import { withLoading } from './auth.pages';
 
 @Component({
   selector: 'app-help',
-  imports: [IonHeader, IonContent, TopBarComponent],
+  imports: [TPipe, IonHeader, IonContent, TopBarComponent],
   template: `
-    <ion-header class="cards"><app-top-bar title="How can we help?" /></ion-header>
+    <ion-header class="cards"><app-top-bar [title]="'How can we help?' | t" /></ion-header>
     <ion-content class="page-cards">
       <div class="page with-nav" style="gap:8px">
         @for (it of items; track it.url) {
           <button class="li tall card" type="button" (click)="nav.go(it.url)">
             <span class="ms">{{ it.icon }}</span>
-            <span class="li-text"><span class="li-title">{{ it.title }}</span><span class="li-sub">{{ it.sub }}</span></span>
+            <span class="li-text"><span class="li-title">{{ it.title | t }}</span><span class="li-sub">{{ it.sub | t }}</span></span>
             <span class="ms li-trail">chevron_right</span>
           </button>
         }
@@ -38,15 +39,15 @@ export class HelpPage {
 
 @Component({
   selector: 'app-guide',
-  imports: [IonHeader, IonContent, TopBarComponent],
+  imports: [TPipe, IonHeader, IonContent, TopBarComponent],
   template: `
-    <ion-header class="cards"><app-top-bar title="Step-by-step guide" back="/help" /></ion-header>
+    <ion-header class="cards"><app-top-bar [title]="'Step-by-step guide' | t" back="/help" /></ion-header>
     <ion-content class="page-cards">
       <div class="page with-nav">
-        <p class="intro">Write your GDD in five steps.</p>
+        <p class="intro">{{ 'Write your GDD in five steps.' | t }}</p>
         <ol class="steps">
           @for (s of steps; track $index) {
-            <li class="card"><span class="n">{{ $index + 1 }}</span><span class="li-title">{{ s }}</span></li>
+            <li class="card"><span class="n">{{ $index + 1 }}</span><span class="li-title">{{ s | t }}</span></li>
           }
         </ol>
       </div>
@@ -65,14 +66,14 @@ export class GuidePage {
 
 @Component({
   selector: 'app-glossary',
-  imports: [IonHeader, IonContent, TopBarComponent],
+  imports: [TPipe, IonHeader, IonContent, TopBarComponent],
   template: `
-    <ion-header class="cards"><app-top-bar title="Glossary" back="/help" /></ion-header>
+    <ion-header class="cards"><app-top-bar [title]="'Glossary' | t" back="/help" /></ion-header>
     <ion-content class="page-cards">
       <div class="page with-nav">
         <dl class="gloss card">
           @for (t of terms; track t[0]) {
-            <div><dt>{{ t[0] }}</dt><dd>{{ t[1] }}</dd></div>
+            <div><dt>{{ t[0] | t }}</dt><dd>{{ t[1] | t }}</dd></div>
           }
         </dl>
       </div>
@@ -91,30 +92,30 @@ export class GlossaryPage {
 
 @Component({
   selector: 'app-feedback',
-  imports: [IonHeader, IonContent, TopBarComponent, SegComponent, SwitchComponent],
+  imports: [TPipe, IonHeader, IonContent, TopBarComponent, SegComponent, SwitchComponent],
   template: `
-    <ion-header><app-top-bar title="Send feedback" back="/help" /></ion-header>
+    <ion-header><app-top-bar [title]="'Send feedback' | t" back="/help" /></ion-header>
     <ion-content>
       <form class="page with-nav" (submit)="$event.preventDefault(); send()" novalidate>
-        <p class="intro">What should we improve? We read every message.</p>
-        <span class="t-label-large">Topic</span>
-        <app-seg label="Topic" [options]="['Idea', 'Problem', 'Question']" [(value)]="topic" />
+        <p class="intro">{{ 'What should we improve? We read every message.' | t }}</p>
+        <span class="t-label-large">{{ 'Topic' | t }}</span>
+        <app-seg [label]="'Topic' | t" [options]="['Idea', 'Problem', 'Question']" [(value)]="topic" />
         <div class="field" [class.error]="err()">
           <div class="field-box">
-            <label for="fb-text">Message</label>
+            <label for="fb-text">{{ 'Message' | t }}</label>
             <textarea id="fb-text" [value]="text()" (input)="text.set($any($event.target).value); err.set(false)"></textarea>
           </div>
-          @if (err()) { <span class="field-error">Write your message before sending it.</span> }
+          @if (err()) { <span class="field-error">{{ 'Write your message before sending it.' | t }}</span> }
         </div>
         <div class="setting" style="padding:0">
-          <span class="li-text"><span class="li-title">You can reply to me</span><span class="li-sub">We’ll answer to your email.</span></span>
-          <app-switch label="You can reply to me" [(on)]="reply" />
+          <span class="li-text"><span class="li-title">{{ 'You can reply to me' | t }}</span><span class="li-sub">{{ 'We’ll answer to your email.' | t }}</span></span>
+          <app-switch [label]="'You can reply to me' | t" [(on)]="reply" />
         </div>
         <button class="btn btn-filled m block" type="submit" [class.ok]="phase() === 'ok'" [attr.aria-busy]="!!phase()">
           @switch (phase()) {
-            @case ('load') { <span class="spin"></span>Sending your feedback }
-            @case ('ok') { <span class="ms">check</span>Feedback sent }
-            @default { Send feedback }
+            @case ('load') { <span class="spin"></span>{{ 'Sending your feedback' | t }} }
+            @case ('ok') { <span class="ms">check</span>{{ 'Feedback sent' | t }} }
+            @default { {{ 'Send feedback' | t }} }
           }
         </button>
       </form>
@@ -133,13 +134,13 @@ export class FeedbackPage {
   send(): void {
     if (!this.text().trim()) { this.err.set(true); return; }
     if (!this.store.live()) { // selector de pantallas: sin servidor
-      withLoading(this.store, this.phase, () => { this.nav.back('/help'); this.store.toast('Thanks! We got your feedback.'); });
+      withLoading(this.store, this.phase, () => { this.nav.back('/help'); this.store.toast(t('Thanks! We got your feedback.')); });
       return;
     }
     this.phase.set('load');
     this.api.sendFeedback(this.topic(), this.text().trim(), this.reply()).then(
-      () => { this.phase.set('ok'); setTimeout(() => { this.phase.set(''); this.nav.back('/help'); this.store.toast('Thanks! We got your feedback.'); }, 650); },
-      (e: unknown) => { this.phase.set(''); this.store.toast(apiMessage(e), { kind: 'err', action: { label: 'Retry', run: () => this.send() } }); },
+      () => { this.phase.set('ok'); setTimeout(() => { this.phase.set(''); this.nav.back('/help'); this.store.toast(t('Thanks! We got your feedback.')); }, 650); },
+      (e: unknown) => { this.phase.set(''); this.store.toast(apiMessage(e), { kind: 'err', action: { label: t('Retry'), run: () => this.send() } }); },
     );
   }
 }

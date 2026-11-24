@@ -5,6 +5,7 @@ import { IonContent, IonHeader } from '@ionic/angular';
 
 import { ApiService, apiMessage } from '../data/api.service';
 import { StoreService } from '../data/store.service';
+import { t, TPipe } from '../i18n/i18n';
 import { NavService } from '../shared/nav.service';
 import { BrandComponent, TopBarComponent } from '../shared/ui';
 
@@ -22,42 +23,42 @@ const validEmail = (e: string): boolean => e.trim().indexOf('@') > 0;
 
 @Component({
   selector: 'app-login',
-  imports: [IonContent, BrandComponent],
+  imports: [TPipe, IonContent, BrandComponent],
   template: `
     <ion-content>
       <form class="auth" (submit)="$event.preventDefault(); submit()" novalidate>
         <div class="logo">
           <app-brand />
-          <p class="tagline">Your GDD, structured and up to date.</p>
+          <p class="tagline">{{ 'Your GDD, structured and up to date.' | t }}</p>
         </div>
-        <h2><span class="ms ic-muted">account_circle</span>Log in</h2>
+        <h2><span class="ms ic-muted">account_circle</span>{{ 'Log in' | t }}</h2>
         <div class="field" [class.error]="errEmail()">
           <div class="field-box">
-            <label for="lg-email">Email</label>
+            <label for="lg-email">{{ 'Email' | t }}</label>
             <input id="lg-email" type="email" autocomplete="email" [value]="email()" (input)="email.set($any($event.target).value); clear()" />
           </div>
-          @if (errEmail()) { <span class="field-error">Enter your email.</span> }
+          @if (errEmail()) { <span class="field-error">{{ 'Enter your email.' | t }}</span> }
         </div>
         <div class="field" [class.error]="errPw()">
           <div class="field-box">
-            <label for="lg-pw">Password</label>
+            <label for="lg-pw">{{ 'Password' | t }}</label>
             <input id="lg-pw" [type]="show() ? 'text' : 'password'" autocomplete="current-password" [value]="pw()" (input)="pw.set($any($event.target).value); clear()" />
-            <button class="icon-btn trail" type="button" [attr.aria-label]="show() ? 'Hide password' : 'Show password'" (click)="show.set(!show())"><span class="ms">{{ show() ? 'visibility_off' : 'visibility' }}</span></button>
+            <button class="icon-btn trail" type="button" [attr.aria-label]="(show() ? 'Hide password' : 'Show password') | t" (click)="show.set(!show())"><span class="ms">{{ show() ? 'visibility_off' : 'visibility' }}</span></button>
           </div>
-          @if (errPw()) { <span class="field-error">Enter your password.</span> }
+          @if (errPw()) { <span class="field-error">{{ 'Enter your password.' | t }}</span> }
         </div>
         @if (bad()) {
-          <p class="bad" role="alert">The email or password is incorrect. Try again or reset your password.</p>
+          <p class="bad" role="alert">{{ 'The email or password is incorrect. Try again or reset your password.' | t }}</p>
         }
-        <button class="btn btn-text" type="button" style="align-self:flex-start;margin-left:-12px" (click)="forgot()">Forgot password?</button>
+        <button class="btn btn-text" type="button" style="align-self:flex-start;margin-left:-12px" (click)="forgot()">{{ 'Forgot password?' | t }}</button>
         <button class="btn btn-filled m block" type="submit" [class.ok]="phase() === 'ok'" [attr.aria-busy]="!!phase()">
           @switch (phase()) {
-            @case ('load') { <span class="spin"></span>Logging in }
-            @case ('ok') { <span class="ms">check</span>Logged in }
-            @default { Log in }
+            @case ('load') { <span class="spin"></span>{{ 'Logging in' | t }} }
+            @case ('ok') { <span class="ms">check</span>{{ 'Logged in' | t }} }
+            @default { {{ 'Log in' | t }} }
           }
         </button>
-        <p class="alt">Don’t have an account? <button class="btn btn-text" type="button" (click)="nav.go('/signup')">Sign up</button></p>
+        <p class="alt">{{ 'Don’t have an account?' | t }} <button class="btn btn-text" type="button" (click)="nav.go('/signup')">{{ 'Sign up' | t }}</button></p>
       </form>
     </ion-content>
   `,
@@ -100,51 +101,51 @@ export class LoginPage {
 
 @Component({
   selector: 'app-signup',
-  imports: [IonContent, BrandComponent],
+  imports: [TPipe, IonContent, BrandComponent],
   template: `
     <ion-content>
       <form class="auth" (submit)="$event.preventDefault(); submit()" novalidate>
         <div class="logo">
           <app-brand />
-          <p class="tagline">Your GDD, structured and up to date.</p>
+          <p class="tagline">{{ 'Your GDD, structured and up to date.' | t }}</p>
         </div>
         <div>
-          <h2>Sign up</h2>
-          <p class="li-sub">Create your account to start your GDD.</p>
+          <h2>{{ 'Sign up' | t }}</h2>
+          <p class="li-sub">{{ 'Create your account to start your GDD.' | t }}</p>
         </div>
         <div class="field" [class.error]="errUser()">
           <div class="field-box">
-            <label for="su-user">User name</label>
+            <label for="su-user">{{ 'User name' | t }}</label>
             <input id="su-user" autocomplete="username" [value]="user()" (input)="user.set($any($event.target).value); errUser.set(false)" />
           </div>
-          @if (errUser()) { <span class="field-error">Enter a user name.</span> }
+          @if (errUser()) { <span class="field-error">{{ 'Enter a user name.' | t }}</span> }
         </div>
         <div class="field" [class.error]="!!errEmail()">
           <div class="field-box">
-            <label for="su-email">Email</label>
+            <label for="su-email">{{ 'Email' | t }}</label>
             <input id="su-email" type="email" autocomplete="email" [value]="email()" (input)="email.set($any($event.target).value); errEmail.set('')" />
           </div>
-          @if (errEmail()) { <span class="field-error">{{ errEmail() }}</span> }
+          @if (errEmail()) { <span class="field-error">{{ errEmail() | t }}</span> }
           @if (errEmail() === taken) {
-            <button class="btn btn-text" type="button" style="align-self:flex-start" (click)="loginWith()">Log in with this email</button>
+            <button class="btn btn-text" type="button" style="align-self:flex-start" (click)="loginWith()">{{ 'Log in with this email' | t }}</button>
           }
         </div>
         <div class="field" [class.error]="errPw()">
           <div class="field-box">
-            <label for="su-pw">Password</label>
+            <label for="su-pw">{{ 'Password' | t }}</label>
             <input id="su-pw" [type]="show() ? 'text' : 'password'" autocomplete="new-password" [value]="pw()" (input)="pw.set($any($event.target).value); errPw.set(false)" />
-            <button class="icon-btn trail" type="button" [attr.aria-label]="show() ? 'Hide password' : 'Show password'" (click)="show.set(!show())"><span class="ms">{{ show() ? 'visibility_off' : 'visibility' }}</span></button>
+            <button class="icon-btn trail" type="button" [attr.aria-label]="(show() ? 'Hide password' : 'Show password') | t" (click)="show.set(!show())"><span class="ms">{{ show() ? 'visibility_off' : 'visibility' }}</span></button>
           </div>
-          @if (errPw()) { <span class="field-error">The password needs at least 8 characters.</span> } @else { <span class="field-help">At least 8 characters.</span> }
+          @if (errPw()) { <span class="field-error">{{ 'The password needs at least 8 characters.' | t }}</span> } @else { <span class="field-help">{{ 'At least 8 characters.' | t }}</span> }
         </div>
         <button class="btn btn-filled m block" type="submit" [class.ok]="phase() === 'ok'" [attr.aria-busy]="!!phase()">
           @switch (phase()) {
-            @case ('load') { <span class="spin"></span>Creating your account }
-            @case ('ok') { <span class="ms">check</span>Account created }
-            @default { Sign up }
+            @case ('load') { <span class="spin"></span>{{ 'Creating your account' | t }} }
+            @case ('ok') { <span class="ms">check</span>{{ 'Account created' | t }} }
+            @default { {{ 'Sign up' | t }} }
           }
         </button>
-        <p class="alt">Already have an account? <button class="btn btn-text" type="button" (click)="nav.root('/login')">Log in</button></p>
+        <p class="alt">{{ 'Already have an account?' | t }} <button class="btn btn-text" type="button" (click)="nav.root('/login')">{{ 'Log in' | t }}</button></p>
       </form>
     </ion-content>
   `,
@@ -178,7 +179,7 @@ export class SignupPage {
         this.phase.set('');
         const m = apiMessage(e);
         if (e instanceof HttpErrorResponse && e.status === 409) this.errEmail.set(this.taken);
-        else if (e instanceof HttpErrorResponse && e.status === 400) this.errEmail.set(m);
+        else if (e instanceof HttpErrorResponse && e.status === 400) this.errEmail.set(apiMessage(e, false)); // en inglés: la plantilla lo traduce
         else this.store.toast(m, { kind: 'err' });
       },
     );
@@ -191,24 +192,24 @@ export class SignupPage {
 
 @Component({
   selector: 'app-forgot',
-  imports: [IonHeader, IonContent, TopBarComponent],
+  imports: [TPipe, IonHeader, IonContent, TopBarComponent],
   template: `
-    <ion-header><app-top-bar title="Reset password" back="/login" [profile]="false" /></ion-header>
+    <ion-header><app-top-bar [title]="'Reset password' | t" back="/login" [profile]="false" /></ion-header>
     <ion-content>
       <form class="page" (submit)="$event.preventDefault(); send()" novalidate>
-        <p class="intro">Enter the email of your account. We’ll send you a link to create a new password.</p>
+        <p class="intro">{{ 'Enter the email of your account. We’ll send you a link to create a new password.' | t }}</p>
         <div class="field" [class.error]="err()">
           <div class="field-box">
-            <label for="fg-email">Email</label>
+            <label for="fg-email">{{ 'Email' | t }}</label>
             <input id="fg-email" type="email" autocomplete="email" [value]="email()" (input)="email.set($any($event.target).value); err.set(false)" />
           </div>
-          @if (err()) { <span class="field-error">Enter the email of your account, for example name&#64;example.com.</span> }
+          @if (err()) { <span class="field-error">{{ 'Enter the email of your account, for example name@example.com.' | t }}</span> }
         </div>
         <button class="btn btn-filled m block" type="submit" [class.ok]="phase() === 'ok'" [attr.aria-busy]="!!phase()">
           @switch (phase()) {
-            @case ('load') { <span class="spin"></span>Sending the link }
-            @case ('ok') { <span class="ms">check</span>Link sent }
-            @default { Send link }
+            @case ('load') { <span class="spin"></span>{{ 'Sending the link' | t }} }
+            @case ('ok') { <span class="ms">check</span>{{ 'Link sent' | t }} }
+            @default { {{ 'Send link' | t }} }
           }
         </button>
       </form>
@@ -231,7 +232,7 @@ export class ForgotPage {
     // El servidor manda el enlace (si la cuenta existe; responde igual si no, para no decir qué cuentas hay)
     this.api.forgot(em).then(
       (r) => {
-        if (!r.mail) { this.phase.set(''); this.store.toast('Email isn’t set up in this app yet, so we can’t send the link.', { kind: 'err' }); return; }
+        if (!r.mail) { this.phase.set(''); this.store.toast(t('Email isn’t set up in this app yet, so we can’t send the link.'), { kind: 'err' }); return; }
         withLoading(this.store, this.phase, () => this.nav.replace('/forgot/sent?email=' + encodeURIComponent(em)), true);
       },
       (e: unknown) => { this.phase.set(''); this.store.toast(apiMessage(e), { kind: 'err' }); },
@@ -241,16 +242,16 @@ export class ForgotPage {
 
 @Component({
   selector: 'app-forgot-sent',
-  imports: [IonHeader, IonContent, TopBarComponent],
+  imports: [TPipe, IonHeader, IonContent, TopBarComponent],
   template: `
-    <ion-header><app-top-bar title="Reset password" back="/login" [profile]="false" /></ion-header>
+    <ion-header><app-top-bar [title]="'Reset password' | t" back="/login" [profile]="false" /></ion-header>
     <ion-content>
       <div class="sent-msg">
         <span class="ms">mail</span>
-        <h2 class="t-headline-small">Check your email</h2>
-        <p class="intro">We sent a link to {{ email() || 'your email' }}. It can take a few minutes.</p>
-        <button class="btn btn-filled m block" type="button" (click)="nav.root('/login')">Back to log in</button>
-        <button class="btn btn-text" type="button" (click)="again()">Send the link again</button>
+        <h2 class="t-headline-small">{{ 'Check your email' | t }}</h2>
+        <p class="intro">{{ 'We sent a link to {p0}. It can take a few minutes.' | t: { p0: email() || 'your email' } }}</p>
+        <button class="btn btn-filled m block" type="button" (click)="nav.root('/login')">{{ 'Back to log in' | t }}</button>
+        <button class="btn btn-text" type="button" (click)="again()">{{ 'Send the link again' | t }}</button>
       </div>
     </ion-content>
   `,
@@ -261,9 +262,9 @@ export class ForgotSentPage {
   private api = inject(ApiService);
   readonly email = input(''); // viene de ?email= (withComponentInputBinding)
   again(): void {
-    if (!validEmail(this.email())) { this.store.toast('We sent the link again'); return; } // selector de pantallas
+    if (!validEmail(this.email())) { this.store.toast(t('We sent the link again')); return; } // selector de pantallas
     this.api.forgot(this.email()).then(
-      () => this.store.toast('We sent the link again'),
+      () => this.store.toast(t('We sent the link again')),
       (e: unknown) => this.store.toast(apiMessage(e), { kind: 'err' }),
     );
   }
@@ -272,24 +273,24 @@ export class ForgotSentPage {
 /** /verify?token= : el enlace de los correos (verificar la cuenta o confirmar un email nuevo). */
 @Component({
   selector: 'app-verify',
-  imports: [IonHeader, IonContent, TopBarComponent],
+  imports: [TPipe, IonHeader, IonContent, TopBarComponent],
   template: `
     <ion-header><app-top-bar title="My GDD" [profile]="false" /></ion-header>
     <ion-content>
       <div class="sent-msg">
         @switch (state()) {
-          @case ('load') { <span class="spin" aria-label="Checking the link"></span> }
+          @case ('load') { <span class="spin" [attr.aria-label]="'Checking the link' | t"></span> }
           @case ('ok') {
             <span class="ms ic-ok">mark_email_read</span>
-            <h2 class="t-headline-small">{{ kind() === 'email' ? 'New email confirmed' : 'Email verified' }}</h2>
-            <p class="intro">{{ kind() === 'email' ? 'Your account now uses ' + email() + '.' : 'You can now invite people and join teams.' }}</p>
-            <button class="btn btn-filled m block" type="button" (click)="go()">{{ logged() ? 'Continue' : 'Log in' }}</button>
+            <h2 class="t-headline-small">{{ (kind() === 'email' ? 'New email confirmed' : 'Email verified') | t }}</h2>
+            <p class="intro">{{ kind() === 'email' ? ('Your account now uses {email}.' | t: { email: email() }) : ('You can now invite people and join teams.' | t) }}</p>
+            <button class="btn btn-filled m block" type="button" (click)="go()">{{ (logged() ? 'Continue' : 'Log in') | t }}</button>
           }
           @default {
             <span class="ms">link_off</span>
-            <h2 class="t-headline-small">This link doesn’t work</h2>
+            <h2 class="t-headline-small">{{ 'This link doesn’t work' | t }}</h2>
             <p class="intro">{{ error() }}</p>
-            <button class="btn btn-filled m block" type="button" (click)="go()">{{ logged() ? 'Go to Home' : 'Log in' }}</button>
+            <button class="btn btn-filled m block" type="button" (click)="go()">{{ (logged() ? 'Go to Home' : 'Log in') | t }}</button>
           }
         }
       </div>
@@ -325,32 +326,32 @@ export class VerifyPage implements OnInit {
 /** /reset?token= : crear una contraseña nueva con el enlace del correo. */
 @Component({
   selector: 'app-reset',
-  imports: [IonHeader, IonContent, TopBarComponent],
+  imports: [TPipe, IonHeader, IonContent, TopBarComponent],
   template: `
-    <ion-header><app-top-bar title="New password" back="/login" [profile]="false" /></ion-header>
+    <ion-header><app-top-bar [title]="'New password' | t" back="/login" [profile]="false" /></ion-header>
     <ion-content>
       <form class="page" (submit)="$event.preventDefault(); save()" novalidate>
-        <p class="intro">Create a new password for your account. You’ll be logged out of all your devices.</p>
+        <p class="intro">{{ 'Create a new password for your account. You’ll be logged out of all your devices.' | t }}</p>
         <div class="field" [class.error]="err() === 'pw'">
           <div class="field-box">
-            <label for="rs-pw">New password</label>
+            <label for="rs-pw">{{ 'New password' | t }}</label>
             <input id="rs-pw" [type]="show() ? 'text' : 'password'" autocomplete="new-password" [value]="pw()" (input)="pw.set($any($event.target).value); err.set('')" />
-            <button class="icon-btn trail" type="button" [attr.aria-label]="show() ? 'Hide password' : 'Show password'" (click)="show.set(!show())"><span class="ms">{{ show() ? 'visibility_off' : 'visibility' }}</span></button>
+            <button class="icon-btn trail" type="button" [attr.aria-label]="(show() ? 'Hide password' : 'Show password') | t" (click)="show.set(!show())"><span class="ms">{{ show() ? 'visibility_off' : 'visibility' }}</span></button>
           </div>
-          @if (err() === 'pw') { <span class="field-error">The password needs at least 8 characters.</span> } @else { <span class="field-help">At least 8 characters.</span> }
+          @if (err() === 'pw') { <span class="field-error">{{ 'The password needs at least 8 characters.' | t }}</span> } @else { <span class="field-help">{{ 'At least 8 characters.' | t }}</span> }
         </div>
         <div class="field" [class.error]="err() === 'cf'">
           <div class="field-box">
-            <label for="rs-cf">Confirm new password</label>
+            <label for="rs-cf">{{ 'Confirm new password' | t }}</label>
             <input id="rs-cf" [type]="show() ? 'text' : 'password'" autocomplete="new-password" [value]="cf()" (input)="cf.set($any($event.target).value); err.set('')" />
           </div>
-          @if (err() === 'cf') { <span class="field-error">The passwords don’t match.</span> }
+          @if (err() === 'cf') { <span class="field-error">{{ 'The passwords don’t match.' | t }}</span> }
         </div>
         <button class="btn btn-filled m block" type="submit" [class.ok]="phase() === 'ok'" [attr.aria-busy]="!!phase()">
           @switch (phase()) {
-            @case ('load') { <span class="spin"></span>Saving }
-            @case ('ok') { <span class="ms">check</span>Password saved }
-            @default { Save password }
+            @case ('load') { <span class="spin"></span>{{ 'Saving' | t }} }
+            @case ('ok') { <span class="ms">check</span>{{ 'Password saved' | t }} }
+            @default { {{ 'Save password' | t }} }
           }
         </button>
       </form>
@@ -376,7 +377,7 @@ export class ResetPage {
       () => withLoading(this.store, this.phase, () => {
         if (this.api.token) this.store.logout(); // la sesión de este aparato también se cerró
         this.nav.root('/login');
-        this.store.toast('Password changed. Log in with your new password.', { kind: 'ok' });
+        this.store.toast(t('Password changed. Log in with your new password.'), { kind: 'ok' });
       }, true),
       (e: unknown) => { this.phase.set(''); this.store.toast(apiMessage(e), { kind: 'err' }); },
     );

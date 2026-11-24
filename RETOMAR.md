@@ -1,3 +1,5 @@
+> **Pausa 2026-11-24 (tarde):** secciones 1–5 del roadmap hechas y publicadas. La 6 (idiomas es/ca) está casi lista en la rama **`wip/idiomas`** (sin publicar): ver el final de `BITACORA.md` («Roadmap 6… EN CURSO») para los pasos exactos. Brevo (sección 3) sigue pendiente de que el usuario lo active (pasos en `ROADMAP.md`).
+
 > **Actualización 2026-11-24:** la app está publicada en https://my-gdd.onrender.com, revisada a fondo y con los fallos encontrados corregidos. Hechos los puntos 2 y 3 (GDDs compartidos con Editor/Viewer e invitaciones que se aceptan). Lo siguiente está en **`ROADMAP.md`** (secciones 1–7, en orden recomendado). El usuario envía cada sección; las marcadas ❓ necesitan antes su decisión. La sección 3 queda como referencia.
 
 # Retomar My GDD (mañana)

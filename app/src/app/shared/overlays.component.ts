@@ -4,6 +4,7 @@ import { filter } from 'rxjs';
 
 import { AVATAR_ICON, AVATAR_NAME, type AvatarKey, type Dialog, type Grant, type Member, type Sheet } from '../data/models';
 import { StoreService } from '../data/store.service';
+import { t, tn, TPipe } from '../i18n/i18n';
 
 import { GrantsComponent } from './grants.component';
 import { NavService } from './nav.service';
@@ -19,7 +20,7 @@ type DelDlg = Extract<Dialog, { k: 'del' }>;
  */
 @Component({
   selector: 'app-overlays',
-  imports: [SegComponent, GrantsComponent],
+  imports: [TPipe, SegComponent, GrantsComponent],
   template: `
     @if (store.sheet() || store.dialog()) {
       <!-- tocar fuera (en el scrim) o pulsar Esc cierra la capa -->
@@ -33,11 +34,11 @@ type DelDlg = Extract<Dialog, { k: 'del' }>;
                 <label for="dlg-name">{{ renameLabel(d) }}</label>
                 <input id="dlg-name" [value]="d.val" (input)="store.dialog.set({ ...d, val: $any($event.target).value, err: false })" (keyup.enter)="store.saveRename(d)" />
               </div>
-              @if (d.err) { <span class="field-error">Enter a name.</span> }
+              @if (d.err) { <span class="field-error">{{ 'Enter a name.' | t }}</span> }
             </div>
             <div class="btn-row">
-              <button class="btn btn-text" type="button" (click)="close()">Cancel</button>
-              <button class="btn btn-text" type="button" (click)="store.saveRename(d)">Save</button>
+              <button class="btn btn-text" type="button" (click)="close()">{{ 'Cancel' | t }}</button>
+              <button class="btn btn-text" type="button" (click)="store.saveRename(d)">{{ 'Save' | t }}</button>
             </div>
           </div>
         }
@@ -59,21 +60,21 @@ type DelDlg = Extract<Dialog, { k: 'del' }>;
             <h2>{{ actInfo(sh).name }}</h2>
             @if (sharedOf(sh); as sg) {
               <!-- GDD de otra persona: no se renombra, mueve ni borra; se puede salir de su equipo -->
-              <p class="sheet-meta">Shared by {{ sg.name }} · {{ sg.role }}</p>
+              <p class="sheet-meta">{{ 'Shared by {p0} · {p1}' | t: { p0: sg.name, p1: sg.role } }}</p>
               <ul class="list plain acts">
-                <li><button class="li danger" type="button" (click)="leave(sg)"><span class="ms">logout</span><span class="li-text"><span class="li-title">Leave {{ sg.name }}’s team</span></span></button></li>
+                <li><button class="li danger" type="button" (click)="leave(sg)"><span class="ms">logout</span><span class="li-text"><span class="li-title">{{ 'Leave {p0}’s team' | t: { p0: sg.name } }}</span></span></button></li>
               </ul>
             } @else {
             <ul class="list plain acts">
-              <li><button class="li" type="button" (click)="store.openRename(sh.what, sh.id, sh.g, sh.dp)"><span class="ms">edit</span><span class="li-text"><span class="li-title">Rename</span></span></button></li>
+              <li><button class="li" type="button" (click)="store.openRename(sh.what, sh.id, sh.g, sh.dp)"><span class="ms">edit</span><span class="li-text"><span class="li-title">{{ 'Rename' | t }}</span></span></button></li>
               @if (sh.what === 'gdd') {
-                <li><button class="li" type="button" (click)="store.sheet.set(null); store.toast('Cover images arrive in a later version')"><span class="ms">add_photo_alternate</span><span class="li-text"><span class="li-title">Add cover image</span></span></button></li>
+                <li><button class="li" type="button" (click)="store.sheet.set(null); store.toast(tr('Cover images arrive in a later version'))"><span class="ms">add_photo_alternate</span><span class="li-text"><span class="li-title">{{ 'Add cover image' | t }}</span></span></button></li>
               }
               @if (sh.what !== 'block') {
-                <li><button class="li" type="button" [disabled]="actInfo(sh).idx <= 0" (click)="store.move(sh, -1)"><span class="ms">{{ sh.what === 'gdd' ? 'arrow_back' : 'arrow_upward' }}</span><span class="li-text"><span class="li-title">{{ sh.what === 'gdd' ? 'Move left' : 'Move up' }}</span></span></button></li>
-                <li><button class="li" type="button" [disabled]="actInfo(sh).idx >= actInfo(sh).len - 1" (click)="store.move(sh, 1)"><span class="ms">{{ sh.what === 'gdd' ? 'arrow_forward' : 'arrow_downward' }}</span><span class="li-text"><span class="li-title">{{ sh.what === 'gdd' ? 'Move right' : 'Move down' }}</span></span></button></li>
+                <li><button class="li" type="button" [disabled]="actInfo(sh).idx <= 0" (click)="store.move(sh, -1)"><span class="ms">{{ sh.what === 'gdd' ? 'arrow_back' : 'arrow_upward' }}</span><span class="li-text"><span class="li-title">{{ (sh.what === 'gdd' ? 'Move left' : 'Move up') | t }}</span></span></button></li>
+                <li><button class="li" type="button" [disabled]="actInfo(sh).idx >= actInfo(sh).len - 1" (click)="store.move(sh, 1)"><span class="ms">{{ sh.what === 'gdd' ? 'arrow_forward' : 'arrow_downward' }}</span><span class="li-text"><span class="li-title">{{ (sh.what === 'gdd' ? 'Move right' : 'Move down') | t }}</span></span></button></li>
               }
-              <li><button class="li danger" type="button" (click)="store.askDelete(sh)"><span class="ms">delete</span><span class="li-text"><span class="li-title">Delete</span></span></button></li>
+              <li><button class="li danger" type="button" (click)="store.askDelete(sh)"><span class="ms">delete</span><span class="li-text"><span class="li-title">{{ 'Delete' | t }}</span></span></button></li>
             </ul>
             }
           </div>
@@ -84,22 +85,22 @@ type DelDlg = Extract<Dialog, { k: 'del' }>;
             <h2>{{ sh.title }}</h2>
             <ul class="list plain acts">
               @if (sh.kind === 'change') {
-                <li><button class="li" type="button" (click)="openNote(sh.id)"><span class="ms">check</span><span class="li-text"><span class="li-title">Review</span></span></button></li>
+                <li><button class="li" type="button" (click)="openNote(sh.id)"><span class="ms">check</span><span class="li-text"><span class="li-title">{{ 'Review' | t }}</span></span></button></li>
               }
               @if (sh.kind === 'team') {
-                <li><button class="li" type="button" (click)="openNote(sh.id)"><span class="ms">open_in_new</span><span class="li-text"><span class="li-title">Open block</span></span></button></li>
+                <li><button class="li" type="button" (click)="openNote(sh.id)"><span class="ms">open_in_new</span><span class="li-text"><span class="li-title">{{ 'Open block' | t }}</span></span></button></li>
               }
-              <li><button class="li danger" type="button" (click)="store.deleteNote(sh.id, sh.kind === 'sent')"><span class="ms">delete</span><span class="li-text"><span class="li-title">Delete note</span></span></button></li>
+              <li><button class="li danger" type="button" (click)="store.deleteNote(sh.id, sh.kind === 'sent')"><span class="ms">delete</span><span class="li-text"><span class="li-title">{{ 'Delete note' | t }}</span></span></button></li>
             </ul>
           </div>
         }
         @if (avatarSheet(); as sh) {
-          <div class="sheet" role="dialog" aria-modal="true" aria-label="Profile photo">
+          <div class="sheet" role="dialog" aria-modal="true" [attr.aria-label]="'Profile photo' | t">
             <div class="handle"></div>
-            <h2>Profile photo</h2>
-            <p class="sheet-meta">Choose an avatar. Photos from your device arrive in a later version.</p>
+            <h2>{{ 'Profile photo' | t }}</h2>
+            <p class="sheet-meta">{{ 'Choose an avatar. Photos from your device arrive in a later version.' | t }}</p>
             <div class="sheet-body">
-              <div class="avatars" role="radiogroup" aria-label="Avatar">
+              <div class="avatars" role="radiogroup" [attr.aria-label]="'Avatar' | t">
                 @for (k of avatarKeys; track k) {
                   <button type="button" role="radio" [class.on]="sh.av === k" [attr.aria-checked]="sh.av === k" (click)="store.sheet.set({ k: 'avatar', av: k })">
                     <span class="ms" [class.fill]="sh.av === k">{{ avatarIcon[k] }}</span>{{ avatarName[k] }}
@@ -107,48 +108,48 @@ type DelDlg = Extract<Dialog, { k: 'del' }>;
                 }
               </div>
               <div class="btn-row">
-                <button class="btn btn-text" type="button" (click)="close()">Cancel</button>
-                <button class="btn btn-filled" type="button" (click)="store.sheet.set(null); store.setAvatar(sh.av)">Save</button>
+                <button class="btn btn-text" type="button" (click)="close()">{{ 'Cancel' | t }}</button>
+                <button class="btn btn-filled" type="button" (click)="store.sheet.set(null); store.setAvatar(sh.av)">{{ 'Save' | t }}</button>
               </div>
             </div>
           </div>
         }
         @if (manage(); as sh) {
-          <div class="sheet" role="dialog" aria-modal="true" [attr.aria-label]="'Manage ' + member(sh.id)?.name">
+          <div class="sheet" role="dialog" aria-modal="true" [attr.aria-label]="'Manage {p0}' | t: { p0: member(sh.id)?.name }">
             <div class="handle"></div>
-            <h2>Manage {{ member(sh.id)?.name }}</h2>
+            <h2>{{ 'Manage {p0}' | t: { p0: member(sh.id)?.name } }}</h2>
             <p class="sheet-meta">{{ member(sh.id)?.email }} · {{ member(sh.id)?.dept }}</p>
             <div class="sheet-body">
               <app-grants [gdds]="store.ownGdds()" [grants]="sh.grants ?? memberGrants(sh.id)" (grantsChange)="store.sheet.set({ ...sh, grants: $event })" />
               <div class="btn-row">
-                <button class="btn btn-text" type="button" (click)="close()">Cancel</button>
-                <button class="btn btn-filled" type="button" (click)="store.saveAccess(sh.id, sh.grants ?? memberGrants(sh.id))">Save</button>
+                <button class="btn btn-text" type="button" (click)="close()">{{ 'Cancel' | t }}</button>
+                <button class="btn btn-filled" type="button" (click)="store.saveAccess(sh.id, sh.grants ?? memberGrants(sh.id))">{{ 'Save' | t }}</button>
               </div>
-              <button class="btn btn-outlined danger block" type="button" (click)="store.sheet.set(null); store.dialog.set({ k: 'del', what: 'member', id: sh.id })">Remove from team</button>
+              <button class="btn btn-outlined danger block" type="button" (click)="store.sheet.set(null); store.dialog.set({ k: 'del', what: 'member', id: sh.id })">{{ 'Remove from team' | t }}</button>
             </div>
           </div>
         }
         @if (invite(); as sh) {
-          <div class="sheet" role="dialog" aria-modal="true" aria-label="Invite a member">
+          <div class="sheet" role="dialog" aria-modal="true" [attr.aria-label]="'Invite a member' | t">
             <div class="handle"></div>
-            <h2>Invite a member</h2>
-            <p class="sheet-meta">When they log in with this email, they’ll see your invitation in Notes. Once they accept, they can see the projects you choose.</p>
+            <h2>{{ 'Invite a member' | t }}</h2>
+            <p class="sheet-meta">{{ 'When they log in with this email, they’ll see your invitation in Notes. Once they accept, they can see the projects you choose.' | t }}</p>
             <div class="sheet-body">
               <div class="field" [class.error]="sh.err">
                 <div class="field-box">
-                  <label for="inv-email">Email</label>
+                  <label for="inv-email">{{ 'Email' | t }}</label>
                   <input id="inv-email" type="email" autocomplete="off" [value]="sh.email" (input)="store.sheet.set({ ...sh, email: $any($event.target).value, err: false })" />
                 </div>
                 @if (sh.err) { <span class="field-error">Enter an email address, for example name@example.com.</span> }
               </div>
               <app-grants [gdds]="store.ownGdds()" [grants]="sh.grants ?? store.defaultGrants(sh.role)" (grantsChange)="store.sheet.set({ ...sh, grants: $event })" />
               <div class="btn-row">
-                <button class="btn btn-text" type="button" (click)="close()">Cancel</button>
+                <button class="btn btn-text" type="button" (click)="close()">{{ 'Cancel' | t }}</button>
                 <button class="btn btn-filled" type="button" [class.ok]="sh.busy === 'ok'" [attr.aria-busy]="!!sh.busy" (click)="sendInvite(sh)">
                   @switch (sh.busy) {
-                    @case ('load') { <span class="spin"></span>Sending the invitation }
-                    @case ('ok') { <span class="ms s20">check</span>Invitation sent }
-                    @default { Send invite }
+                    @case ('load') { <span class="spin"></span>{{ 'Sending the invitation' | t }} }
+                    @case ('ok') { <span class="ms s20">check</span>{{ 'Invitation sent' | t }} }
+                    @default { {{ 'Send invite' | t }} }
                   }
                 </button>
               </div>
@@ -160,16 +161,17 @@ type DelDlg = Extract<Dialog, { k: 'del' }>;
 
     @if (store.snack(); as s) {
       <div class="snackbar" [class.ok]="s.kind === 'ok'" [class.err]="s.kind === 'err'" [style.--sn-b]="snackBottom()" role="status" aria-live="polite">
-        @if (s.kind === 'ok') { <span class="lbl ok"><span class="ms s16">check</span>OK</span> }
-        @if (s.kind === 'err') { <span class="lbl er">× Error</span> }
+        @if (s.kind === 'ok') { <span class="lbl ok"><span class="ms s16">check</span>{{ 'OK' | t }}</span> }
+        @if (s.kind === 'err') { <span class="lbl er">{{ '× Error' | t }}</span> }
         <span class="msg">{{ s.msg }}</span>
-        @if (s.undo) { <button class="btn btn-text act" type="button" (click)="store.undo()">Undo</button> }
+        @if (s.undo) { <button class="btn btn-text act" type="button" (click)="store.undo()">{{ 'Undo' | t }}</button> }
         @if (s.action; as a) { <button class="btn btn-text act" type="button" (click)="store.snack.set(null); a.run()">{{ a.label }}</button> }
       </div>
     }
   `,
 })
 export class OverlaysComponent {
+  protected tr = t;
   protected store = inject(StoreService);
   private nav = inject(NavService);
   private url = signal(location.pathname);
@@ -211,10 +213,10 @@ export class OverlaysComponent {
   }
 
   renameTitle(d: RenameDlg): string {
-    return d.what === 'gdd' ? 'Rename project' : d.what === 'dept' ? 'Rename department' : d.what === 'block' ? 'Rename block' : d.label ?? '';
+    return t(d.what === 'gdd' ? 'Rename project' : d.what === 'dept' ? 'Rename department' : d.what === 'block' ? 'Rename block' : d.label ?? '');
   }
   renameLabel(d: RenameDlg): string {
-    return d.what === 'gdd' ? 'Project name' : d.what === 'dept' ? 'Department name' : d.what === 'block' ? 'Block name' : d.label ?? '';
+    return t(d.what === 'gdd' ? 'Project name' : d.what === 'dept' ? 'Department name' : d.what === 'block' ? 'Block name' : d.label ?? '');
   }
   delText(d: DelDlg): { title: string; text: string; ok: string; cancel: string } {
     const data = this.store.data();
@@ -222,13 +224,13 @@ export class OverlaysComponent {
       const x = data.gdds.find((g) => g.id === d.id);
       const nd = x?.depts.length ?? 0;
       const nb = x?.depts.reduce((a, y) => a + y.blocks.length, 0) ?? 0;
-      return { title: 'Delete ' + (x?.name ?? '') + '?', text: 'Its ' + nd + (nd === 1 ? ' department' : ' departments') + ' and ' + nb + (nb === 1 ? ' block' : ' blocks') + ' will be deleted. You can’t undo this.', ok: 'Delete', cancel: 'Cancel' };
+      return { title: t('Delete {name}?', { name: x?.name ?? '' }), text: t('Its {depts} and {blocks} will be deleted. You can’t undo this.', { depts: tn(nd, '{n} department', '{n} departments'), blocks: tn(nb, '{n} block', '{n} blocks') }), ok: t('Delete'), cancel: t('Cancel') };
     }
     if (d.what === 'member') {
       const m = data.team.members.find((x) => x.id === d.id);
-      return { title: 'Remove ' + (m?.name ?? '') + ' from your team?', text: 'They won’t see your GDDs or get your notes anymore.', ok: 'Remove', cancel: 'Keep' };
+      return { title: t('Remove {name} from your team?', { name: m?.name ?? '' }), text: t('They won’t see your GDDs or get your notes anymore.'), ok: t('Remove'), cancel: t('Keep') };
     }
-    return { title: 'Delete your account?', text: 'Your GDDs, notes and team will be deleted. You can’t undo this.', ok: 'Delete', cancel: 'Cancel' };
+    return { title: t('Delete your account?'), text: t('Your GDDs, notes and team will be deleted. You can’t undo this.'), ok: t('Delete'), cancel: t('Cancel') };
   }
   confirmDelete(d: DelDlg): void {
     if (this.store.confirmDelete(d) === 'account') this.nav.root('/login');
@@ -248,15 +250,15 @@ export class OverlaysComponent {
   sharedOf(sh: ActSheet): { owner: string; name: string; role: 'Editor' | 'Viewer' } | null {
     return sh.what === 'gdd' ? (this.store.gdd(sh.id)?.share ?? null) : null;
   }
-  leave(t: { owner: string; name: string; role: 'Editor' | 'Viewer' }): void {
+  leave(team: { owner: string; name: string; role: 'Editor' | 'Viewer' }): void {
     this.store.sheet.set(null);
-    void this.store.leaveTeam(t);
+    void this.store.leaveTeam(team);
   }
   openNote(id: string): void {
     const n = this.store.data().notes.find((x) => x.id === id);
     this.store.sheet.set(null);
     if (!n) return;
-    if (!this.store.gdd(n.g)) { this.store.toast('This note isn’t linked to a GDD you can open.'); return; }
+    if (!this.store.gdd(n.g)) { this.store.toast(t('This note isn’t linked to a GDD you can open.')); return; }
     if (n.kind === 'change') { this.nav.go('/gdd/' + n.g + '/review/' + n.id); return; }
     const g = this.store.gdd(n.g);
     const dp = this.store.dept(g, n.dp);
@@ -267,12 +269,12 @@ export class OverlaysComponent {
     if (em.indexOf('@') < 1) { this.store.sheet.set({ ...sh, err: true }); return; }
     if (sh.busy) return;
     if (this.store.needVerify('invite people')) return;
-    const t = this.store.data().team, low = em.toLowerCase();
-    if (low === this.store.data().user.email.toLowerCase()) { this.store.toast('That’s your own email.'); return; }
-    if (t.members.some((m) => m.email.toLowerCase() === low)) { this.store.toast(em + ' is already in your team.'); return; }
-    if (t.invites.some((v) => v.email.toLowerCase() === low)) { this.store.toast(em + ' already has an invitation.'); return; }
+    const team = this.store.data().team, low = em.toLowerCase();
+    if (low === this.store.data().user.email.toLowerCase()) { this.store.toast(t('That’s your own email.')); return; }
+    if (team.members.some((m) => m.email.toLowerCase() === low)) { this.store.toast(t('{email} is already in your team.', { email: em })); return; }
+    if (team.invites.some((v) => v.email.toLowerCase() === low)) { this.store.toast(t('{email} already has an invitation.', { email: em })); return; }
     const grants = sh.grants ?? this.store.defaultGrants(sh.role);
-    if (!grants.length && this.store.ownGdds().length) { this.store.toast('Choose at least one project.'); return; }
+    if (!grants.length && this.store.ownGdds().length) { this.store.toast(t('Choose at least one project.')); return; }
     const k = this.store.settings().slowMotion ? 4 : 1;
     this.store.sheet.set({ ...sh, busy: 'load' });
     setTimeout(() => {

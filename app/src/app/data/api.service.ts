@@ -2,6 +2,8 @@ import { HttpClient, HttpErrorResponse, type HttpInterceptorFn } from '@angular/
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom, type Observable } from 'rxjs';
 
+import { t } from '../i18n/i18n';
+
 import type { AppData, Gdd, Invitation, Note, SentNote, TeamRef } from './models';
 
 const TOKEN_KEY = 'mygdd.token';
@@ -23,13 +25,14 @@ export interface MeResponse {
 }
 
 /** Mensaje de error de la API en lenguaje del diseño (o uno genérico si no hay conexión). */
-export function apiMessage(e: unknown): string {
+export function apiMessage(e: unknown, translate = true): string {
+  const tr = translate ? t : (s: string): string => s;
   if (e instanceof HttpErrorResponse) {
-    if (e.status === 0) return 'Can’t connect to the server. Check your connection.';
+    if (e.status === 0) return tr('Can’t connect to the server. Check your connection.');
     const m = (e.error as { message?: string | string[] } | null)?.message;
-    if (m) return Array.isArray(m) ? m[0] : m;
+    if (m) return tr(Array.isArray(m) ? m[0] : m);
   }
-  return 'Something went wrong. Try again.';
+  return tr('Something went wrong. Try again.');
 }
 
 /** Añade el token de sesión a cada petición a /api. */
