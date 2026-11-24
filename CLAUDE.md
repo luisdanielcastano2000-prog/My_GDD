@@ -34,6 +34,8 @@ NestJS 12 + Mongoose, ESM (los `import` relativos acaban en `.js`). Base MongoDB
 
 ## Publicación (Render, un solo servicio)
 
+**En línea:** https://my-gdd.onrender.com (servicio `my-gdd`, Frankfurt, Free; base `my_gdd` en MongoDB Atlas, Cluster0). Variables en Render: `MONGODB_URI`, `JWT_SECRET`, `NODE_ENV=production`. Se vuelve a publicar solo con cada push a `main`. El plan gratis se duerme a los 15 min sin visitas (primera carga ~1 min).
+
 La API sirve también la web compilada (`app/www`, con `@nestjs/serve-static`): una sola dirección, sin CORS. En la raíz, `npm run build` instala y compila `app/` y `api/`; `npm start` arranca la API. Probado en el Mac en modo producción.
 
 ## Bitácora

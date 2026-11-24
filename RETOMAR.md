@@ -1,3 +1,5 @@
+> **Actualización 2026-11-24:** la app ya está publicada en https://my-gdd.onrender.com y comprobada. La sección 3 queda como referencia; lo siguiente es la sección 4.
+
 # Retomar My GDD (mañana)
 
 ## 1. Prompt para pegar al empezar
@@ -23,9 +25,9 @@ Si usas **otro ordenador**, cambia la primera línea por:
 | Diseño | `design/` (copia de claude.ai, solo lectura) | ✅ |
 | Web (Ionic + Angular) | `app/` | ✅ 56 pantallas, conectada a la API |
 | API (NestJS + Mongoose) | `api/` | ✅ cuentas reales, probada en el Mac (también en modo producción) |
-| Base de datos | MongoDB Atlas, Cluster0, base `my_gdd` | ⏳ se crea sola al guardar el primer dato desde Render |
+| Base de datos | MongoDB Atlas, Cluster0, base `my_gdd` | ✅ creada desde Render |
 | GitHub | `luisdanielcastano2000-prog/My_GDD` (público) | ✅ todo subido |
-| Render | servicio `my-gdd` | ⏳ **pendiente: lo creas tú** |
+| Render | servicio `my-gdd` → https://my-gdd.onrender.com | ✅ en línea, comprobado 2026-11-24 |
 
 ## 3. Lo primero que haremos: crear el servicio en Render
 

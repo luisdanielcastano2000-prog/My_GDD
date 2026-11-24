@@ -101,8 +101,8 @@ Cómo arrancar y cómo está organizado el proyecto: `CLAUDE.md`. Aquí va **lo 
 
 ## Pendiente
 
-- Subir a GitHub los commits del front (falta el OK del usuario).
-- Servicio en Render (lo crea el usuario) y comprobación de la dirección pública.
+- ~~Subir a GitHub los commits del front~~ hecho.
+- ~~Servicio en Render~~ hecho 2026-11-24 (ver abajo).
 - Detalles de animación simplificados (desintegración en cuadrados, reordenar arrastrando) y escenas sin marco F5 (fecha de revisión, calendario, hora).
 - Avisos de Sass por `@import` (no afectan al funcionamiento).
 
@@ -117,3 +117,8 @@ Cómo arrancar y cómo está organizado el proyecto: `CLAUDE.md`. Aquí va **lo 
 **Render · primer deploy fallido**
 - Log: `sh: 1: ng: not found`. Causa: con `NODE_ENV=production`, `npm ci` omite las `devDependencies` (ahí están `@angular/cli` y `@nestjs/cli`); solo instaló 21 paquetes.
 - Arreglo: `npm ci --include=dev` en el script `build` de la raíz. Probado en el Mac con `NODE_ENV=production npm run build`: compila web (`app/www`) y API (`api/dist`).
+
+**Render · en línea**
+- Segundo deploy correcto. Dirección pública: https://my-gdd.onrender.com
+- Comprobado con `curl` (todo bien): web en `/` y `/home` (200); `/api/me` sin token → 401; signup → 201; email repetido → 409; guardar un GDD → 200; login nuevo y leer → el GDD está (guardado en Atlas, base `my_gdd`); contraseña mala → 401; borrar cuenta → 200; login tras borrar → 401. La cuenta de prueba (`render-check-…@example.com`) quedó borrada.
+- No verificado aún: prueba en el navegador por el usuario y ver la base en Atlas (*Browse Collections*).
