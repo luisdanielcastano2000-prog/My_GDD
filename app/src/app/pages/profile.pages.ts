@@ -1,5 +1,5 @@
 // Perfil: Profile, Edit profile, Personal info, Password, My team, Language, Privacy and terms.
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, type OnDestroy, computed, inject, signal } from '@angular/core';
 import { IonContent, IonHeader } from '@ionic/angular';
 
 import { ApiService, apiMessage } from '../data/api.service';
@@ -104,18 +104,26 @@ export class ProfilePage {
         <span class="t-label-large">Accent color</span>
         <div class="accents" role="radiogroup" aria-label="Accent color">
           @for (a of accents; track a[0]) {
-            <button type="button" role="radio" [class.on]="accent() === a[0]" [attr.aria-checked]="accent() === a[0]" [attr.aria-label]="a[0]" [style.background]="a[1]" (click)="accent.set(a[0])">
+            <button type="button" role="radio" [class.on]="accent() === a[0]" [attr.aria-checked]="accent() === a[0]" [attr.aria-label]="a[0]" [style.background]="a[1]" (click)="pickAccent(a[0])">
               @if (accent() === a[0]) { <span class="ms s20">check</span> }
             </button>
           }
         </div>
-        <p class="field-help" style="padding:0">More accent colors arrive with the next color palette.</p>
+        <p class="field-help" style="padding:0">Changes buttons, links and selection. Tap Save to keep it.</p>
         <button class="btn btn-filled m block" type="submit">Save</button>
       </form>
     </ion-content>
   `,
 })
-export class EditProfilePage {
+export class EditProfilePage implements OnDestroy {
+  /** Vista previa del acento al tocarlo (se guarda con Save; al salir sin guardar, vuelve el de antes). */
+  pickAccent(a: string): void {
+    this.accent.set(a);
+    this.store.previewAccent.set(a);
+  }
+  ngOnDestroy(): void {
+    this.store.previewAccent.set(null);
+  }
   protected store = inject(StoreService);
   private nav = inject(NavService);
   private u = this.store.data().user;

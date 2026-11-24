@@ -38,5 +38,6 @@
 
 /* My GDD: tokens del sistema de diseño (generados) + tema y componentes */
 @import './theme/tokens';
+@import './theme/accents'; /* color de acento (generado: npm run accents) */
 @import './theme/app';
 @import './theme/shell'; // (Sass avisa de que @import está obsoleto: se mantiene para que estos estilos vayan después de los de Ionic)

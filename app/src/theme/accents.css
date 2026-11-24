@@ -1,0 +1,310 @@
+/* ARCHIVO GENERADO por scripts/build-accents.mjs (npm run accents). No editar a mano. */
+/* Color de acento: familias primary y secondary de cada acento en los 4 temas (el azul es el de tokens.css). */
+
+:root.accent-green {
+  --gdd-primary: #006029;
+  --gdd-on-primary: #FFFFFF;
+  --gdd-primary-container: #1E7A3C;
+  --gdd-on-primary-container: #ACFFB7;
+  --gdd-inverse-primary: #81DA90;
+  --gdd-primary-fixed: #9CF7AA;
+  --gdd-primary-fixed-dim: #81DA90;
+  --gdd-on-primary-fixed: #00210A;
+  --gdd-on-primary-fixed-variant: #005322;
+  --gdd-secondary: #456649;
+  --gdd-on-secondary: #FFFFFF;
+  --gdd-secondary-container: #C7ECC7;
+  --gdd-on-secondary-container: #4B6C4F;
+  --gdd-secondary-fixed: #C7ECC7;
+  --gdd-secondary-fixed-dim: #ABD0AD;
+  --gdd-on-secondary-fixed: #02210B;
+  --gdd-on-secondary-fixed-variant: #2E4E33;
+}
+:root.accent-green.theme-dark {
+  --gdd-primary: #81DA90;
+  --gdd-on-primary: #003916;
+  --gdd-primary-container: #1E7A3C;
+  --gdd-on-primary-container: #ACFFB7;
+  --gdd-inverse-primary: #076D31;
+  --gdd-primary-fixed: #9CF7AA;
+  --gdd-primary-fixed-dim: #81DA90;
+  --gdd-on-primary-fixed: #00210A;
+  --gdd-on-primary-fixed-variant: #005322;
+  --gdd-secondary: #ABD0AD;
+  --gdd-on-secondary: #17371E;
+  --gdd-secondary-container: #2E4E33;
+  --gdd-on-secondary-container: #9ABE9C;
+  --gdd-secondary-fixed: #C7ECC7;
+  --gdd-secondary-fixed-dim: #ABD0AD;
+  --gdd-on-secondary-fixed: #02210B;
+  --gdd-on-secondary-fixed-variant: #2E4E33;
+}
+:root.accent-green.theme-light-hc {
+  --gdd-primary: #003413;
+  --gdd-on-primary: #FFFFFF;
+  --gdd-primary-container: #005524;
+  --gdd-on-primary-container: #FFFFFF;
+  --gdd-inverse-primary: #81DA90;
+  --gdd-primary-fixed: #005524;
+  --gdd-primary-fixed-dim: #003C17;
+  --gdd-on-primary-fixed: #FFFFFF;
+  --gdd-on-primary-fixed-variant: #FFFFFF;
+  --gdd-secondary: #13321A;
+  --gdd-on-secondary: #FFFFFF;
+  --gdd-secondary-container: #315035;
+  --gdd-on-secondary-container: #FFFFFF;
+  --gdd-secondary-fixed: #315035;
+  --gdd-secondary-fixed-dim: #1A3920;
+  --gdd-on-secondary-fixed: #FFFFFF;
+  --gdd-on-secondary-fixed-variant: #FFFFFF;
+}
+:root.accent-green.theme-dark-hc {
+  --gdd-primary: #C1FFC7;
+  --gdd-on-primary: #000000;
+  --gdd-primary-container: #7DD68D;
+  --gdd-on-primary-container: #000F03;
+  --gdd-inverse-primary: #005423;
+  --gdd-primary-fixed: #9CF7AA;
+  --gdd-primary-fixed-dim: #81DA90;
+  --gdd-on-primary-fixed: #000000;
+  --gdd-on-primary-fixed-variant: #001505;
+  --gdd-secondary: #D4FAD4;
+  --gdd-on-secondary: #000000;
+  --gdd-secondary-container: #A8CCA9;
+  --gdd-on-secondary-container: #000F03;
+  --gdd-secondary-fixed: #C7ECC7;
+  --gdd-secondary-fixed-dim: #ABD0AD;
+  --gdd-on-secondary-fixed: #000000;
+  --gdd-on-secondary-fixed-variant: #001505;
+}
+
+:root.accent-orange {
+  --gdd-primary: #A83212;
+  --gdd-on-primary: #FFFFFF;
+  --gdd-primary-container: #CA4A28;
+  --gdd-on-primary-container: #FFFBFF;
+  --gdd-inverse-primary: #FFB4A1;
+  --gdd-primary-fixed: #FFDBD2;
+  --gdd-primary-fixed-dim: #FFB4A1;
+  --gdd-on-primary-fixed: #3C0800;
+  --gdd-on-primary-fixed-variant: #891E00;
+  --gdd-secondary: #8E4C3B;
+  --gdd-on-secondary: #FFFFFF;
+  --gdd-secondary-container: #FEA993;
+  --gdd-on-secondary-container: #793B2B;
+  --gdd-secondary-fixed: #FFDBD2;
+  --gdd-secondary-fixed-dim: #FFB4A1;
+  --gdd-on-secondary-fixed: #390B02;
+  --gdd-on-secondary-fixed-variant: #713525;
+}
+:root.accent-orange.theme-dark {
+  --gdd-primary: #FFB4A1;
+  --gdd-on-primary: #611300;
+  --gdd-primary-container: #EF6541;
+  --gdd-on-primary-container: #4B0C00;
+  --gdd-inverse-primary: #AB3514;
+  --gdd-primary-fixed: #FFDBD2;
+  --gdd-primary-fixed-dim: #FFB4A1;
+  --gdd-on-primary-fixed: #3C0800;
+  --gdd-on-primary-fixed-variant: #891E00;
+  --gdd-secondary: #FFB4A1;
+  --gdd-on-secondary: #552012;
+  --gdd-secondary-container: #713525;
+  --gdd-on-secondary-container: #F4A08A;
+  --gdd-secondary-fixed: #FFDBD2;
+  --gdd-secondary-fixed-dim: #FFB4A1;
+  --gdd-on-secondary-fixed: #390B02;
+  --gdd-on-secondary-fixed-variant: #713525;
+}
+:root.accent-orange.theme-light-hc {
+  --gdd-primary: #591100;
+  --gdd-on-primary: #FFFFFF;
+  --gdd-primary-container: #8D2000;
+  --gdd-on-primary-container: #FFFFFF;
+  --gdd-inverse-primary: #FFB4A1;
+  --gdd-primary-fixed: #8D2000;
+  --gdd-primary-fixed-dim: #651400;
+  --gdd-on-primary-fixed: #FFFFFF;
+  --gdd-on-primary-fixed-variant: #FFFFFF;
+  --gdd-secondary: #4F1C0E;
+  --gdd-on-secondary: #FFFFFF;
+  --gdd-secondary-container: #743828;
+  --gdd-on-secondary-container: #FFFFFF;
+  --gdd-secondary-fixed: #743828;
+  --gdd-secondary-fixed-dim: #582214;
+  --gdd-on-secondary-fixed: #FFFFFF;
+  --gdd-on-secondary-fixed-variant: #FFFFFF;
+}
+:root.accent-orange.theme-dark-hc {
+  --gdd-primary: #FFECE7;
+  --gdd-on-primary: #000000;
+  --gdd-primary-container: #FFAF9A;
+  --gdd-on-primary-container: #1F0200;
+  --gdd-inverse-primary: #8B1F00;
+  --gdd-primary-fixed: #FFDBD2;
+  --gdd-primary-fixed-dim: #FFB4A1;
+  --gdd-on-primary-fixed: #000000;
+  --gdd-on-primary-fixed-variant: #290400;
+  --gdd-secondary: #FFECE7;
+  --gdd-on-secondary: #000000;
+  --gdd-secondary-container: #FFAF9A;
+  --gdd-on-secondary-container: #1F0200;
+  --gdd-secondary-fixed: #FFDBD2;
+  --gdd-secondary-fixed-dim: #FFB4A1;
+  --gdd-on-secondary-fixed: #000000;
+  --gdd-on-secondary-fixed-variant: #290400;
+}
+
+:root.accent-purple {
+  --gdd-primary: #6234AF;
+  --gdd-on-primary: #FFFFFF;
+  --gdd-primary-container: #7B4FC9;
+  --gdd-on-primary-container: #F1E4FF;
+  --gdd-inverse-primary: #D4BBFF;
+  --gdd-primary-fixed: #EBDCFF;
+  --gdd-primary-fixed-dim: #D4BBFF;
+  --gdd-on-primary-fixed: #260059;
+  --gdd-on-primary-fixed-variant: #5828A4;
+  --gdd-secondary: #675686;
+  --gdd-on-secondary: #FFFFFF;
+  --gdd-secondary-container: #DDC8FF;
+  --gdd-on-secondary-container: #625181;
+  --gdd-secondary-fixed: #EBDCFF;
+  --gdd-secondary-fixed-dim: #D2BDF4;
+  --gdd-on-secondary-fixed: #22123E;
+  --gdd-on-secondary-fixed-variant: #4F3E6C;
+}
+:root.accent-purple.theme-dark {
+  --gdd-primary: #D4BBFF;
+  --gdd-on-primary: #40008C;
+  --gdd-primary-container: #7B4FC9;
+  --gdd-on-primary-container: #F1E4FF;
+  --gdd-inverse-primary: #7044BE;
+  --gdd-primary-fixed: #EBDCFF;
+  --gdd-primary-fixed-dim: #D4BBFF;
+  --gdd-on-primary-fixed: #260059;
+  --gdd-on-primary-fixed-variant: #5828A4;
+  --gdd-secondary: #D2BDF4;
+  --gdd-on-secondary: #382854;
+  --gdd-secondary-container: #4F3E6C;
+  --gdd-on-secondary-container: #C0ACE2;
+  --gdd-secondary-fixed: #EBDCFF;
+  --gdd-secondary-fixed-dim: #D2BDF4;
+  --gdd-on-secondary-fixed: #22123E;
+  --gdd-on-secondary-fixed-variant: #4F3E6C;
+}
+:root.accent-purple.theme-light-hc {
+  --gdd-primary: #3B0082;
+  --gdd-on-primary: #FFFFFF;
+  --gdd-primary-container: #5A2BA7;
+  --gdd-on-primary-container: #FFFFFF;
+  --gdd-inverse-primary: #D4BBFF;
+  --gdd-primary-fixed: #5A2BA7;
+  --gdd-primary-fixed-dim: #43048F;
+  --gdd-on-primary-fixed: #FFFFFF;
+  --gdd-on-primary-fixed-variant: #FFFFFF;
+  --gdd-secondary: #332450;
+  --gdd-on-secondary: #FFFFFF;
+  --gdd-secondary-container: #51416F;
+  --gdd-on-secondary-container: #FFFFFF;
+  --gdd-secondary-fixed: #51416F;
+  --gdd-secondary-fixed-dim: #3A2A57;
+  --gdd-on-secondary-fixed: #FFFFFF;
+  --gdd-on-secondary-fixed-variant: #FFFFFF;
+}
+:root.accent-purple.theme-dark-hc {
+  --gdd-primary: #F6ECFF;
+  --gdd-on-primary: #000000;
+  --gdd-primary-container: #D0B6FF;
+  --gdd-on-primary-container: #120030;
+  --gdd-inverse-primary: #5929A5;
+  --gdd-primary-fixed: #EBDCFF;
+  --gdd-primary-fixed-dim: #D4BBFF;
+  --gdd-on-primary-fixed: #000000;
+  --gdd-on-primary-fixed-variant: #19003F;
+  --gdd-secondary: #F6ECFF;
+  --gdd-on-secondary: #000000;
+  --gdd-secondary-container: #CEB9F0;
+  --gdd-on-secondary-container: #11012E;
+  --gdd-secondary-fixed: #EBDCFF;
+  --gdd-secondary-fixed-dim: #D2BDF4;
+  --gdd-on-secondary-fixed: #000000;
+  --gdd-on-secondary-fixed-variant: #170633;
+}
+
+:root.accent-grey {
+  --gdd-primary: #5D5B62;
+  --gdd-on-primary: #FFFFFF;
+  --gdd-primary-container: #75737A;
+  --gdd-on-primary-container: #FFFBFF;
+  --gdd-inverse-primary: #C8C5CD;
+  --gdd-primary-fixed: #E5E1E9;
+  --gdd-primary-fixed-dim: #C8C5CD;
+  --gdd-on-primary-fixed: #1B1B21;
+  --gdd-on-primary-fixed-variant: #47464C;
+  --gdd-secondary: #5F5E61;
+  --gdd-on-secondary: #FFFFFF;
+  --gdd-secondary-container: #E5E1E5;
+  --gdd-on-secondary-container: #656467;
+  --gdd-secondary-fixed: #E5E1E5;
+  --gdd-secondary-fixed-dim: #C9C5C9;
+  --gdd-on-secondary-fixed: #1C1B1E;
+  --gdd-on-secondary-fixed-variant: #474649;
+}
+:root.accent-grey.theme-dark {
+  --gdd-primary: #C8C5CD;
+  --gdd-on-primary: #313036;
+  --gdd-primary-container: #928F97;
+  --gdd-on-primary-container: #050509;
+  --gdd-inverse-primary: #5F5D64;
+  --gdd-primary-fixed: #E5E1E9;
+  --gdd-primary-fixed-dim: #C8C5CD;
+  --gdd-on-primary-fixed: #1B1B21;
+  --gdd-on-primary-fixed-variant: #47464C;
+  --gdd-secondary: #C9C5C9;
+  --gdd-on-secondary: #313033;
+  --gdd-secondary-container: #474649;
+  --gdd-on-secondary-container: #B7B4B7;
+  --gdd-secondary-fixed: #E5E1E5;
+  --gdd-secondary-fixed-dim: #C9C5C9;
+  --gdd-on-secondary-fixed: #1C1B1E;
+  --gdd-on-secondary-fixed-variant: #474649;
+}
+:root.accent-grey.theme-light-hc {
+  --gdd-primary: #2C2B31;
+  --gdd-on-primary: #FFFFFF;
+  --gdd-primary-container: #4A484F;
+  --gdd-on-primary-container: #FFFFFF;
+  --gdd-inverse-primary: #C8C5CD;
+  --gdd-primary-fixed: #4A484F;
+  --gdd-primary-fixed-dim: #333238;
+  --gdd-on-primary-fixed: #FFFFFF;
+  --gdd-on-primary-fixed-variant: #FFFFFF;
+  --gdd-secondary: #2D2C2E;
+  --gdd-on-secondary: #FFFFFF;
+  --gdd-secondary-container: #4A494B;
+  --gdd-on-secondary-container: #FFFFFF;
+  --gdd-secondary-fixed: #4A494B;
+  --gdd-secondary-fixed-dim: #333235;
+  --gdd-on-secondary-fixed: #FFFFFF;
+  --gdd-on-secondary-fixed-variant: #FFFFFF;
+}
+:root.accent-grey.theme-dark-hc {
+  --gdd-primary: #F2EEF6;
+  --gdd-on-primary: #000000;
+  --gdd-primary-container: #C4C1C9;
+  --gdd-on-primary-container: #050509;
+  --gdd-inverse-primary: #48474D;
+  --gdd-primary-fixed: #E5E1E9;
+  --gdd-primary-fixed-dim: #C8C5CD;
+  --gdd-on-primary-fixed: #000000;
+  --gdd-on-primary-fixed-variant: #111116;
+  --gdd-secondary: #F3EFF2;
+  --gdd-on-secondary: #000000;
+  --gdd-secondary-container: #C5C1C5;
+  --gdd-on-secondary-container: #0B0B0D;
+  --gdd-secondary-fixed: #E5E1E5;
+  --gdd-secondary-fixed-dim: #C9C5C9;
+  --gdd-on-secondary-fixed: #000000;
+  --gdd-on-secondary-fixed-variant: #111113;
+}

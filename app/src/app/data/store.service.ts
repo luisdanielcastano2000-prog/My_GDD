@@ -62,6 +62,8 @@ export class StoreService {
   private undoData: AppData | null = null;
   private snackTimer: ReturnType<typeof setTimeout> | undefined;
 
+  /** Acento que se está probando en Edit profile (sin guardar); null = el de la cuenta. */
+  readonly previewAccent = signal<string | null>(null);
   readonly dark = computed(() => {
     const t = this.data().user.theme;
     return t === 'Dark' || (t === 'System' && this.systemDark());
@@ -113,6 +115,13 @@ export class StoreService {
       const ts = s.textSize === 'Larger' ? 1.4 : s.textSize === 'Large' ? 1.2 : 1;
       root.style.setProperty('--gdd-ts', String(ts));
       if (ts > 1) root.classList.add(ts > 1.3 ? 'ts-larger' : 'ts-large');
+    });
+    // Color de acento: clase accent-<color> en <html> (botones, enlaces, selección; ver theme/accents.css)
+    effect(() => {
+      const a = (this.previewAccent() ?? this.data().user.accent ?? 'Blue').toLowerCase();
+      const root = document.documentElement;
+      [...root.classList].filter((c) => c.startsWith('accent-')).forEach((c) => root.classList.remove(c));
+      if (a !== 'blue') root.classList.add('accent-' + a);
     });
     // Los ajustes de accesibilidad también se guardan en la cuenta
     effect(() => {

@@ -65,7 +65,7 @@ A tener en cuenta:
 - Al activarlo, las cuentas que ya existen aparecen **sin verificar**: verán el aviso y tendrán que pulsar *Send link* una vez para poder invitar o aceptar.
 - Plan gratis: 300 correos al día.
 
-## 4. Color de acento ⬜
+## 4. Color de acento ✅ 2026-11-24
 
 > **Decisión del usuario (2026-11-24):** solo botones, enlaces y selección (no los colores de los departamentos).
 
