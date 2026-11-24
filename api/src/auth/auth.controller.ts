@@ -1,6 +1,7 @@
-import { Body, ConflictException, Controller, HttpCode, Post, UnauthorizedException } from '@nestjs/common';
+import { Body, ConflictException, Controller, HttpCode, Post, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
+import { ThrottlerGuard } from '@nestjs/throttler';
 import bcrypt from 'bcryptjs';
 import type { Model } from 'mongoose';
 
@@ -9,6 +10,7 @@ import { LoginDto, SignupDto } from './dto.js';
 
 /** Crear cuenta y entrar. Devuelven un token que el front envía en cada petición. */
 @Controller('auth')
+@UseGuards(ThrottlerGuard)
 export class AuthController {
   constructor(
     @InjectModel(User.name) private readonly users: Model<User>,
@@ -28,7 +30,7 @@ export class AuthController {
       user: u.toLowerCase(),
       team: { members: [{ id: 'me', name, email, dept: '', role: 'Owner', you: true }], invites: [] },
     });
-    return { token: await this.jwt.signAsync({ sub: String(doc._id) }) };
+    return { token: await this.jwt.signAsync({ sub: String(doc._id), tv: doc.tv ?? 0 }) };
   }
 
   @Post('login')
@@ -37,6 +39,6 @@ export class AuthController {
     const doc = await this.users.findOne({ email: dto.email.trim().toLowerCase() });
     // Mismo mensaje si falla el email o la contraseña: no dice qué cuentas existen.
     if (!doc || !(await bcrypt.compare(dto.password, doc.passwordHash))) throw new UnauthorizedException('The email or password is incorrect.');
-    return { token: await this.jwt.signAsync({ sub: String(doc._id) }) };
+    return { token: await this.jwt.signAsync({ sub: String(doc._id), tv: doc.tv ?? 0 }) };
   }
 }

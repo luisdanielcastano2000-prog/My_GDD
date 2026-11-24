@@ -88,14 +88,18 @@ export class NotesPage {
   });
 
   private noteRow(n: Note): Row {
+    const when = this.store.when(n.ts, n.when);
+    // Las notas que llegan del equipo traen path «From: Ana»: no repetir el nombre («Ana, Ana»)
+    const from = n.kind === 'team' && n.by ? (n.path.startsWith('From: ') ? n.by : n.by + ', ' + n.path) : n.path;
     return {
       id: n.id, kind: n.kind, icon: n.kind === 'change' ? 'warning' : 'chat', title: n.title, unread: n.unread,
-      sub: n.when + ' · ' + (n.kind === 'team' && n.by ? n.by + ', ' + n.path.replace(/^From: /, '') : n.path),
-      aria: (n.kind === 'change' ? 'Change in your GDD: ' : 'Team note: ') + n.title + ', ' + n.path + ', ' + n.when + '. Review',
+      sub: when + ' · ' + from,
+      aria: (n.kind === 'change' ? 'Change in your GDD: ' : 'Team note: ') + n.title + ', ' + from + ', ' + when + '. Review',
     };
   }
   private sentRow(n: SentNote): Row {
-    return { id: n.id, kind: 'sent', icon: 'send', title: '“' + n.text + '”', sub: n.when + ' · To: ' + n.to, unread: false, aria: 'Sent to ' + n.to + ': ' + n.text + ', ' + n.when };
+    const when = this.store.when(n.ts, n.when);
+    return { id: n.id, kind: 'sent', icon: 'send', title: '“' + n.text + '”', sub: when + ' · To: ' + n.to, unread: false, aria: 'Sent to ' + n.to + ': ' + n.text + ', ' + when };
   }
   toggle(id: string): void {
     this.store.notesCollapsed.update((c) => ({ ...c, [id]: !c[id] }));

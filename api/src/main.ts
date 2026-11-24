@@ -6,6 +6,7 @@ import { AppModule } from './app.module.js';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  app.set('trust proxy', 1); // en Render la petición llega por un proxy: así se ve la IP real (límite de intentos)
   app.setGlobalPrefix('api'); // la API vive en /api; el resto de direcciones son de la web
   app.useBodyParser('json', { limit: '2mb' }); // un GDD grande cabe en una petición
   // Valida lo que llega con las reglas de los DTO y responde 400 con el primer mensaje

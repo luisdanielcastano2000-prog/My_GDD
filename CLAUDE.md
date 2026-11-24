@@ -30,7 +30,11 @@ NestJS 12 + Mongoose, ESM (los `import` relativos acaban en `.js`). Base MongoDB
 - **Cuentas:** `POST /api/auth/signup`, `POST /api/auth/login` → `{ token }` (JWT, 7 días). Contraseñas con bcrypt. Todas las demás rutas piden `Authorization: Bearer <token>` (`AuthGuard`) y solo tocan los datos de esa cuenta.
 - **Datos:** `GET /api/me` (todo: perfil, ajustes, equipo, GDDs, notas), `PATCH /api/me`, `PATCH /api/me/password`, `PUT /api/me/team`, `DELETE /api/me` (borra la cuenta y sus datos), `PUT|DELETE /api/gdds/:id` (un GDD entero por documento), `PUT|DELETE /api/notes/:id`, `POST /api/notes/read`. Una nota enviada nueva se entrega a las personas del equipo (miembros o invitaciones) que tienen cuenta, por su email.
 - **Variables de entorno:** `MONGODB_URI` (si falta: MongoDB local), `JWT_SECRET` (obligatoria en producción), `PORT` (si falta: 3000).
-- **Simulado (sin servicio de correo):** enlace de contraseña olvidada, envío de invitaciones por email y «Download my data».
+- **Sesiones:** el token lleva la versión de sesión de la cuenta (`tv`). `PATCH /api/me/password` y `POST /api/me/logout-others` la suben: los tokens de otros aparatos dejan de valer y este recibe uno nuevo. Una cuenta borrada también deja sin valor sus tokens.
+- **Límite de intentos:** `POST /api/auth/*`, 10 por minuto e IP (`@nestjs/throttler`; `trust proxy` para ver la IP real en Render) → 429.
+- **Feedback:** `POST /api/me/feedback` → colección `feedback` (se lee en Atlas). Se borra con la cuenta.
+- **Fechas:** cada GDD guarda `cts` (creado) y `uts` (último cambio) en ms; las notas, `ts`. El front escribe «Updated 2 days ago», «5 min ago»… (`src/app/data/time.ts`). `GET /api/me` da `since` (alta de la cuenta).
+- **Simulado (sin servicio de correo):** enlace de contraseña olvidada, envío de invitaciones por email, confirmación al cambiar el email y verificación en dos pasos. «Download my data» es real (descarga un JSON en el navegador).
 
 ## Publicación (Render, un solo servicio)
 

@@ -151,10 +151,10 @@ export class EditProfilePage {
             <li><button class="li" type="button" (click)="r.run()"><span class="li-text"><span class="li-sub">{{ r.k }}</span><span class="li-title">{{ r.v }}</span></span><span class="ms li-trail">chevron_right</span></button></li>
           }
         </ul>
-        <p class="crumb">Member since October 2026</p>
+        <p class="crumb">Member since {{ since() }}</p>
         <h2 class="section-title">Your data</h2>
         <ul class="list card">
-          <li><button class="li" type="button" (click)="store.toast('We’ll email you a file with your data at ' + store.data().user.email + '.')"><span class="ms">download</span><span class="li-title">Download my data</span></button></li>
+          <li><button class="li" type="button" (click)="store.downloadData()"><span class="ms">download</span><span class="li-title">Download my data</span></button></li>
           <li><button class="li" type="button" style="color:var(--gdd-error)" (click)="store.dialog.set({ k: 'del', what: 'account' })"><span class="ms" style="color:var(--gdd-error)">delete</span><span class="li-title" style="color:var(--gdd-error)">Delete account</span></button></li>
         </ul>
       </div>
@@ -164,6 +164,11 @@ export class EditProfilePage {
 export class PersonalPage {
   protected store = inject(StoreService);
   private nav = inject(NavService);
+  /** «November 2026» (fecha de alta de la cuenta; los datos de ejemplo no la tienen). */
+  protected since = computed(() => {
+    const t = this.store.since();
+    return t ? new Date(t).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }) : 'October 2026';
+  });
   protected rows = computed(() => {
     const u = this.store.data().user;
     const edit = () => this.nav.go('/profile/edit');
@@ -202,7 +207,7 @@ export class PersonalPage {
         <h2 class="section-title">Security</h2>
         <ul class="list card">
           <li class="setting"><span class="li-text"><span class="li-title">Two-step verification</span><span class="li-sub">Ask for a code when you log in on a new device.</span></span><app-switch label="Two-step verification" [(on)]="tfa" /></li>
-          <li><button class="li" type="button" (click)="store.toast('You’re logged out of all other devices.')"><span class="ms">logout</span><span class="li-title">Log out of other devices</span></button></li>
+          <li><button class="li" type="button" (click)="store.logoutOthers()"><span class="ms">logout</span><span class="li-title">Log out of other devices</span></button></li>
         </ul>
       </form>
     </ion-content>

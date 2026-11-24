@@ -14,6 +14,7 @@ export interface MeResponse {
   gdds: Gdd[];
   notes: Note[];
   sent: SentNote[];
+  since?: string; // fecha de alta de la cuenta
 }
 
 /** Mensaje de error de la API en lenguaje del diseño (o uno genérico si no hay conexión). */
@@ -67,8 +68,18 @@ export class ApiService {
   saveProfile(p: Partial<AppData['user']> & { settings?: Record<string, unknown> }): Promise<unknown> {
     return this.run(this.http.patch('/api/me', p));
   }
-  changePassword(current: string, next: string): Promise<unknown> {
-    return this.run(this.http.patch('/api/me/password', { current, next }));
+  /** Cambia la contraseña; el servidor cierra las sesiones de otros aparatos y da un token nuevo a este. */
+  async changePassword(current: string, next: string): Promise<void> {
+    const r = await this.run(this.http.patch<{ token: string }>('/api/me/password', { current, next }));
+    this.setToken(r.token);
+  }
+  /** «Log out of other devices»: este aparato sigue dentro con un token nuevo. */
+  async logoutOthers(): Promise<void> {
+    const r = await this.run(this.http.post<{ token: string }>('/api/me/logout-others', {}));
+    this.setToken(r.token);
+  }
+  sendFeedback(topic: string, text: string, reply: boolean): Promise<unknown> {
+    return this.run(this.http.post('/api/me/feedback', { topic, text, reply }));
   }
   saveTeam(team: AppData['team']): Promise<unknown> {
     return this.run(this.http.put('/api/me/team', team));

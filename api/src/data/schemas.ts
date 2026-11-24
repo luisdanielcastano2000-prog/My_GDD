@@ -21,6 +21,8 @@ export class User {
   /** Ajustes de accesibilidad (tamaño de texto, alto contraste, menos movimiento…). */
   @Prop({ type: Object, default: {} }) settings: Record<string, unknown>;
   /** Equipo: personas (members) e invitaciones pendientes (invites). */
+  /** Versión de sesión: al subirla, los tokens antiguos dejan de valer (cambiar contraseña, «Log out of other devices»). */
+  @Prop({ default: 0 }) tv: number;
   @Prop({ type: Object, default: () => ({ members: [], invites: [] }) }) team: { members: Record<string, unknown>[]; invites: Record<string, unknown>[] };
 }
 export type UserDoc = HydratedDocument<User>;
@@ -34,6 +36,8 @@ export class Gdd {
   @Prop({ required: true, trim: true }) name: string;
   @Prop({ default: '' }) desc: string;
   @Prop({ default: '' }) updated: string;
+  @Prop() cts?: number; // cuándo se creó (ms, lo pone el front)
+  @Prop() uts?: number; // cuándo cambió por última vez (ms)
   @Prop({ default: 0 }) order: number; // posición en el carrusel de Home
   @Prop({ type: [Object], default: [] }) depts: Record<string, unknown>[];
   @Prop({ type: Object, default: null }) last: Record<string, unknown> | null;
@@ -50,3 +54,14 @@ export class Note {
   @Prop({ type: Object, required: true }) data: Record<string, unknown>;
 }
 export const NoteSchema = SchemaFactory.createForClass(Note);
+
+/** Un mensaje de «Send feedback» (se lee en Atlas, colección feedback). */
+@Schema({ collection: 'feedback', timestamps: true, versionKey: false })
+export class Feedback {
+  @Prop({ required: true }) owner: string;
+  @Prop({ required: true }) email: string;
+  @Prop({ required: true, enum: ['Idea', 'Problem', 'Question'] }) topic: string;
+  @Prop({ required: true }) text: string;
+  @Prop({ default: true }) reply: boolean;
+}
+export const FeedbackSchema = SchemaFactory.createForClass(Feedback);

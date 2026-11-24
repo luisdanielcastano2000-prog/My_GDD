@@ -2,6 +2,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { IonContent, IonHeader } from '@ionic/angular';
 
+import { ApiService, apiMessage } from '../data/api.service';
 import { StoreService } from '../data/store.service';
 import { NavService } from '../shared/nav.service';
 import { SegComponent, SwitchComponent, TopBarComponent } from '../shared/ui';
@@ -122,6 +123,7 @@ export class GlossaryPage {
 })
 export class FeedbackPage {
   private store = inject(StoreService);
+  private api = inject(ApiService);
   private nav = inject(NavService);
   protected topic = signal('Idea');
   protected text = signal('');
@@ -130,6 +132,14 @@ export class FeedbackPage {
   protected phase = signal<'' | 'load' | 'ok'>('');
   send(): void {
     if (!this.text().trim()) { this.err.set(true); return; }
-    withLoading(this.store, this.phase, () => { this.nav.back('/help'); this.store.toast('Thanks! We got your feedback.'); });
+    if (!this.store.live()) { // selector de pantallas: sin servidor
+      withLoading(this.store, this.phase, () => { this.nav.back('/help'); this.store.toast('Thanks! We got your feedback.'); });
+      return;
+    }
+    this.phase.set('load');
+    this.api.sendFeedback(this.topic(), this.text().trim(), this.reply()).then(
+      () => { this.phase.set('ok'); setTimeout(() => { this.phase.set(''); this.nav.back('/help'); this.store.toast('Thanks! We got your feedback.'); }, 650); },
+      (e: unknown) => { this.phase.set(''); this.store.toast(apiMessage(e), { kind: 'err', action: { label: 'Retry', run: () => this.send() } }); },
+    );
   }
 }

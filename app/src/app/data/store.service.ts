@@ -5,6 +5,7 @@ import { ApiService, apiMessage } from './api.service';
 import type { AppData, Block, Dept, Dialog, Gdd, Note, Sheet, Snack } from './models';
 import type { Template} from './sample';
 import { CATALOG, buildGdd, mkBlock, mkSection, nid, sampleData } from './sample';
+import { ago, cap, dayAgo, isReal } from './time';
 
 export type StatusKind = 'old' | 'ok' | 'empty';
 export interface Settings {
@@ -13,6 +14,12 @@ export interface Settings {
   reduceMotion: boolean;
   slowMotion: boolean; // solo para revisar animaciones (selector de pantallas)
   notifications: boolean;
+}
+
+/** Apunta que un GDD acaba de cambiar. */
+function touch(g: Gdd): void {
+  g.updated = 'Updated today';
+  g.uts = Date.now();
 }
 
 const DEFAULT_SETTINGS: Settings = { textSize: 'Default', highContrast: false, reduceMotion: false, slowMotion: false, notifications: true };
@@ -54,9 +61,14 @@ export class StoreService {
     const t = this.data().user.theme;
     return t === 'Dark' || (t === 'System' && this.systemDark());
   });
+  /** La hora actual, cada minuto: hace que «5 min ago» avance solo. */
+  readonly now = signal(Date.now());
+  /** Fecha de alta de la cuenta (la da el servidor). */
+  readonly since = signal<number | null>(null);
   readonly unread = computed(() => this.data().notes.filter((n) => n.unread).length);
 
   constructor() {
+    setInterval(() => this.now.set(Date.now()), 60_000);
     if (typeof matchMedia !== 'undefined') {
       matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => this.systemDark.set(e.matches));
     }
@@ -90,6 +102,7 @@ export class StoreService {
       const r = await this.api.me();
       const d: AppData = { gdds: r.gdds, notes: r.notes, sent: r.sent, user: r.user, team: r.team };
       this.data.set(d);
+      this.since.set(r.since ? Date.parse(r.since) : null);
       this.snapshot = structuredClone(d);
       this.settings.set({ ...DEFAULT_SETTINGS, ...(r.settings as Partial<Settings>), slowMotion: false });
       this.savedSettings = this.settingsKey();
@@ -169,6 +182,17 @@ export class StoreService {
   where(bid: string, d: AppData = this.data()): { g: Gdd; dp: Dept; b: Block } | null {
     for (const g of d.gdds) for (const dp of g.depts) for (const b of dp.blocks) if (b.id === bid) return { g, dp, b };
     return null;
+  }
+  /** «Updated yesterday», «Created today»… (o el texto fijo de los datos de ejemplo). */
+  gUpdated(g: Gdd): string {
+    const now = this.now();
+    if (isReal(g.uts)) return 'Updated ' + dayAgo(g.uts, now);
+    if (isReal(g.cts)) return 'Created ' + dayAgo(g.cts, now);
+    return g.updated;
+  }
+  /** «Just now», «5 min ago»… para una nota (o su texto fijo si es de ejemplo). */
+  when(ts: number | undefined, fixed: string): string {
+    return isReal(ts) ? cap(ago(ts, this.now())) : fixed;
   }
   gStat(g: Gdd): { t: string; k: StatusKind; n: number } {
     let old = 0, has = 0, total = 0;
@@ -254,6 +278,7 @@ export class StoreService {
   // ---------- crear ----------
   createGdd(name: string, tpl: Template, on: number[]): Gdd {
     const g = buildGdd(name, tpl, [...on].sort((a, b) => a - b));
+    g.cts = Date.now();
     this.mutate((d) => d.gdds.unshift(g));
     this.homeIndex.set(0);
     this.pop(g.id);
@@ -273,7 +298,7 @@ export class StoreService {
     const last = g0.depts[g0.depts.length - 1];
     const lc = last ? last.col ?? ((g0.depts.length - 1) % 6) + 1 : 0;
     const nd: Dept = { id: nid(), name, blocks: [], col: (lc % 6) + 1 };
-    this.mutate((d) => { const g = d.gdds.find((x) => x.id === gid)!; g.depts.push(nd); g.updated = 'Updated today'; });
+    this.mutate((d) => { const g = d.gdds.find((x) => x.id === gid)!; g.depts.push(nd); touch(g); });
     this.pop(nd.id);
     this.toast(name + ' created');
   }
@@ -282,13 +307,13 @@ export class StoreService {
     if (!dp0) return;
     const name = this.uniq('New block', dp0.blocks.map((x) => x.name));
     const nb = mkBlock(name, '');
-    this.mutate((d) => { const g = d.gdds.find((x) => x.id === gid)!; g.depts.find((x) => x.id === dpid)!.blocks.push(nb); g.updated = 'Updated today'; });
+    this.mutate((d) => { const g = d.gdds.find((x) => x.id === gid)!; g.depts.find((x) => x.id === dpid)!.blocks.push(nb); touch(g); });
     this.pop(nb.id);
     this.toast(name + ' created');
   }
   useTemplate(gid: string): void {
     const t = buildGdd('x', 'Minimal', [0, 2, 3, 5]);
-    this.mutate((d) => { const g = d.gdds.find((x) => x.id === gid)!; g.depts = g.depts.concat(t.depts); g.updated = 'Updated today'; });
+    this.mutate((d) => { const g = d.gdds.find((x) => x.id === gid)!; g.depts = g.depts.concat(t.depts); touch(g); });
     this.toast('Minimal template added: 4 departments');
   }
   suggest(gid: string, dpid: string): void {
@@ -335,8 +360,8 @@ export class StoreService {
       const has = w.b.secs.some((s) => (s.x || '').trim() || (s.t || '').trim());
       w.b.status = has ? 'Up to date' : 'Empty';
       d.notes.forEach((n) => { if (n.kind === 'change' && n.aff?.includes(bid) && !n.rvd?.includes(bid)) n.rvd?.push(bid); });
-      w.g.updated = 'Updated today';
-      w.g.last = { dp: w.dp.id, b: bid, when: 'Edited just now' };
+      touch(w.g);
+      w.g.last = { dp: w.dp.id, b: bid, when: 'Edited just now', ts: Date.now() };
       msg = had ? w.b.name + ' reviewed · Up to date' : has ? w.b.name + ' saved · Up to date' : w.b.name + ' saved';
     });
     return msg;
@@ -408,7 +433,7 @@ export class StoreService {
     const w = this.where(bid);
     if (!w) return;
     this.afterDissolve(bid, () => {
-      this.mutate((d) => { const x = this.where(bid, d)!; x.dp.blocks = x.dp.blocks.filter((b) => b.id !== bid); x.g.updated = 'Updated today'; }, true);
+      this.mutate((d) => { const x = this.where(bid, d)!; x.dp.blocks = x.dp.blocks.filter((b) => b.id !== bid); touch(x.g); }, true);
       this.toast(w.b.name + ' deleted', { undo: true });
     });
   }
@@ -416,7 +441,7 @@ export class StoreService {
     const dp = this.dept(this.gdd(gid), did);
     if (!dp) return;
     this.afterDissolve(did, () => {
-      this.mutate((d) => { const g = d.gdds.find((x) => x.id === gid)!; g.depts = g.depts.filter((x) => x.id !== did); g.updated = 'Updated today'; }, true);
+      this.mutate((d) => { const g = d.gdds.find((x) => x.id === gid)!; g.depts = g.depts.filter((x) => x.id !== did); touch(g); }, true);
       this.toast(dp.name + ' deleted', { undo: true });
     });
   }
@@ -498,6 +523,28 @@ export class StoreService {
   setLang(lang: string): void {
     this.mutate((d) => (d.user.lang = lang));
     this.toast(lang === 'English' ? 'Language changed to English.' : 'Language changed to ' + lang + '. This prototype is only in English.');
+  }
+  /** «Download my data»: descarga un archivo JSON con todo lo de la cuenta (sin la contraseña). */
+  downloadData(): void {
+    const d = this.data();
+    const file = { exported: new Date().toISOString(), user: d.user, settings: this.settings(), team: d.team, gdds: d.gdds, notes: d.notes, sent: d.sent };
+    const url = URL.createObjectURL(new Blob([JSON.stringify(file, null, 2)], { type: 'application/json' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'my-gdd-data-' + new Date().toISOString().slice(0, 10) + '.json';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    this.toast('Your data was downloaded');
+  }
+  /** «Log out of other devices» (de verdad: el servidor invalida los demás tokens). */
+  async logoutOthers(): Promise<void> {
+    if (!this.live()) { this.toast('You’re logged out of all other devices.'); return; } // selector de pantallas
+    try {
+      await this.api.logoutOthers();
+      this.toast('You’re logged out of all other devices.');
+    } catch (e) {
+      this.toast(apiMessage(e), { kind: 'err' });
+    }
   }
   invite(email: string, role: 'Editor' | 'Viewer'): void {
     this.mutate((d) => d.team.invites.push({ id: nid(), email, role }));

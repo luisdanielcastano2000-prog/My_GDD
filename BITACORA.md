@@ -122,3 +122,23 @@ Cómo arrancar y cómo está organizado el proyecto: `CLAUDE.md`. Aquí va **lo 
 - Segundo deploy correcto. Dirección pública: https://my-gdd.onrender.com
 - Comprobado con `curl` (todo bien): web en `/` y `/home` (200); `/api/me` sin token → 401; signup → 201; email repetido → 409; guardar un GDD → 200; login nuevo y leer → el GDD está (guardado en Atlas, base `my_gdd`); contraseña mala → 401; borrar cuenta → 200; login tras borrar → 401. La cuenta de prueba (`render-check-…@example.com`) quedó borrada.
 - No verificado aún: prueba en el navegador por el usuario y ver la base en Atlas (*Browse Collections*).
+
+**Revisión completa de la app publicada (a petición del usuario: «revisa que todo esté bien»)**
+- Prueba en el navegador contra https://my-gdd.onrender.com (Playwright, 390 × 844, cuentas de prueba borradas al acabar): 24 pantallas por dirección directa y recorridos con dos cuentas (crear GDD, escribir y guardar un bloque, recargar, invitar, enviar y recibir notas, borrar GDD, cerrar sesión y entrar, cuenta borrada con la pestaña abierta → vuelve a «Log in»). **Ningún error de JavaScript ni de red.**
+- Fallos encontrados:
+  1. Fechas fijas: «Created today», «Updated today», «Edited just now» y «Just now» se guardaban como texto y no cambiaban nunca.
+  2. «Member since October 2026» escrito a mano para todas las cuentas.
+  3. Nota del equipo recibida: «Just now · Ana, Ana» (nombre repetido).
+  4. Botones que decían hacer algo que no hacían: «Download my data», «Send feedback», «Log out of other devices».
+  5. Cambiar la contraseña no cerraba las sesiones abiertas en otros aparatos.
+  6. Sin límite de intentos en Log in / Sign up.
+- Arreglado (decisiones de esta sesión, sin cambiar el diseño):
+  - Fechas reales: `cts`/`uts` en cada GDD y `ts` en «Continue writing»; nuevo `data/time.ts` («just now», «5 min ago», «3 h ago», «yesterday», «4 days ago», «on 12 Nov»). La hora de la app avanza sola cada minuto (`store.now`). Los datos de ejemplo de `/scenes` conservan sus textos.
+  - «Member since» = mes y año de alta (`since` en `GET /api/me`).
+  - Nota del equipo: «Just now · Ana».
+  - «Download my data» descarga `my-gdd-data-AAAA-MM-DD.json` (perfil, ajustes, equipo, GDDs y notas; sin contraseña).
+  - «Send feedback» se guarda en la colección `feedback` de Atlas.
+  - «Log out of other devices» y cambiar la contraseña invalidan los tokens de los demás aparatos (versión de sesión `tv`).
+  - Límite de 10 intentos por minuto e IP en `/api/auth/*` (429 «Too many attempts. Wait a minute and try again.»).
+- Probado en el Mac en modo producción (`NODE_ENV=production npm run build` + `npm start`, puerto 3100): API con `curl` (since, cts/uts, feedback y feedback vacío → 400, tokens antiguos → 401 tras logout-others y tras cambiar la contraseña, 10 intentos → 429, cuenta borrada → 401) y navegador (11 comprobaciones, todas bien; con el reloj adelantado 2 días: «Updated 2 days ago», «edited 2 days ago», notas «2 days ago»).
+- Conocido y anterior a esto: `npm run lint` en `app/` falla en el paso de Prettier (20 archivos con formato distinto); ESLint y tipos, sin errores. No se reformatea para no mezclar 20 archivos en este cambio.

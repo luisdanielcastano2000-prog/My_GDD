@@ -43,9 +43,11 @@ export interface Gdd {
   id: string;
   name: string;
   desc: string;
-  updated: string;
+  updated: string; // texto fijo (datos de ejemplo); con cts/uts se calcula «hace cuánto»
+  cts?: number; // cuándo se creó (ms)
+  uts?: number; // cuándo cambió por última vez (ms)
   depts: Dept[];
-  last?: { dp: string; b: string; when: string }; // último bloque editado
+  last?: { dp: string; b: string; when: string; ts?: number }; // último bloque editado
 }
 
 /** Nota recibida: un cambio en el GDD o una nota del equipo. */

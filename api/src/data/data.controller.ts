@@ -1,19 +1,22 @@
 // La API de los datos de cada cuenta. Todas las rutas piden token (AuthGuard) y solo tocan
 // los documentos de esa cuenta (owner = id de la cuenta).
 import { BadRequestException, Body, Controller, Delete, Get, HttpCode, NotFoundException, Param, Patch, Post, Put, UseGuards } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import bcrypt from 'bcryptjs';
-import { IsArray, IsIn, IsNumber, IsObject, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsArray, IsBoolean, IsIn, IsNumber, IsObject, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 import type { Model } from 'mongoose';
 
 import { AuthGuard, UserId } from '../auth/auth.guard.js';
 import { PasswordDto, ProfileDto } from '../auth/dto.js';
-import { Gdd, Note, User } from './schemas.js';
+import { Feedback, Gdd, Note, User } from './schemas.js';
 
 class GddDto {
   @IsString() @MinLength(1, { message: 'Enter a project name.' }) @MaxLength(120) name: string;
   @IsOptional() @IsString() desc?: string;
   @IsOptional() @IsString() updated?: string;
+  @IsOptional() @IsNumber() cts?: number; // cuándo se creó (ms)
+  @IsOptional() @IsNumber() uts?: number; // cuándo cambió por última vez (ms)
   @IsNumber() order: number;
   @IsArray() depts: Record<string, unknown>[];
   @IsOptional() @IsObject() last?: Record<string, unknown> | null;
@@ -21,6 +24,11 @@ class GddDto {
 class NoteDto {
   @IsIn(['received', 'sent']) box: 'received' | 'sent';
   @IsObject() data: Record<string, unknown>;
+}
+class FeedbackDto {
+  @IsIn(['Idea', 'Problem', 'Question']) topic: string;
+  @IsString() @MinLength(1, { message: 'Write your message before sending it.' }) @MaxLength(5000) text: string;
+  @IsOptional() @IsBoolean() reply?: boolean;
 }
 class TeamDto {
   @IsArray() members: Record<string, unknown>[];
@@ -36,7 +44,15 @@ export class MeController {
     @InjectModel(User.name) private readonly users: Model<User>,
     @InjectModel(Gdd.name) private readonly gdds: Model<Gdd>,
     @InjectModel(Note.name) private readonly notes: Model<Note>,
+    @InjectModel(Feedback.name) private readonly feedback: Model<Feedback>,
+    private readonly jwt: JwtService,
   ) {}
+
+  /** Nuevo token para ESTE aparato tras subir la versión de sesión (los demás quedan fuera). */
+  private async bump(id: string): Promise<string> {
+    const u = await this.users.findByIdAndUpdate(id, { $inc: { tv: 1 } }, { new: true, projection: { tv: 1 } }).lean();
+    return this.jwt.signAsync({ sub: id, tv: u?.tv ?? 0 });
+  }
 
   /** Todo lo que necesita el front al entrar: perfil, equipo, GDDs y notas. */
   @Get()
@@ -52,6 +68,7 @@ export class MeController {
       gdds: gdds.map(({ _id, owner: _o, order: _r, ...g }) => ({ id: _id, ...g })),
       notes: notes.filter((n) => n.box === 'received').map((n) => ({ ...n.data, id: n._id })),
       sent: notes.filter((n) => n.box === 'sent').map((n) => ({ ...n.data, id: n._id })),
+      since: (u as { createdAt?: Date }).createdAt,
     };
   }
 
@@ -67,11 +84,27 @@ export class MeController {
   }
 
   @Patch('password')
-  async password(@UserId() id: string, @Body() dto: PasswordDto): Promise<{ ok: true }> {
+  async password(@UserId() id: string, @Body() dto: PasswordDto): Promise<{ ok: true; token: string }> {
     const u = await this.users.findById(id);
     if (!u || !(await bcrypt.compare(dto.current, u.passwordHash))) throw new BadRequestException('The current password is incorrect.');
     u.passwordHash = await bcrypt.hash(dto.next, 10);
     await u.save();
+    return { ok: true, token: await this.bump(id) }; // las sesiones de otros aparatos se cierran
+  }
+
+  /** «Log out of other devices»: los tokens anteriores dejan de valer; este aparato recibe uno nuevo. */
+  @Post('logout-others')
+  @HttpCode(200)
+  async logoutOthers(@UserId() id: string): Promise<{ token: string }> {
+    return { token: await this.bump(id) };
+  }
+
+  /** «Send feedback»: se guarda en la colección feedback (se lee en Atlas). */
+  @Post('feedback')
+  @HttpCode(201)
+  async sendFeedback(@UserId() id: string, @Body() dto: FeedbackDto): Promise<{ ok: true }> {
+    const u = await this.users.findById(id, { email: 1 }).lean();
+    await this.feedback.create({ owner: id, email: u?.email ?? '', topic: dto.topic, text: dto.text, reply: dto.reply ?? true });
     return { ok: true };
   }
 
@@ -84,7 +117,7 @@ export class MeController {
   /** Borra la cuenta y TODOS sus datos. */
   @Delete()
   async remove(@UserId() id: string): Promise<{ ok: true }> {
-    await Promise.all([this.gdds.deleteMany({ owner: id }), this.notes.deleteMany({ owner: id }), this.users.deleteOne({ _id: id })]);
+    await Promise.all([this.gdds.deleteMany({ owner: id }), this.notes.deleteMany({ owner: id }), this.feedback.deleteMany({ owner: id }), this.users.deleteOne({ _id: id })]);
     return { ok: true };
   }
 }
@@ -99,7 +132,7 @@ export class GddsController {
   async save(@UserId() owner: string, @Param('id') id: string, @Body() dto: GddDto): Promise<{ ok: true }> {
     const cur = await this.gdds.findById(id).lean();
     if (cur && cur.owner !== owner) throw new NotFoundException('GDD not found.');
-    await this.gdds.updateOne({ _id: id }, { $set: { name: dto.name, desc: dto.desc, updated: dto.updated, order: dto.order, depts: dto.depts, last: dto.last ?? null, owner } }, { upsert: true });
+    await this.gdds.updateOne({ _id: id }, { $set: { name: dto.name, desc: dto.desc, updated: dto.updated, cts: dto.cts, uts: dto.uts, order: dto.order, depts: dto.depts, last: dto.last ?? null, owner } }, { upsert: true });
     return { ok: true };
   }
 
