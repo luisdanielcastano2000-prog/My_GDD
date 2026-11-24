@@ -25,7 +25,7 @@ function scrollToNew(content: () => IonContent | undefined, popped: () => string
       @if (g(); as gd) {
         <div class="page with-fab" style="gap:8px">
           @if (gd.depts.length) {
-            @if (!searching()) { <p class="intro t-body-medium">{{ edit() ? 'Your GDD follows the production pipeline. Open a department to see its blocks.' : 'Shared by ' + gd.share?.name + '. You can read it and send notes.' }}</p> }
+            @if (!searching()) { <p class="intro t-body-medium">{{ intro() }}</p> }
             <ul class="dept-list">
               @for (x of list(); track x.id) {
                 <li class="dept-card card" [class.pop-in]="store.popped() === x.id" [class.dissolve]="store.dying() === x.id">
@@ -76,7 +76,14 @@ export class DeptsPage {
   protected q = signal(this.store.takeDraft('depts', { q: '' }).q);
   protected searching = signal(!!this.q());
   protected g = computed(() => this.store.gdd(this.gid()));
-  protected edit = computed(() => this.store.canEdit(this.gid())); // Viewer: solo leer
+  protected edit = computed(() => this.store.canManageDepts(this.gid())); // crear, renombrar, mover y borrar departamentos
+  protected intro = computed(() => {
+    const g = this.g();
+    if (!g?.share) return 'Your GDD follows the production pipeline. Open a department to see its blocks.';
+    if (g.share.role === 'Viewer') return 'Shared by ' + g.share.name + '. You can read it and send notes.';
+    const mine = this.store.myDepts(g.id).map((id) => g.depts.find((d) => d.id === id)?.name).filter(Boolean);
+    return 'Shared by ' + g.share.name + '. ' + (mine.length ? 'You can edit: ' + mine.join(', ') + '.' : 'You can edit every department.');
+  });
   protected list = computed(() => {
     const g = this.g();
     if (!g) return [];
@@ -153,7 +160,7 @@ export class DeptPage {
   protected searching = signal(false);
   protected g = computed(() => this.store.gdd(this.gid()));
   protected dp = computed(() => this.store.dept(this.g(), this.dpid()));
-  protected edit = computed(() => this.store.canEdit(this.gid())); // Viewer: solo leer
+  protected edit = computed(() => this.store.canEditDept(this.gid(), this.dpid())); // escribir en los bloques de este departamento
   protected pos = computed(() => (this.g()?.depts.indexOf(this.dp()!) ?? 0) + 1);
   protected band = computed(() => (this.g() && this.dp() ? this.store.deptColor(this.g()!, this.dp()!) : ''));
   protected blocks = computed(() => {

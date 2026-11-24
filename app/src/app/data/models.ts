@@ -59,6 +59,14 @@ export interface Share {
   owner: string; // id de la cuenta dueña
   name: string; // su nombre
   role: 'Editor' | 'Viewer';
+  depts?: string[]; // Editor de departamentos: solo escribe en estos (vacío = en todos)
+}
+
+/** Acceso de una persona del equipo a uno de tus GDDs: rol y departamentos (vacío = todos). */
+export interface Grant {
+  g: string;
+  role: 'Editor' | 'Viewer';
+  depts: string[];
 }
 
 /** Una invitación que te han hecho a un equipo (se acepta o se rechaza). */
@@ -66,6 +74,7 @@ export interface Invitation {
   owner: string;
   name: string;
   role: 'Editor' | 'Viewer';
+  projects?: string[]; // nombres de los GDDs a los que te invitan
 }
 
 /** Un equipo de otra persona en el que estás. */
@@ -95,6 +104,7 @@ export interface Note {
 export interface SentNote {
   id: string;
   g?: string;
+  toDept?: string; // «Send to» solo un departamento: llega a quien lo tiene
   dp?: string; // departamento y bloque de donde sale la nota (si los hay)
   b?: string;
   aff?: string[]; // bloques que esta nota marcó como «Out of date» (los marca el servidor)
@@ -122,6 +132,7 @@ export type AvatarKey = 'account' | 'game' | 'palette' | 'movie' | 'code' | 'mus
 export interface Member {
   id: string;
   uid?: string; // id de la cuenta (personas que aceptaron la invitación)
+  grants?: Grant[]; // proyectos a los que entra (sin grants = todos, como antes)
   name: string;
   email: string;
   dept: string;
@@ -133,6 +144,7 @@ export interface Invite {
   id: string;
   email: string;
   role: 'Editor' | 'Viewer';
+  grants?: Grant[];
 }
 
 export interface AppData {
@@ -149,8 +161,8 @@ export type Sheet =
   | { k: 'act'; what: 'gdd' | 'dept' | 'block'; id: string; g?: string; dp?: string }
   | { k: 'note'; kind: 'change' | 'team' | 'sent'; id: string; title: string }
   | { k: 'avatar'; av: AvatarKey }
-  | { k: 'manage'; id: string; role: 'Editor' | 'Viewer' | 'Owner' }
-  | { k: 'invite'; email: string; role: 'Editor' | 'Viewer'; err: boolean; busy?: 'load' | 'ok' };
+  | { k: 'manage'; id: string; role: 'Editor' | 'Viewer' | 'Owner'; grants?: Grant[] }
+  | { k: 'invite'; email: string; role: 'Editor' | 'Viewer'; err: boolean; busy?: 'load' | 'ok'; grants?: Grant[] };
 
 export type Dialog =
   | { k: 'rename'; what: 'gdd' | 'dept' | 'block' | 'field'; id?: string; g?: string; dp?: string; key?: 'phone' | 'country' | 'tz'; label?: string; val: string; err: boolean }

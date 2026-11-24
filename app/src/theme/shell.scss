@@ -334,3 +334,13 @@ dl.gloss dd { margin: 2px 0 0; color: var(--gdd-on-surface-variant); }
 
 /* New note: botón que abre la lista de bloques afectados */
 .aff-toggle { width: 100%; text-align: left; border: none; }
+
+/* Proyectos de una persona del equipo (hojas Invite y Manage): opciones bajo cada proyecto marcado */
+.grants > li + li { border-top: 1px solid var(--gdd-outline-variant); }
+.grant-opts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 16px 14px 56px;
+  .chips { flex-wrap: wrap; }
+}

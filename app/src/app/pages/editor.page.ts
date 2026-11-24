@@ -18,7 +18,7 @@ import { TopBarComponent } from '../shared/ui';
         <div class="editor">
           <p class="crumb">{{ dp()!.name }} › {{ blk.name }}</p>
           @if (!edit()) {
-            <div class="banner-warn"><span class="ms s20" aria-hidden="true">visibility</span><span>Shared by {{ g()?.share?.name }} · You can read this block. To suggest a change, send a note.</span></div>
+            <div class="banner-warn"><span class="ms s20" aria-hidden="true">visibility</span><span>Shared by {{ g()?.share?.name }} · {{ readWhy() }}</span></div>
           }
           @if (revs().length) {
             <div class="rev-banner">
@@ -70,7 +70,9 @@ export class EditorPage {
   protected g = computed(() => this.store.gdd(this.gid()));
   protected dp = computed(() => this.store.dept(this.g(), this.dpid()));
   protected b = computed(() => this.dp()?.blocks.find((x) => x.id === this.bid()) ?? null);
-  protected edit = computed(() => this.store.canEdit(this.gid())); // Viewer: solo leer
+  protected edit = computed(() => this.store.canEditDept(this.gid(), this.dpid())); // Viewer o departamento ajeno: solo leer
+  /** Por qué solo puedes leer (Viewer, o Editor de otros departamentos). */
+  protected readWhy = computed(() => (this.store.role(this.gid()) === 'Viewer' ? 'You can read this block. To suggest a change, send a note.' : 'You edit other departments. To suggest a change here, send a note.'));
   protected fs = signal<string | null>(null); // sección con el foco
   protected revOpen = signal(false);
   protected cur = computed(() => { const b = this.b(); return b?.secs.find((s) => s.id === this.fs()) ?? b?.secs[0] ?? null; });
@@ -99,7 +101,7 @@ export class EditorPage {
   }
   save(): void {
     const msg = this.store.save(this.bid());
-    if (!this.store.canEdit(this.gid())) return;
+    if (!msg) return; // no puedes editar este bloque (ya lo avisó el store)
     // Si el cambio puede afectar a otros bloques, avisar al equipo y marcarlos con un toque
     this.store.toast(msg, { kind: 'ok', action: { label: 'Note a change', run: () => { this.store.setDraft('newnote', { g: this.gid(), dp: this.dpid(), b: this.bid() }); this.nav.go('/notes/new'); } } });
   }

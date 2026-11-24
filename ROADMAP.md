@@ -8,7 +8,7 @@ Orden recomendado: **1 → 2 → 3 → 4 → 5 → 6 → 7**. Primero lo que cam
 
 ---
 
-## 1. «Out of date» de verdad ✅ 2026-11-24
+## 1. «Out of date» de verdad ✅ 2026-11-24 (`bc25059`, comprobado en línea)
 
 > **Decisión del usuario (2026-11-24): propuesta A** (con el extra del aviso «Saved»).
 
@@ -22,7 +22,7 @@ Orden recomendado: **1 → 2 → 3 → 4 → 5 → 6 → 7**. Primero lo que cam
 
 Pasos (con A): 1.1 elegir los bloques en «New note» · 1.2 crear el aviso de cambio y marcar los bloques (servidor: para todo el equipo del GDD) · 1.3 revisar y marcar como revisado para todos · 1.4 pruebas e2e.
 
-## 2. Invitar a proyectos concretos y con roles por departamento ⬜
+## 2. Invitar a proyectos concretos y con roles por departamento ✅ 2026-11-24
 
 > **Decisión del usuario (2026-11-24): sí a todo** — elegir GDDs al invitar (y cambiarlos en *Manage*); por GDD: Viewer / Editor / Editor de departamentos; las notas a un departamento llegan solo a quien lo tiene.
 

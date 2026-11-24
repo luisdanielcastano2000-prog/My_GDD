@@ -32,7 +32,7 @@ interface Row { id: string; kind: 'change' | 'team' | 'sent'; icon: string; titl
           <li class="invite-li">
             <span class="setting" style="padding:0;min-height:0">
               <span class="ms ic-muted">group_add</span>
-              <span class="li-text"><span class="li-title">{{ v.name }} invited you to their team</span><span class="li-sub">As {{ v.role }} · {{ v.role === 'Viewer' ? 'You’ll read their GDDs and send notes.' : 'You’ll write in their GDDs and send notes.' }}</span></span>
+              <span class="li-text"><span class="li-title">{{ v.name }} invited you to their team</span><span class="li-sub">{{ v.projects?.length ? (v.projects.length === 1 ? 'Project: ' : 'Projects: ') + v.projects.join(', ') + ' · ' : '' }}{{ v.role === 'Viewer' ? 'You’ll read and send notes.' : 'You’ll write and send notes.' }}</span></span>
             </span>
             <span class="btn-row">
               <button class="btn btn-text" type="button" (click)="store.answerInvite(v, false)">Decline</button>

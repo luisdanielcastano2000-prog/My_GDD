@@ -3,8 +3,9 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { IonContent, IonHeader } from '@ionic/angular';
 
 import { ApiService, apiMessage } from '../data/api.service';
-import { AVATAR_ICON } from '../data/models';
+import { AVATAR_ICON, type Grant } from '../data/models';
 import { StoreService, type Settings } from '../data/store.service';
+import { accessText } from '../shared/grants.component';
 import { NavService } from '../shared/nav.service';
 import { SegComponent, SwitchComponent, TopBarComponent } from '../shared/ui';
 
@@ -254,8 +255,8 @@ export class PasswordPage {
           @for (m of team().members; track m.id) {
             <li class="setting" style="min-height:72px" [class.slide-out]="store.dying() === m.id">
               <span class="member-ini" [class.you]="m.you">{{ m.name.charAt(0).toUpperCase() }}</span>
-              <span class="li-text"><span class="li-title">{{ m.you ? m.name + ' (you)' : m.name }}</span><span class="li-sub">{{ m.dept }} · {{ m.role }}</span></span>
-              @if (!m.you) { <button class="btn btn-outlined" type="button" (click)="store.sheet.set({ k: 'manage', id: m.id, role: m.role })">Manage</button> }
+              <span class="li-text"><span class="li-title">{{ m.you ? m.name + ' (you)' : m.name }}</span><span class="li-sub">{{ m.you ? m.role : access(m.role, m.grants) }}</span></span>
+              @if (!m.you) { <button class="btn btn-outlined" type="button" (click)="store.sheet.set({ k: 'manage', id: m.id, role: m.role, grants: m.grants })">Manage</button> }
             </li>
           }
         </ul>
@@ -265,7 +266,7 @@ export class PasswordPage {
             @for (v of team().invites; track v.id) {
               <li class="setting">
                 <span class="ms ic-muted">send</span>
-                <span class="li-text"><span class="li-title">{{ v.email }}</span><span class="li-sub">{{ v.role }} · Waiting for them to accept</span></span>
+                <span class="li-text"><span class="li-title">{{ v.email }}</span><span class="li-sub">{{ access(v.role, v.grants) }} · Waiting for them to accept</span></span>
                 <button class="icon-btn" type="button" [attr.aria-label]="'Resend invitation to ' + v.email" (click)="store.toast(v.email + ' will see your invitation in Notes when they log in.')"><span class="ms">refresh</span></button>
                 <button class="icon-btn" type="button" [attr.aria-label]="'Cancel invitation to ' + v.email" (click)="store.cancelInvite(v.id)"><span class="ms">close</span></button>
               </li>
@@ -279,7 +280,7 @@ export class PasswordPage {
           <li class="invite-li">
             <span class="setting" style="padding:0;min-height:0">
               <span class="ms ic-muted">group_add</span>
-              <span class="li-text"><span class="li-title">{{ v.name }} invited you to their team</span><span class="li-sub">As {{ v.role }} · {{ v.role === 'Viewer' ? 'You’ll read their GDDs and send notes.' : 'You’ll write in their GDDs and send notes.' }}</span></span>
+              <span class="li-text"><span class="li-title">{{ v.name }} invited you to their team</span><span class="li-sub">{{ v.projects?.length ? (v.projects.length === 1 ? 'Project: ' : 'Projects: ') + v.projects.join(', ') + ' · ' : '' }}{{ v.role === 'Viewer' ? 'You’ll read and send notes.' : 'You’ll write and send notes.' }}</span></span>
             </span>
             <span class="btn-row">
               <button class="btn btn-text" type="button" (click)="store.answerInvite(v, false)">Decline</button>
@@ -301,7 +302,7 @@ export class PasswordPage {
             }
           </ul>
         }
-        <p class="crumb">Editor: can write blocks and send notes. Viewer: can read the GDD and send notes.</p>
+        <p class="crumb">Editor: can write blocks and send notes (only in their departments, if you choose some). Viewer: can read the GDD and send notes. People only see the projects you share with them.</p>
       </div>
       <button class="fab" slot="fixed" type="button" (click)="store.sheet.set({ k: 'invite', email: '', role: 'Editor', err: false })"><span class="ms">add</span>Invite member</button>
     </ion-content>
@@ -309,6 +310,7 @@ export class PasswordPage {
 })
 export class TeamPage {
   protected store = inject(StoreService);
+  protected access = (role: string, grants?: Grant[]): string => accessText(role, grants, this.store.ownGdds().length);
   protected team = computed(() => this.store.data().team);
 }
 

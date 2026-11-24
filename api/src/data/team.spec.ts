@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { type Team, cleanTeam, markOutOfDate, recipients, roleIn } from './team.js';
+import { type Team, accessIn, cleanTeam, deptEditAllowed, markOutOfDate, recipients, roleIn } from './team.js';
 
 const saved: Team = {
   members: [
@@ -56,5 +56,49 @@ describe('markOutOfDate', () => {
     expect(r.marked).toEqual(['b1']);
     expect(r.depts[0]['blocks']).toEqual([{ id: 'b1', status: 'Out of date', pend: true, secs: [{ x: 'hola' }] }, { id: 'b2', status: 'Empty', pend: false }]);
     expect(depts[0].blocks[0].status).toBe('Up to date'); // no cambia el original
+  });
+});
+
+describe('acceso por proyecto y departamento (grants)', () => {
+  const team: Team = {
+    members: [
+      { id: 'me', name: 'Ana', email: 'ana@example.com', dept: '', role: 'Owner', you: true },
+      { id: 'u2', uid: 'u2', name: 'Bea', email: 'bea@example.com', dept: '', role: 'Editor' }, // de antes: sin grants = todo
+      { id: 'u3', uid: 'u3', name: 'Cris', email: 'cris@example.com', dept: '', role: 'Editor', grants: [{ g: 'g1', role: 'Editor', depts: ['art'] }, { g: 'g2', role: 'Viewer', depts: ['audio'] }] },
+    ],
+    invites: [],
+  };
+
+  it('accessIn: dueño, persona de antes (todo) y grants por proyecto', () => {
+    expect(accessIn('me', team, 'me', 'g9')).toEqual({ role: 'Owner', depts: [] });
+    expect(accessIn('me', team, 'u2', 'g9')).toEqual({ role: 'Editor', depts: [] });
+    expect(accessIn('me', team, 'u3', 'g1')).toEqual({ role: 'Editor', depts: ['art'] });
+    expect(accessIn('me', team, 'u3', 'g2')).toEqual({ role: 'Viewer', depts: ['audio'] });
+    expect(accessIn('me', team, 'u3', 'g9')).toBeNull(); // no le dieron ese proyecto
+  });
+
+  it('recipients: por proyecto y «a un departamento»', () => {
+    expect(recipients('me', team, 'me', 'g1')).toEqual(['u2', 'u3']);
+    expect(recipients('me', team, 'me', 'g9')).toEqual(['u2']);
+    expect(recipients('me', team, 'u2', 'g2', 'audio')).toEqual(['me', 'u3']); // dueño + quien tiene Audio
+    expect(recipients('me', team, 'me', 'g1', 'audio')).toEqual([]);
+  });
+
+  it('cleanTeam: grants solo a GDDs del dueño, sin repetir; el rol de la lista se resume', () => {
+    const t = cleanTeam(team, { members: [team.members[0], { id: 'u3', grants: [{ g: 'g1', role: 'Viewer', depts: ['art', 'art'] }, { g: 'g1', role: 'Editor' }, { g: 'ajeno', role: 'Editor' }] }], invites: [{ id: 'i', email: 'dani@example.com', grants: [{ g: 'g2', role: 'Viewer' }] }] }, 'ana@example.com', new Set(['g1', 'g2']));
+    expect(t.members[1].grants).toEqual([{ g: 'g1', role: 'Viewer', depts: ['art'] }]);
+    expect(t.members[1].role).toBe('Viewer');
+    expect(t.invites[0]).toEqual({ id: 'i', email: 'dani@example.com', role: 'Viewer', grants: [{ g: 'g2', role: 'Viewer', depts: [] }] });
+  });
+
+  it('deptEditAllowed: solo bloques de sus departamentos; nada de la lista de departamentos', () => {
+    const cur = [{ id: 'art', name: 'Art', blocks: [{ id: 'b1', x: '' }] }, { id: 'audio', name: 'Audio', blocks: [{ id: 'b2', x: '' }] }];
+    const edit = (f: (d: typeof cur) => void) => { const n = structuredClone(cur); f(n); return deptEditAllowed(cur, n, ['art']); };
+    expect(edit((n) => { n[0].blocks[0].x = 'nuevo'; n[0].blocks.push({ id: 'b3', x: '' }); })).toBe(true);
+    expect(edit((n) => { n[1].blocks[0].x = 'no'; })).toBe(false);
+    expect(edit((n) => { n[0].name = 'Arte'; })).toBe(false);
+    expect(edit((n) => { n.reverse(); })).toBe(false);
+    expect(edit((n) => { n.pop(); })).toBe(false);
+    expect(deptEditAllowed(cur, [{ blocks: cur[0].blocks, name: 'Art', id: 'art' }, cur[1]], ['art'])).toBe(true); // mismo contenido, otro orden de campos
   });
 });

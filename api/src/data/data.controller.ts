@@ -12,7 +12,7 @@ import type { Model } from 'mongoose';
 import { AuthGuard, UserId } from '../auth/auth.guard.js';
 import { PasswordDto, ProfileDto } from '../auth/dto.js';
 import { Feedback, Gdd, Note, User } from './schemas.js';
-import { type Member, type Team, cleanTeam, markOutOfDate, recipients, roleIn } from './team.js';
+import { type Member, type Team, accessIn, cleanGrants, cleanTeam, deptEditAllowed, markOutOfDate, recipients, roleIn } from './team.js';
 
 class GddDto {
   @IsString() @MinLength(1, { message: 'Enter a project name.' }) @MaxLength(120) name: string;
@@ -43,7 +43,7 @@ const PROFILE = ['name', 'user', 'email', 'av', 'phone', 'country', 'tz', 'lang'
 const teamOf = (u: { team?: unknown } | null | undefined): Team => (u?.team as Team | undefined) ?? { members: [], invites: [] };
 type GddLean = Gdd & { _id: string };
 /** Un GDD tal como lo usa el front (sin owner ni order; con share si es de otra persona). */
-const toFront = ({ _id, owner: _o, order: _r, ...g }: GddLean, share?: { owner: string; name: string; role: string }): Record<string, unknown> => ({ id: _id, ...g, ...(share ? { share } : {}) });
+const toFront = ({ _id, owner: _o, order: _r, ...g }: GddLean, share?: { owner: string; name: string; role: string; depts: string[] }): Record<string, unknown> => ({ id: _id, ...g, ...(share ? { share } : {}) });
 
 @Controller('me')
 @UseGuards(AuthGuard)
@@ -77,8 +77,18 @@ export class MeController {
       this.users.find({ 'team.invites.email': u.email, _id: { $ne: id } }, { name: 1, team: 1 }).lean(),
     ]);
     const teams = owners.map((o) => ({ owner: String(o._id), name: o.name, role: roleIn(String(o._id), teamOf(o), id) ?? 'Viewer' }));
-    const shared = teams.length ? await this.gdds.find({ owner: { $in: teams.map((t) => t.owner) } }).sort({ order: 1 }).lean<GddLean[]>() : [];
-    const gdds = [...own.map((g) => toFront(g)), ...shared.map((g) => toFront(g, teams.find((t) => t.owner === g.owner)))];
+    const ownersById = new Map(owners.map((o) => [String(o._id), o]));
+    const inviterIds = inviters.map((o) => String(o._id));
+    const [sharedAll, invitedGdds] = await Promise.all([
+      teams.length ? this.gdds.find({ owner: { $in: teams.map((t) => t.owner) } }).sort({ order: 1 }).lean<GddLean[]>() : [],
+      inviterIds.length ? this.gdds.find({ owner: { $in: inviterIds } }, { name: 1, owner: 1 }).lean<GddLean[]>() : [],
+    ]);
+    // Solo los GDDs a los que te dieron acceso, con tu rol y tus departamentos en cada uno
+    const shared = sharedAll.flatMap((g) => {
+      const a = accessIn(g.owner, teamOf(ownersById.get(g.owner)), id, g._id);
+      return a ? [toFront(g, { owner: g.owner, name: ownersById.get(g.owner)?.name ?? '', role: a.role, depts: a.depts })] : [];
+    });
+    const gdds = [...own.map((g) => toFront(g)), ...shared];
     const seen = new Set(gdds.map((g) => g['id']));
     const user = Object.fromEntries(PROFILE.map((k) => [k, u[k]]));
     return {
@@ -91,7 +101,14 @@ export class MeController {
       sent: notes.filter((n) => n.box === 'sent').map((n) => ({ ...n.data, id: n._id })),
       since: (u as { createdAt?: Date }).createdAt,
       teams,
-      invitations: inviters.flatMap((o) => teamOf(o).invites.filter((v) => v.email === u.email).map((v) => ({ owner: String(o._id), name: o.name, role: v.role }))),
+      // Invitaciones: de quién, con qué rol y a qué proyectos (sin grants = a todos)
+      invitations: inviters.flatMap((o) =>
+        teamOf(o).invites.filter((v) => v.email === u.email).map((v) => {
+          const mine = invitedGdds.filter((g) => g.owner === String(o._id));
+          const projects = v.grants ? mine.filter((g) => v.grants!.some((x) => x.g === g._id)).map((g) => g.name) : mine.map((g) => g.name);
+          return { owner: String(o._id), name: o.name, role: v.role, projects };
+        }),
+      ),
     };
   }
 
@@ -141,7 +158,8 @@ export class MeController {
   async team(@UserId() id: string, @Body() dto: TeamDto): Promise<{ ok: true; team: Team }> {
     const u = await this.users.findById(id, { team: 1, email: 1 }).lean();
     if (!u) throw new NotFoundException('This account no longer exists.');
-    const team = cleanTeam(teamOf(u), dto, u.email);
+    const own = new Set((await this.gdds.find({ owner: id }, { _id: 1 }).lean<GddLean[]>()).map((g) => g._id));
+    const team = cleanTeam(teamOf(u), dto, u.email, own);
     await this.users.updateOne({ _id: id }, { $set: { team } });
     return { ok: true, team };
   }
@@ -173,7 +191,8 @@ export class TeamsController {
     const o = owner === id ? null : await this.users.findById(owner, { team: 1 }).lean().catch(() => null);
     const inv = o ? teamOf(o).invites.find((v) => v.email === me?.email) : undefined;
     if (!me || !o || !inv) throw new NotFoundException('This invitation is no longer available.');
-    const member: Member = { id, uid: id, name: me.name, email: me.email, dept: '', role: inv.role };
+    const grants = cleanGrants(inv.grants);
+    const member: Member = { id, uid: id, name: me.name, email: me.email, dept: '', role: inv.role, ...(grants ? { grants } : {}) };
     // Quita la invitación y, si aún no está, añade a la persona (en una sola operación)
     await this.users.updateOne({ _id: owner, 'team.members.uid': { $ne: id } }, { $pull: { 'team.invites': { email: me.email } }, $push: { 'team.members': member } });
     await this.users.updateOne({ _id: owner }, { $pull: { 'team.invites': { email: me.email } } });
@@ -218,9 +237,12 @@ export class GddsController {
       await this.gdds.create({ _id: id, owner: uid, name: dto.name, cts: dto.cts, order: dto.order, rev: 1, ...content });
       return { ok: true, rev: 1 };
     }
-    const role = cur.owner === uid ? 'Owner' : roleIn(cur.owner, teamOf(await this.users.findById(cur.owner, { team: 1 }).lean()), uid);
-    if (!role) throw new NotFoundException('GDD not found.');
+    const access = cur.owner === uid ? { role: 'Owner' as const, depts: [] } : accessIn(cur.owner, teamOf(await this.users.findById(cur.owner, { team: 1 }).lean()), uid, id);
+    if (!access) throw new NotFoundException('GDD not found.');
+    const role = access.role;
     if (role === 'Viewer') throw new ForbiddenException('You can only read this GDD.');
+    // Editor de departamentos: solo los bloques de sus departamentos
+    if (role === 'Editor' && access.depts.length && !deptEditAllowed(cur.depts, dto.depts, access.depts)) throw new ForbiddenException('You can only edit your departments.');
     const rev = cur.rev ?? 0;
     if (dto.rev !== undefined && dto.rev !== rev) throw new ConflictException({ message: 'Someone else changed this GDD.', gdd: toFront(cur) });
     // El nombre, la fecha de creación y el orden en Home solo los cambia el dueño
@@ -288,14 +310,16 @@ export class NotesController {
     let teamOwner = sender;
     if (g && g.owner !== sender) {
       const o = await this.users.findById(g.owner, { team: 1 }).lean();
-      if (roleIn(g.owner, teamOf(o), sender)) teamOwner = g.owner;
+      if (accessIn(g.owner, teamOf(o), sender, String(data['g']))) teamOwner = g.owner;
     }
     const gid = g && teamOwner === g.owner ? String(data['g']) : null;
     // «Out of date»: los bloques afectados se marcan en el GDD, para todo el equipo
     const aff = gid && Array.isArray(data['aff']) ? data['aff'].filter((x): x is string => typeof x === 'string').slice(0, 500) : [];
     const marked = aff.length && gid ? await this.markBlocks(gid, aff) : [];
     const o = await this.users.findById(teamOwner, { team: 1 }).lean();
-    const to = recipients(teamOwner, teamOf(o), sender);
+    // «Send to» solo un departamento (sin «Whole team»): llega a quien tiene ese departamento
+    const toDept = gid && typeof data['toDept'] === 'string' ? data['toDept'] : null;
+    const to = recipients(teamOwner, teamOf(o), sender, gid, toDept);
     if (!to.length) return 0;
     const text = typeof data['text'] === 'string' ? data['text'] : '';
     const where = await this.where(gid, data);

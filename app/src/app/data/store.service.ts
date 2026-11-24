@@ -3,7 +3,7 @@ import { Injectable, computed, effect, inject, signal } from '@angular/core';
 
 import { ApiService, type MeResponse, apiMessage } from './api.service';
 import { mergeGdd } from './merge';
-import type { AppData, Block, Dept, Dialog, Gdd, Invitation, Note, Role, Sheet, Snack, TeamRef } from './models';
+import type { AppData, Block, Dept, Dialog, Gdd, Grant, Invitation, Note, Role, Sheet, Snack, TeamRef } from './models';
 import type { Template} from './sample';
 import { CATALOG, buildGdd, mkBlock, mkSection, nid, sampleData } from './sample';
 import { ago, cap, dayAgo, isReal } from './time';
@@ -294,18 +294,43 @@ export class StoreService {
   role(gid: string | null | undefined): Role {
     return this.gdd(gid)?.share?.role ?? 'Owner';
   }
+  /** Departamentos en los que puede escribir un «Editor de departamentos» (vacío = todos). */
+  myDepts(gid: string | null | undefined): string[] {
+    return this.gdd(gid)?.share?.depts ?? [];
+  }
+  /** ¿Puedes escribir en algo de este GDD? (Viewer: no). */
   canEdit(gid: string | null | undefined): boolean {
     return this.role(gid) !== 'Viewer';
   }
-  /** true (y lo avisa) si no puedes cambiar ese GDD. */
-  private readOnly(gid: string | null | undefined, ownerOnly = false): boolean {
+  /** ¿Puedes escribir en los bloques de este departamento? */
+  canEditDept(gid: string | null | undefined, dpid: string | null | undefined): boolean {
+    const r = this.role(gid);
+    if (r === 'Owner') return true;
+    if (r === 'Viewer') return false;
+    const ds = this.myDepts(gid);
+    return !ds.length || (!!dpid && ds.includes(dpid));
+  }
+  /** ¿Puedes crear, renombrar, mover o borrar departamentos? (dueño o Editor de todo el GDD). */
+  canManageDepts(gid: string | null | undefined): boolean {
+    const r = this.role(gid);
+    return r === 'Owner' || (r === 'Editor' && !this.myDepts(gid).length);
+  }
+  /**
+   * true (y lo avisa) si NO puedes hacer algo:
+   * 'owner' = solo el dueño (el GDD en sí) · 'depts' = la lista de departamentos · 'dept' = los bloques de dpid.
+   */
+  private deny(gid: string | null | undefined, need: 'owner' | 'depts' | 'dept', dpid?: string | null): boolean {
     const g = this.gdd(gid);
-    if (!g?.share || (!ownerOnly && g.share.role === 'Editor')) return false;
-    this.toast(ownerOnly ? 'Only ' + g.share.name + ' can do this.' : 'You can only read this GDD.');
+    if (!g?.share) return false;
+    const ok = need === 'owner' ? false : need === 'depts' ? this.canManageDepts(gid) : this.canEditDept(gid, dpid);
+    if (ok) return false;
+    this.toast(need === 'owner' ? 'Only ' + g.share.name + ' can do this.' : g.share.role === 'Viewer' ? 'You can only read this GDD.' : need === 'depts' ? 'Only editors of the whole GDD can change its departments.' : 'You can only edit your departments.');
     return true;
   }
-  private gidOf(bid: string): string | undefined {
-    return this.where(bid)?.g.id;
+  /** deny() para un bloque (busca su GDD y departamento). */
+  private denyBlock(bid: string): boolean {
+    const w = this.where(bid);
+    return !!w && this.deny(w.g.id, 'dept', w.dp.id);
   }
 
   gStat(g: Gdd): { t: string; k: StatusKind; n: number } {
@@ -407,7 +432,7 @@ export class StoreService {
     return base + ' ' + i;
   }
   quickDept(gid: string): void {
-    if (this.readOnly(gid)) return;
+    if (this.deny(gid, 'depts')) return;
     const g0 = this.gdd(gid);
     if (!g0) return;
     const name = this.uniq('New department', g0.depts.map((x) => x.name));
@@ -419,7 +444,7 @@ export class StoreService {
     this.toast(name + ' created');
   }
   quickBlock(gid: string, dpid: string): void {
-    if (this.readOnly(gid)) return;
+    if (this.deny(gid, 'dept', dpid)) return;
     const dp0 = this.dept(this.gdd(gid), dpid);
     if (!dp0) return;
     const name = this.uniq('New block', dp0.blocks.map((x) => x.name));
@@ -429,13 +454,13 @@ export class StoreService {
     this.toast(name + ' created');
   }
   useTemplate(gid: string): void {
-    if (this.readOnly(gid)) return;
+    if (this.deny(gid, 'depts')) return;
     const t = buildGdd('x', 'Minimal', [0, 2, 3, 5]);
     this.mutate((d) => { const g = d.gdds.find((x) => x.id === gid)!; g.depts = g.depts.concat(t.depts); touch(g); });
     this.toast('Minimal template added: 4 departments');
   }
   suggest(gid: string, dpid: string): void {
-    if (this.readOnly(gid)) return;
+    if (this.deny(gid, 'dept', dpid)) return;
     let n = 0;
     this.mutate((d) => {
       const dp = d.gdds.find((x) => x.id === gid)!.depts.find((x) => x.id === dpid)!;
@@ -449,11 +474,11 @@ export class StoreService {
 
   // ---------- editor ----------
   setSec(bid: string, sid: string, key: 't' | 'x', v: string): void {
-    if (this.readOnly(this.gidOf(bid))) return;
+    if (this.denyBlock(bid)) return;
     this.mutate((d) => { const s = this.where(bid, d)?.b.secs.find((x) => x.id === sid); if (s) s[key] = v; });
   }
   fmtSec(bid: string, sid: string, key: 'big' | 'b' | 'i' | 'list'): void {
-    if (this.readOnly(this.gidOf(bid))) return;
+    if (this.denyBlock(bid)) return;
     this.mutate((d) => {
       const s = this.where(bid, d)?.b.secs.find((x) => x.id === sid);
       if (!s) return;
@@ -466,14 +491,14 @@ export class StoreService {
   }
   addSec(bid: string): string {
     const s = mkSection();
-    if (this.readOnly(this.gidOf(bid))) return s.id;
+    if (this.denyBlock(bid)) return s.id;
     this.mutate((d) => this.where(bid, d)?.b.secs.push(s));
     return s.id;
   }
   /** Guarda el bloque: si estaba pendiente de revisar, queda revisado. Devuelve el mensaje del snackbar. */
   save(bid: string): string {
     let msg = '';
-    if (this.readOnly(this.gidOf(bid))) return 'You can only read this GDD.';
+    if (this.denyBlock(bid)) return '';
     this.mutate((d) => {
       const w = this.where(bid, d);
       if (!w) return;
@@ -491,7 +516,7 @@ export class StoreService {
   }
   /** Marca un bloque como revisado (lo usa el selector de pantallas). */
   markReviewed(bid: string): void {
-    if (this.readOnly(this.gidOf(bid))) return;
+    if (this.denyBlock(bid)) return;
     this.mutate((d) => {
       const w = this.where(bid, d);
       if (!w) return;
@@ -505,7 +530,7 @@ export class StoreService {
   // ---------- renombrar, mover, borrar ----------
   openRename(what: 'gdd' | 'dept' | 'block', id: string, g?: string, dp?: string): void {
     let val = '';
-    if (this.readOnly(what === 'gdd' ? id : g, what === 'gdd')) { this.sheet.set(null); return; }
+    if (what === 'gdd' ? this.deny(id, 'owner') : what === 'dept' ? this.deny(g, 'depts') : this.deny(g, 'dept', dp)) { this.sheet.set(null); return; }
     if (what === 'gdd') val = this.gdd(id)?.name ?? '';
     if (what === 'dept') val = this.dept(this.gdd(g), id)?.name ?? '';
     if (what === 'block') val = this.where(id)?.b.name ?? '';
@@ -538,7 +563,7 @@ export class StoreService {
     return { idx, len: arr.length, name: idx >= 0 ? arr[idx].name : sh.what === 'gdd' ? (this.gdd(sh.id)?.name ?? '') : '' };
   }
   move(sh: Extract<Sheet, { k: 'act' }>, dir: -1 | 1): void {
-    if (this.readOnly(sh.what === 'gdd' ? sh.id : sh.g, sh.what === 'gdd')) { this.sheet.set(null); return; }
+    if (sh.what === 'gdd' ? this.deny(sh.id, 'owner') : sh.what === 'dept' ? this.deny(sh.g, 'depts') : this.deny(sh.g, 'dept', sh.dp)) { this.sheet.set(null); return; }
     this.mutate((d) => {
       const arr = this.listOf(d, sh);
       const i = arr.findIndex((x) => x.id === sh.id);
@@ -551,14 +576,14 @@ export class StoreService {
   }
   askDelete(sh: Extract<Sheet, { k: 'act' }>): void {
     this.sheet.set(null);
-    if (this.readOnly(sh.what === 'gdd' ? sh.id : sh.g, sh.what === 'gdd')) return;
+    if (sh.what === 'gdd' ? this.deny(sh.id, 'owner') : sh.what === 'dept' ? this.deny(sh.g, 'depts') : this.deny(sh.g, 'dept', sh.dp)) return;
     if (sh.what === 'block') this.deleteBlock(sh.id);
     else if (sh.what === 'dept') this.deleteDept(sh.id, sh.g!);
     else this.dialog.set({ k: 'del', what: 'gdd', id: sh.id });
   }
   deleteBlock(bid: string): void {
     const w = this.where(bid);
-    if (!w || this.readOnly(w.g.id)) return;
+    if (!w || this.deny(w.g.id, 'dept', w.dp.id)) return;
     this.afterDissolve(bid, () => {
       this.mutate((d) => { const x = this.where(bid, d)!; x.dp.blocks = x.dp.blocks.filter((b) => b.id !== bid); touch(x.g); }, true);
       this.toast(w.b.name + ' deleted', { undo: true });
@@ -566,7 +591,7 @@ export class StoreService {
   }
   deleteDept(did: string, gid: string): void {
     const dp = this.dept(this.gdd(gid), did);
-    if (!dp || this.readOnly(gid)) return;
+    if (!dp || this.deny(gid, 'depts')) return;
     this.afterDissolve(did, () => {
       this.mutate((d) => { const g = d.gdds.find((x) => x.id === gid)!; g.depts = g.depts.filter((x) => x.id !== did); touch(g); }, true);
       this.toast(dp.name + ' deleted', { undo: true });
@@ -620,7 +645,7 @@ export class StoreService {
       const to: string[] = [];
       if (cTeam) to.push('Whole team');
       if (dp && cDep) to.push(dp.name);
-      d.sent.push({ id: nid(), g: g.id, ...(dp ? { dp: dp.id } : {}), ...(bid ? { b: bid } : {}), ...(aff.length ? { aff } : {}), text, to: to.length ? to.join(', ') : 'Whole team', when: 'Just now', ts: Date.now() });
+      d.sent.push({ id: nid(), g: g.id, ...(dp ? { dp: dp.id } : {}), ...(dp && cDep && !cTeam ? { toDept: dp.id } : {}), ...(bid ? { b: bid } : {}), ...(aff.length ? { aff } : {}), text, to: to.length ? to.join(', ') : 'Whole team', when: 'Just now', ts: Date.now() });
       if (!this.live() && aff.length) { // selector de pantallas (sin servidor): se marcan aquí
         g.depts.forEach((x) => x.blocks.forEach((b) => { if (aff.includes(b.id)) { b.pend = true; b.status = 'Out of date'; } }));
       }
@@ -681,15 +706,25 @@ export class StoreService {
       this.toast(apiMessage(e), { kind: 'err' });
     }
   }
-  invite(email: string, role: 'Editor' | 'Viewer'): void {
-    this.mutate((d) => d.team.invites.push({ id: nid(), email, role }));
+  /** Tus GDDs (los que puedes compartir con tu equipo). */
+  ownGdds(): Gdd[] {
+    return this.data().gdds.filter((g) => !g.share);
+  }
+  /** Acceso por defecto: todos tus GDDs con ese rol. */
+  defaultGrants(role: 'Editor' | 'Viewer'): Grant[] {
+    return this.ownGdds().map((g) => ({ g: g.id, role, depts: [] }));
+  }
+  invite(email: string, grants: Grant[]): void {
+    const role = grants.some((x) => x.role === 'Editor') ? 'Editor' : 'Viewer';
+    this.mutate((d) => d.team.invites.push({ id: nid(), email, role, grants }));
     this.toast('Invitation sent to ' + email);
   }
-  saveRole(id: string, role: 'Editor' | 'Viewer' | 'Owner'): void {
+  /** Guarda a qué proyectos entra una persona del equipo, con qué rol y departamentos. */
+  saveAccess(id: string, grants: Grant[]): void {
     let name = '';
-    this.mutate((d) => { const m = d.team.members.find((x) => x.id === id); if (m) { m.role = role; name = m.name; } });
+    this.mutate((d) => { const m = d.team.members.find((x) => x.id === id); if (m) { m.grants = grants; m.role = grants.some((x) => x.role === 'Editor') ? 'Editor' : 'Viewer'; name = m.name; } });
     this.sheet.set(null);
-    this.toast(name ? name + ' is now ' + role.toLowerCase() : 'Saved');
+    this.toast(name ? name + '’s access was saved' : 'Saved');
   }
   /** Aceptar o rechazar una invitación a un equipo. Al aceptar, aparecen sus GDDs. */
   async answerInvite(inv: Invitation, accept: boolean): Promise<void> {

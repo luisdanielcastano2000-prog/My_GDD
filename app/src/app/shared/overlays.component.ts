@@ -2,9 +2,10 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs';
 
-import { AVATAR_ICON, AVATAR_NAME, type AvatarKey, type Dialog, type Member, type Sheet } from '../data/models';
+import { AVATAR_ICON, AVATAR_NAME, type AvatarKey, type Dialog, type Grant, type Member, type Sheet } from '../data/models';
 import { StoreService } from '../data/store.service';
 
+import { GrantsComponent } from './grants.component';
 import { NavService } from './nav.service';
 import { SegComponent } from './ui';
 
@@ -18,7 +19,7 @@ type DelDlg = Extract<Dialog, { k: 'del' }>;
  */
 @Component({
   selector: 'app-overlays',
-  imports: [SegComponent],
+  imports: [SegComponent, GrantsComponent],
   template: `
     @if (store.sheet() || store.dialog()) {
       <!-- tocar fuera (en el scrim) o pulsar Esc cierra la capa -->
@@ -118,12 +119,10 @@ type DelDlg = Extract<Dialog, { k: 'del' }>;
             <h2>Manage {{ member(sh.id)?.name }}</h2>
             <p class="sheet-meta">{{ member(sh.id)?.email }} · {{ member(sh.id)?.dept }}</p>
             <div class="sheet-body">
-              <span class="t-label-large">Role</span>
-              <app-seg label="Role" [options]="['Editor', 'Viewer']" [value]="sh.role" (valueChange)="store.sheet.set({ k: 'manage', id: sh.id, role: $any($event) })" />
-              <p class="li-sub">{{ sh.role === 'Viewer' ? 'Can read the GDD and send notes.' : 'Can write blocks and send notes.' }}</p>
+              <app-grants [gdds]="store.ownGdds()" [grants]="sh.grants ?? memberGrants(sh.id)" (grantsChange)="store.sheet.set({ ...sh, grants: $event })" />
               <div class="btn-row">
                 <button class="btn btn-text" type="button" (click)="close()">Cancel</button>
-                <button class="btn btn-filled" type="button" (click)="store.saveRole(sh.id, sh.role)">Save</button>
+                <button class="btn btn-filled" type="button" (click)="store.saveAccess(sh.id, sh.grants ?? memberGrants(sh.id))">Save</button>
               </div>
               <button class="btn btn-outlined danger block" type="button" (click)="store.sheet.set(null); store.dialog.set({ k: 'del', what: 'member', id: sh.id })">Remove from team</button>
             </div>
@@ -133,7 +132,7 @@ type DelDlg = Extract<Dialog, { k: 'del' }>;
           <div class="sheet" role="dialog" aria-modal="true" aria-label="Invite a member">
             <div class="handle"></div>
             <h2>Invite a member</h2>
-            <p class="sheet-meta">When they log in with this email, they’ll see your invitation in Notes. Once they accept, they can see your GDDs.</p>
+            <p class="sheet-meta">When they log in with this email, they’ll see your invitation in Notes. Once they accept, they can see the projects you choose.</p>
             <div class="sheet-body">
               <div class="field" [class.error]="sh.err">
                 <div class="field-box">
@@ -142,8 +141,7 @@ type DelDlg = Extract<Dialog, { k: 'del' }>;
                 </div>
                 @if (sh.err) { <span class="field-error">Enter an email address, for example name@example.com.</span> }
               </div>
-              <span class="t-label-large">Role</span>
-              <app-seg label="Role" [options]="['Editor', 'Viewer']" [value]="sh.role" (valueChange)="store.sheet.set({ ...sh, role: $any($event) })" />
+              <app-grants [gdds]="store.ownGdds()" [grants]="sh.grants ?? store.defaultGrants(sh.role)" (grantsChange)="store.sheet.set({ ...sh, grants: $event })" />
               <div class="btn-row">
                 <button class="btn btn-text" type="button" (click)="close()">Cancel</button>
                 <button class="btn btn-filled" type="button" [class.ok]="sh.busy === 'ok'" [attr.aria-busy]="!!sh.busy" (click)="sendInvite(sh)">
@@ -238,6 +236,11 @@ export class OverlaysComponent {
   actInfo(sh: ActSheet): { idx: number; len: number; name: string } {
     return this.store.actIndex(sh);
   }
+  /** Acceso actual de una persona (sin grants = todos tus GDDs con su rol, como antes). */
+  memberGrants(id: string): Grant[] {
+    const m = this.member(id);
+    return m?.grants ?? this.store.defaultGrants(m?.role === 'Viewer' ? 'Viewer' : 'Editor');
+  }
   member(id: string): Member | undefined {
     return this.store.data().team.members.find((m) => m.id === id);
   }
@@ -267,11 +270,13 @@ export class OverlaysComponent {
     if (low === this.store.data().user.email.toLowerCase()) { this.store.toast('That’s your own email.'); return; }
     if (t.members.some((m) => m.email.toLowerCase() === low)) { this.store.toast(em + ' is already in your team.'); return; }
     if (t.invites.some((v) => v.email.toLowerCase() === low)) { this.store.toast(em + ' already has an invitation.'); return; }
+    const grants = sh.grants ?? this.store.defaultGrants(sh.role);
+    if (!grants.length && this.store.ownGdds().length) { this.store.toast('Choose at least one project.'); return; }
     const k = this.store.settings().slowMotion ? 4 : 1;
     this.store.sheet.set({ ...sh, busy: 'load' });
     setTimeout(() => {
       this.store.sheet.set({ ...sh, busy: 'ok' });
-      setTimeout(() => { this.store.sheet.set(null); this.store.invite(em, sh.role); }, 650 * k);
+      setTimeout(() => { this.store.sheet.set(null); this.store.invite(em, grants); }, 650 * k);
     }, 400 * k);
   }
 }
