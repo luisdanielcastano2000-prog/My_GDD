@@ -111,3 +111,9 @@ Cómo arrancar y cómo está organizado el proyecto: `CLAUDE.md`. Aquí va **lo 
 
 **Pausa**
 - El usuario para hasta mañana. Creado `RETOMAR.md` con el prompt para retomar, la guía completa de Render y cómo arrancar la app en el Mac.
+
+## 2026-11-24
+
+**Render · primer deploy fallido**
+- Log: `sh: 1: ng: not found`. Causa: con `NODE_ENV=production`, `npm ci` omite las `devDependencies` (ahí están `@angular/cli` y `@nestjs/cli`); solo instaló 21 paquetes.
+- Arreglo: `npm ci --include=dev` en el script `build` de la raíz. Probado en el Mac con `NODE_ENV=production npm run build`: compila web (`app/www`) y API (`api/dist`).
