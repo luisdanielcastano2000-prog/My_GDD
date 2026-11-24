@@ -79,7 +79,17 @@ export class StoreService {
     setInterval(() => this.now.set(Date.now()), 60_000);
     // Lo que cambian otras personas del equipo aparece solo: cada 30 s y al volver a la pestaña
     setInterval(() => void this.refresh(), 30_000);
-    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') void this.refresh(); });
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') void this.refresh();
+      else if (this.live() && this.dirty()) { clearTimeout(this.syncTimer); void this.sync(); } // al irse de la pestaña: guardar ya
+    });
+    // Cerrar o recargar con algo sin guardar (la app guarda 0,4 s después de cada cambio): el navegador pregunta antes
+    addEventListener('beforeunload', (e) => {
+      if (!this.live() || !this.dirty()) return;
+      clearTimeout(this.syncTimer);
+      void this.sync();
+      e.preventDefault();
+    });
     if (typeof matchMedia !== 'undefined') {
       matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => this.systemDark.set(e.matches));
     }
