@@ -105,6 +105,7 @@ Cómo arrancar y cómo está organizado el proyecto: `CLAUDE.md`. Aquí va **lo 
 - ~~Servicio en Render~~ hecho 2026-11-24 (ver abajo).
 - Detalles de animación simplificados (desintegración en cuadrados, reordenar arrastrando) y escenas sin marco F5 (fecha de revisión, calendario, hora).
 - Avisos de Sass por `@import` (no afectan al funcionamiento).
+- **Desde 2026-11-24 la lista al día de lo pendiente está en «Propuestas tras la revisión»** (más abajo): ahí se marcan los puntos hechos.
 
 **GitHub**
 - Push aprobado por el usuario: `9d815f1..e51342b` → `origin/main`. Comprobado con `git ls-remote`.
@@ -172,3 +173,4 @@ Cómo arrancar y cómo está organizado el proyecto: `CLAUDE.md`. Aquí va **lo 
 - Probado en el Mac (modo producción): API con 3 cuentas, **24/24** comprobaciones (invitar, sin acceso ni notas antes de aceptar, aceptar, roles, Editor escribe pero no renombra, 409 con la versión de la otra persona, Viewer 403, nadie más borra, nota del Viewer al equipo, quitar miembro, cambiar nombre, salir, rechazar, borrar cuenta). Navegador con 3 cuentas, **11/11** (incluido un choque real: 409 → «Someone in your team changed this GDD too. Both changes were kept.» y los dos textos en el servidor; Ana ve el texto de Bea sin recargar). La prueba general anterior, 11/11.
 - En línea (`41313b5`): API 24/24 bien. Navegador: 10/11; **falló una vez** «Bea sale del equipo» (el GDD seguía en su Home). Causa encontrada: una **carrera** — si el refresco automático (`refresh()`) pidió `/api/me` justo antes de salir, su respuesta (vieja, con el GDD) llegaba después y se pintaba encima. Lo mismo podía hacer «desaparecer» un momento un cambio recién guardado. Reproducido a propósito (retrasando esa respuesta 1,5 s): con la versión publicada el GDD vuelve a salir; con el arreglo, no. Arreglo: contador `gen` en `StoreService` (sube al cambiar datos, guardar o recargar); un refresco solo se aplica si `gen` no cambió mientras esperaba. En el Mac, la prueba de 3 cuentas dos veces: 11/11 y 11/11.
 - En línea (`4a6eded`): la carrera forzada ya no ocurre; prueba de 3 cuentas **11/11**. Cuentas de prueba borradas.
+- Nota: los scripts de las pruebas de hoy (Playwright y Python) se escribieron en una carpeta temporal de la sesión, **no están en el repositorio**; lo que comprobaban está descrito arriba.
