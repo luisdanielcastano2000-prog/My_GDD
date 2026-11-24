@@ -194,3 +194,11 @@ Cómo arrancar y cómo está organizado el proyecto: `CLAUDE.md`. Aquí va **lo 
   - **C:** automático por la cadena de producción (departamentos posteriores); es fácil, pero ruidoso.
   - Extra para A: el aviso «Saved» ofrece «Note a change».
 - Orden recomendado: 1 Out of date → 2 proyectos y roles → 3 correo → 4 acento → 5 animaciones → 6 idiomas → 7 pequeños.
+
+**Decisiones del usuario sobre el roadmap (2026-11-24)** — se hacen en el orden recomendado (1 → 7):
+- 1 «Out of date»: **propuesta A** (Note a change marca los bloques afectados + aviso «Saved» con «Note a change»).
+- 2 Proyectos y roles: **sí a todo** (GDDs al invitar y en *Manage*; Viewer / Editor / Editor de departamentos; notas a un departamento solo a quien lo tiene).
+- 3 Correo: **Brevo**; se entra sin verificar con aviso, pero sin invitar ni aceptar invitaciones hasta verificar.
+- 4 Acento: solo botones, enlaces y selección.
+- 6 Idiomas: **solo catalán y castellano** por ahora.
+- 7.1 Borrar cuenta: **sin acceso directo** en *Profile* (ya está en *Personal info*).

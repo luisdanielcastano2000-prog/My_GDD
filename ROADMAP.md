@@ -8,7 +8,9 @@ Orden recomendado: **1 → 2 → 3 → 4 → 5 → 6 → 7**. Primero lo que cam
 
 ---
 
-## 1. «Out of date» de verdad ❓
+## 1. «Out of date» de verdad ⬜
+
+> **Decisión del usuario (2026-11-24): propuesta A** (con el extra del aviso «Saved»).
 
 **Situación:** los avisos «Out of date» solo existen en los datos de ejemplo. Ni el código ni el prototipo dicen qué los provoca. Sí existe todo lo necesario para mostrarlos: estados de los bloques, avisos de cambio con bloques afectados, la pantalla de revisión y «Mark as reviewed».
 
@@ -20,7 +22,9 @@ Orden recomendado: **1 → 2 → 3 → 4 → 5 → 6 → 7**. Primero lo que cam
 
 Pasos (con A): 1.1 elegir los bloques en «New note» · 1.2 crear el aviso de cambio y marcar los bloques (servidor: para todo el equipo del GDD) · 1.3 revisar y marcar como revisado para todos · 1.4 pruebas e2e.
 
-## 2. Invitar a proyectos concretos y con roles por departamento ❓
+## 2. Invitar a proyectos concretos y con roles por departamento ⬜
+
+> **Decisión del usuario (2026-11-24): sí a todo** — elegir GDDs al invitar (y cambiarlos en *Manage*); por GDD: Viewer / Editor / Editor de departamentos; las notas a un departamento llegan solo a quien lo tiene.
 
 **Situación:** hoy el equipo es de la cuenta. Quien acepta ve **todos** tus GDDs con un único rol (Editor o Viewer). El campo «departamento» de cada persona solo es un texto.
 
@@ -31,7 +35,9 @@ Pasos (con A): 1.1 elegir los bloques en «New note» · 1.2 crear el aviso de c
 
 Pasos: 2.1 modelo de acceso por GDD y por departamento (servidor + pruebas) · 2.2 hoja «Invite» y «Manage» con proyectos y departamentos · 2.3 permisos en pantallas (solo lectura por departamento) · 2.4 notas por departamento · 2.5 pasar las personas de hoy al modelo nuevo · 2.6 pruebas.
 
-## 3. Correo real ❓ (necesita una cuenta del usuario)
+## 3. Correo real ⬜ (necesita una cuenta del usuario)
+
+> **Decisión del usuario (2026-11-24): Brevo.** Se puede entrar sin verificar (con aviso), pero no invitar ni aceptar invitaciones hasta verificar.
 
 **Qué incluye:** verificar el email al registrarse; enlace para crear una contraseña nueva («Forgot password»); aviso por email al cambiar la contraseña; invitaciones por email con enlace; confirmar el cambio de email.
 
@@ -43,6 +49,8 @@ Pasos: 2.1 modelo de acceso por GDD y por departamento (servidor + pruebas) · 2
 Pasos: 3.1 cuenta y clave en Render (usuario) · 3.2 envío de correos en la API (`@nestjs/mail` o similar) y plantillas · 3.3 verificación al registrarse · 3.4 «Forgot password» con enlace de un solo uso y caducidad · 3.5 aviso al cambiar la contraseña · 3.6 invitaciones por email (enlace que lleva a *Sign up* o *Log in*) · 3.7 confirmar el cambio de email · 3.8 pruebas (en local, los correos se guardan sin enviarse).
 
 ## 4. Color de acento ⬜
+
+> **Decisión del usuario (2026-11-24):** solo botones, enlaces y selección (no los colores de los departamentos).
 
 **Situación:** se elige (Blue, Green, Orange, Purple, Grey) y se guarda, pero **no cambia nada**: la app usa siempre la paleta azul. El propio diseño lo deja para más adelante («The accent color arrives with the color palette»); los tokens solo traen la paleta azul.
 
@@ -61,7 +69,9 @@ Según el README del sistema de diseño (tabla de movimiento) y los marcos `Mov-
 
 Todas respetan «menos movimiento» (fundido de 150 ms o menos).
 
-## 6. Idiomas: español, catalán y japonés ⬜
+## 6. Idiomas: español y catalán ⬜
+
+> **Decisión del usuario (2026-11-24):** por ahora **solo catalán y castellano**; el japonés, más adelante.
 
 **Es abarcable.** La interfaz tiene unos 300 textos. Hace falta un sistema de traducción que cambie al momento (sin recargar), y también las fechas («2 days ago») y los mensajes de la API. El contenido de los GDDs no se traduce.
 
@@ -74,7 +84,7 @@ Pasos: 6.1 sistema de traducción + inglés · 6.2 español · 6.3 catalán · 6
 
 ## 7. Pequeños pendientes ⬜
 
-- 7.1 **Borrar la cuenta:** **ya existe** en *Profile › Personal info › Delete account* (pide confirmación y borra todo; lo comprueban las pruebas). ¿Hace falta también un acceso directo en la pantalla *Profile*?
+- 7.1 ✅ **Borrar la cuenta:** ya existe en *Profile › Personal info › Delete account*. **Decisión del usuario: no añadir acceso directo en *Profile*.**
 - 7.2 Verificación en dos pasos: quitar el interruptor (no hace nada) o hacerla real después del correo (3).
 - 7.3 Formato del código (Prettier) en `app/`: un commit aparte, sin cambios de código.
 - 7.4 Render gratis se duerme: aceptarlo o pasar al plan de pago.
