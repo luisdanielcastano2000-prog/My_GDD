@@ -2,7 +2,7 @@ import { HttpClient, HttpErrorResponse, type HttpInterceptorFn } from '@angular/
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom, type Observable } from 'rxjs';
 
-import type { AppData, Gdd, Note, SentNote } from './models';
+import type { AppData, Gdd, Invitation, Note, SentNote, TeamRef } from './models';
 
 const TOKEN_KEY = 'mygdd.token';
 
@@ -15,6 +15,8 @@ export interface MeResponse {
   notes: Note[];
   sent: SentNote[];
   since?: string; // fecha de alta de la cuenta
+  teams?: TeamRef[]; // equipos de otras personas en los que estás
+  invitations?: Invitation[]; // invitaciones que esperan respuesta
 }
 
 /** Mensaje de error de la API en lenguaje del diseño (o uno genérico si no hay conexión). */
@@ -81,17 +83,23 @@ export class ApiService {
   sendFeedback(topic: string, text: string, reply: boolean): Promise<unknown> {
     return this.run(this.http.post('/api/me/feedback', { topic, text, reply }));
   }
-  saveTeam(team: AppData['team']): Promise<unknown> {
-    return this.run(this.http.put('/api/me/team', team));
+  /** Guarda «My team»; el servidor devuelve el equipo tal como queda (solo entra quien acepta). */
+  saveTeam(team: AppData['team']): Promise<{ team: AppData['team'] }> {
+    return this.run(this.http.put<{ team: AppData['team'] }>('/api/me/team', team));
+  }
+  /** Responder a una invitación o salir de un equipo (owner = id de la cuenta dueña). */
+  teamAction(owner: string, action: 'accept' | 'decline' | 'leave'): Promise<unknown> {
+    return this.run(this.http.post('/api/teams/' + encodeURIComponent(owner) + '/' + action, {}));
   }
   deleteAccount(): Promise<unknown> {
     return this.run(this.http.delete('/api/me'));
   }
 
   // ---------- datos ----------
-  saveGdd(g: Gdd, order: number): Promise<unknown> {
-    const { id, ...rest } = g;
-    return this.run(this.http.put('/api/gdds/' + encodeURIComponent(id), { ...rest, order }));
+  /** Guarda un GDD. Si otra persona lo cambió antes, el servidor responde 409 con su versión (error.gdd). */
+  saveGdd(g: Gdd, order: number): Promise<{ rev: number }> {
+    const { id, share: _s, ...rest } = g;
+    return this.run(this.http.put<{ rev: number }>('/api/gdds/' + encodeURIComponent(id), { ...rest, order }));
   }
   deleteGdd(id: string): Promise<unknown> {
     return this.run(this.http.delete('/api/gdds/' + encodeURIComponent(id)));

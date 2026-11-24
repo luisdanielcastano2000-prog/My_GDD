@@ -265,9 +265,38 @@ export class PasswordPage {
             @for (v of team().invites; track v.id) {
               <li class="setting">
                 <span class="ms ic-muted">send</span>
-                <span class="li-text"><span class="li-title">{{ v.email }}</span><span class="li-sub">{{ v.role }} · Invitation sent</span></span>
-                <button class="icon-btn" type="button" [attr.aria-label]="'Resend invitation to ' + v.email" (click)="store.toast('Invitation sent again to ' + v.email)"><span class="ms">refresh</span></button>
+                <span class="li-text"><span class="li-title">{{ v.email }}</span><span class="li-sub">{{ v.role }} · Waiting for them to accept</span></span>
+                <button class="icon-btn" type="button" [attr.aria-label]="'Resend invitation to ' + v.email" (click)="store.toast(v.email + ' will see your invitation in Notes when they log in.')"><span class="ms">refresh</span></button>
                 <button class="icon-btn" type="button" [attr.aria-label]="'Cancel invitation to ' + v.email" (click)="store.cancelInvite(v.id)"><span class="ms">close</span></button>
+              </li>
+            }
+          </ul>
+        }
+        @if (store.invitations().length) {
+          <h2 class="section-title">Invitations for you · {{ store.invitations().length }}</h2>
+          <ul class="list card">
+        @for (v of store.invitations(); track v.owner) {
+          <li class="invite-li">
+            <span class="setting" style="padding:0;min-height:0">
+              <span class="ms ic-muted">group_add</span>
+              <span class="li-text"><span class="li-title">{{ v.name }} invited you to their team</span><span class="li-sub">As {{ v.role }} · {{ v.role === 'Viewer' ? 'You’ll read their GDDs and send notes.' : 'You’ll write in their GDDs and send notes.' }}</span></span>
+            </span>
+            <span class="btn-row">
+              <button class="btn btn-text" type="button" (click)="store.answerInvite(v, false)">Decline</button>
+              <button class="btn btn-filled" type="button" (click)="store.answerInvite(v, true)">Accept</button>
+            </span>
+          </li>
+        }
+          </ul>
+        }
+        @if (store.teams().length) {
+          <h2 class="section-title">Teams you’re in · {{ store.teams().length }}</h2>
+          <ul class="list card">
+            @for (t of store.teams(); track t.owner) {
+              <li class="setting">
+                <span class="member-ini">{{ t.name.charAt(0).toUpperCase() }}</span>
+                <span class="li-text"><span class="li-title">{{ t.name }}’s team</span><span class="li-sub">You’re {{ t.role === 'Viewer' ? 'a viewer' : 'an editor' }}</span></span>
+                <button class="btn btn-outlined" type="button" (click)="store.leaveTeam(t)">Leave</button>
               </li>
             }
           </ul>

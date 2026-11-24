@@ -46,8 +46,33 @@ export interface Gdd {
   updated: string; // texto fijo (datos de ejemplo); con cts/uts se calcula «hace cuánto»
   cts?: number; // cuándo se creó (ms)
   uts?: number; // cuándo cambió por última vez (ms)
+  rev?: number; // versión en el servidor (sube en cada guardado)
+  share?: Share; // solo en GDDs de otra persona que te invitó a su equipo
   depts: Dept[];
   last?: { dp: string; b: string; when: string; ts?: number }; // último bloque editado
+}
+
+export type Role = 'Owner' | 'Editor' | 'Viewer';
+
+/** Un GDD de otra persona: de quién es y qué puedes hacer (Editor: escribir; Viewer: solo leer). */
+export interface Share {
+  owner: string; // id de la cuenta dueña
+  name: string; // su nombre
+  role: 'Editor' | 'Viewer';
+}
+
+/** Una invitación que te han hecho a un equipo (se acepta o se rechaza). */
+export interface Invitation {
+  owner: string;
+  name: string;
+  role: 'Editor' | 'Viewer';
+}
+
+/** Un equipo de otra persona en el que estás. */
+export interface TeamRef {
+  owner: string;
+  name: string;
+  role: 'Editor' | 'Viewer';
 }
 
 /** Nota recibida: un cambio en el GDD o una nota del equipo. */
@@ -93,6 +118,7 @@ export type AvatarKey = 'account' | 'game' | 'palette' | 'movie' | 'code' | 'mus
 
 export interface Member {
   id: string;
+  uid?: string; // id de la cuenta (personas que aceptaron la invitación)
   name: string;
   email: string;
   dept: string;

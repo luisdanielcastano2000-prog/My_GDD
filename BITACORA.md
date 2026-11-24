@@ -156,3 +156,17 @@ Cómo arrancar y cómo está organizado el proyecto: `CLAUDE.md`. Aquí va **lo 
 7. **Detalles de animación** ya anotados: desintegración en cuadrados al borrar y reordenar arrastrando.
 8. **Render gratis se duerme:** la primera visita tras 15 min tarda ~1 min. Opciones: plan de pago (~7 $/mes) o aceptar la espera.
 9. **Formato:** `npm run lint` de `app/` falla solo por Prettier (20 archivos). Arreglarlo es `npx prettier --write` en un commit aparte, sin cambios de código.
+
+**Puntos 2 y 3: GDDs compartidos con el equipo e invitaciones que se aceptan (a petición del usuario)**
+
+| Fecha | Decisión | Por qué |
+|---|---|---|
+| 2026-11-24 | Un equipo **por cuenta**: quien acepta ve **todos** los GDDs de esa cuenta. | Es lo que ya dice el diseño («People who can see your GDDs and get your notes»). |
+| 2026-11-24 | **Editor**: escribe y crea/renombra/mueve/borra departamentos y bloques; no renombra, ordena ni borra el GDD. **Viewer**: solo lee y envía notas. | Textos del diseño («Editor: can write blocks… Viewer: can read the GDD and send notes»); el GDD en sí es del dueño. |
+| 2026-11-24 | La invitación se acepta **dentro de la app** (Notes › Received y My team), sin correo. Hasta aceptar no se ve nada ni se reciben notas. | No hay servicio de correo; así se arregla el punto 3 (notas a cualquiera). |
+| 2026-11-24 | Choques entre dos personas: versión `rev` por GDD + unión de cambios en el front (lo que cambió cada una se queda; en la misma sección gana la última). Refresco cada 30 s y al volver a la pestaña. | Un GDD se guarda entero: sin esto, el último en guardar borraría lo del otro. |
+| 2026-11-24 | Pantallas nuevas sin marco en el diseño: tarjeta de invitación (Notes y My team), «Teams you’re in» con *Leave*, aviso «Shared by … · You can read this block» en el editor del Viewer, menú del GDD compartido con «Leave …’s team», texto de la hoja «Invite a member» y «Waiting for them to accept». | Hacían falta para el flujo; con los componentes del sistema de diseño (lista, botones, banner-warn, hoja). |
+
+- Servidor: `api/src/data/team.ts` (reglas puras: `cleanTeam`, `roleIn`, `recipients`) + `team.spec.ts` (7 pruebas, Vitest). `data.controller.ts` reescrito: `GET /api/me` con GDDs compartidos, `invitations` y `teams`; `TeamsController` (`accept`, `decline`, `leave`); permisos y `rev` en `PUT /api/gdds/:id` (409 con el GDD actual); notas al equipo del GDD; al cambiar nombre/email se actualiza en los equipos donde estás; al borrar la cuenta sale de los equipos.
+- Front: `data/merge.ts` + `merge.spec.ts` (6 pruebas); `StoreService` con `role()`/`canEdit()`, avisos de solo lectura, guardado con versiones y unión, `refresh()`, `answerInvite()`, `leaveTeam()`; en Home «Shared by Ana · Editor»; modo solo lectura en departamentos, bloques y editor; invitaciones en Notes (cuentan en el aviso de la barra) y en My team; menú del GDD compartido; una nota sin GDD accesible ya no abre `/gdd/null`.
+- Probado en el Mac (modo producción): API con 3 cuentas, **24/24** comprobaciones (invitar, sin acceso ni notas antes de aceptar, aceptar, roles, Editor escribe pero no renombra, 409 con la versión de la otra persona, Viewer 403, nadie más borra, nota del Viewer al equipo, quitar miembro, cambiar nombre, salir, rechazar, borrar cuenta). Navegador con 3 cuentas, **11/11** (incluido un choque real: 409 → «Someone in your team changed this GDD too. Both changes were kept.» y los dos textos en el servidor; Ana ve el texto de Bea sin recargar). La prueba general anterior, 11/11.

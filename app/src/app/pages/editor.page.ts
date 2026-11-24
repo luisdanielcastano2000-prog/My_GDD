@@ -17,6 +17,9 @@ import { TopBarComponent } from '../shared/ui';
       @if (b(); as blk) {
         <div class="editor">
           <p class="crumb">{{ dp()!.name }} › {{ blk.name }}</p>
+          @if (!edit()) {
+            <div class="banner-warn"><span class="ms s20" aria-hidden="true">visibility</span><span>Shared by {{ g()?.share?.name }} · You can read this block. To suggest a change, send a note.</span></div>
+          }
           @if (revs().length) {
             <div class="rev-banner">
               <div class="head"><span class="lbl av sym" aria-hidden="true">!</span><h2>{{ revTitle() }}</h2></div>
@@ -30,17 +33,18 @@ import { TopBarComponent } from '../shared/ui';
             @for (s of blk.secs; track s.id; let i = $index) {
               <section [id]="'sec-' + s.id" [class.rev]="s.rev">
                 <div class="sec-head">
-                  <input [value]="s.t" placeholder="Section title" [attr.aria-label]="'Title of section ' + (i + 1)" (focus)="fs.set(s.id)" (input)="store.setSec(blk.id, s.id, 't', $any($event.target).value)" />
+                  <input [value]="s.t" placeholder="Section title" [readOnly]="!edit()" [attr.aria-label]="'Title of section ' + (i + 1)" (focus)="fs.set(s.id)" (input)="store.setSec(blk.id, s.id, 't', $any($event.target).value)" />
                   @if (s.rev) { <span class="lbl av"><span>!</span>Needs review</span> }
                 </div>
-                <textarea [id]="'tx-' + s.id" [value]="s.x" placeholder="Start writing…" rows="3" [class.big]="s.big" [class.b]="s.b" [class.i]="s.i"
+                <textarea [id]="'tx-' + s.id" [value]="s.x" [placeholder]="edit() ? 'Start writing…' : ''" [readOnly]="!edit()" rows="3" [class.big]="s.big" [class.b]="s.b" [class.i]="s.i"
                   [attr.aria-label]="'Text of ' + (s.t || 'section ' + (i + 1))" (focus)="fs.set(s.id)" (input)="store.setSec(blk.id, s.id, 'x', $any($event.target).value)"></textarea>
               </section>
             }
-            <button class="btn btn-text" type="button" style="align-self:flex-start;margin-left:-8px" (click)="addSec()"><span class="ms s18">add</span>Add section</button>
+            @if (edit()) { <button class="btn btn-text" type="button" style="align-self:flex-start;margin-left:-8px" (click)="addSec()"><span class="ms s18">add</span>Add section</button> }
           </article>
         </div>
 
+        @if (edit()) {
         <div class="toolbar" slot="fixed">
           <div class="tb" role="toolbar" [attr.aria-label]="'Formatting for ' + (cur()?.t || 'this section')">
             <button class="icon-btn" type="button" aria-label="Large text" [class.on]="!!cur()?.big" [attr.aria-pressed]="!!cur()?.big" (mousedown)="$event.preventDefault()" (click)="fmt('big')"><span class="ms">format_size</span></button>
@@ -52,6 +56,7 @@ import { TopBarComponent } from '../shared/ui';
             <span class="ms">{{ pending() ? 'done_all' : 'check' }}</span>
           </button>
         </div>
+        }
       }
     </ion-content>
   `,
@@ -65,6 +70,7 @@ export class EditorPage {
   protected g = computed(() => this.store.gdd(this.gid()));
   protected dp = computed(() => this.store.dept(this.g(), this.dpid()));
   protected b = computed(() => this.dp()?.blocks.find((x) => x.id === this.bid()) ?? null);
+  protected edit = computed(() => this.store.canEdit(this.gid())); // Viewer: solo leer
   protected fs = signal<string | null>(null); // sección con el foco
   protected revOpen = signal(false);
   protected cur = computed(() => { const b = this.b(); return b?.secs.find((s) => s.id === this.fs()) ?? b?.secs[0] ?? null; });

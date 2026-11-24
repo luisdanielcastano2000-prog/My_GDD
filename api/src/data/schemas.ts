@@ -38,6 +38,7 @@ export class Gdd {
   @Prop({ default: '' }) updated: string;
   @Prop() cts?: number; // cuándo se creó (ms, lo pone el front)
   @Prop() uts?: number; // cuándo cambió por última vez (ms)
+  @Prop() rev?: number; // versión: sube en cada guardado (evita que dos personas se pisen)
   @Prop({ default: 0 }) order: number; // posición en el carrusel de Home
   @Prop({ type: [Object], default: [] }) depts: Record<string, unknown>[];
   @Prop({ type: Object, default: null }) last: Record<string, unknown> | null;

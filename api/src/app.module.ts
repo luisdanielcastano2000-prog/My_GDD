@@ -8,7 +8,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 
 import { AuthController } from './auth/auth.controller.js';
 import { AuthGuard } from './auth/auth.guard.js';
-import { GddsController, MeController, NotesController } from './data/data.controller.js';
+import { GddsController, MeController, NotesController, TeamsController } from './data/data.controller.js';
 import { Feedback, FeedbackSchema, Gdd, GddSchema, Note, NoteSchema, User, UserSchema } from './data/schemas.js';
 
 // Ajustes que da el servidor al arrancar (variables de entorno). Si faltan, valores para el Mac:
@@ -33,7 +33,7 @@ if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) throw new 
     // La web compilada (app/www) se sirve desde el mismo servidor: una sola dirección, sin CORS.
     ServeStaticModule.forRoot({ rootPath: join(import.meta.dirname, '..', '..', 'app', 'www'), exclude: ['/api/{*any}'] }),
   ],
-  controllers: [AuthController, MeController, GddsController, NotesController],
+  controllers: [AuthController, MeController, TeamsController, GddsController, NotesController],
   providers: [AuthGuard],
 })
 export class AppModule {}

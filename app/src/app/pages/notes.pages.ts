@@ -24,6 +24,25 @@ interface Row { id: string; kind: 'change' | 'team' | 'sent'; icon: string; titl
     </ion-header>
     <ion-content class="page-cards">
       <div class="page with-fab" style="padding-left:12px;padding-right:12px;gap:12px">
+        @if (tab() === 'r' && store.invitations().length) {
+          <section class="nt-sec card" aria-label="Invitations">
+            <div class="nt-head"><span class="name">Invitations<span class="new"> · {{ store.invitations().length }} new</span></span></div>
+            <ul class="list plain">
+        @for (v of store.invitations(); track v.owner) {
+          <li class="invite-li">
+            <span class="setting" style="padding:0;min-height:0">
+              <span class="ms ic-muted">group_add</span>
+              <span class="li-text"><span class="li-title">{{ v.name }} invited you to their team</span><span class="li-sub">As {{ v.role }} · {{ v.role === 'Viewer' ? 'You’ll read their GDDs and send notes.' : 'You’ll write in their GDDs and send notes.' }}</span></span>
+            </span>
+            <span class="btn-row">
+              <button class="btn btn-text" type="button" (click)="store.answerInvite(v, false)">Decline</button>
+              <button class="btn btn-filled" type="button" (click)="store.answerInvite(v, true)">Accept</button>
+            </span>
+          </li>
+        }
+            </ul>
+          </section>
+        }
         @for (gr of groups(); track gr.id) {
           <section class="nt-sec card" [class.fade-in]="true">
             <button class="nt-head" type="button" [attr.aria-expanded]="gr.open" (click)="toggle(gr.id)">
@@ -46,11 +65,13 @@ interface Row { id: string; kind: 'change' | 'team' | 'sent'; icon: string; titl
           </section>
         } @empty {
           @if (tab() === 'r') {
+            @if (!store.invitations().length) {
             <div class="empty">
               <span class="ms">inbox</span>
               <h2 class="t-headline-small">No notes yet</h2>
               <p>Changes and team notes of your GDDs will appear here.</p>
             </div>
+            }
           } @else {
             <div class="empty">
               <span class="ms">send</span>
@@ -109,6 +130,7 @@ export class NotesPage {
     const n = this.store.data().notes.find((x) => x.id === it.id);
     if (!n) return;
     if (n.kind === 'change') { this.nav.go('/gdd/' + n.g + '/review/' + n.id); return; }
+    if (!this.store.gdd(n.g)) { this.more(it); return; } // nota sin GDD que puedas abrir: solo sus opciones
     const dp = this.store.dept(this.store.gdd(n.g), n.dp);
     this.nav.go(dp ? '/gdd/' + n.g + '/dept/' + dp.id : '/gdd/' + n.g);
   }

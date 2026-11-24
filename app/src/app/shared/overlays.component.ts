@@ -56,6 +56,13 @@ type DelDlg = Extract<Dialog, { k: 'del' }>;
           <div class="sheet" role="dialog" aria-modal="true" [attr.aria-label]="actInfo(sh).name">
             <div class="handle"></div>
             <h2>{{ actInfo(sh).name }}</h2>
+            @if (sharedOf(sh); as sg) {
+              <!-- GDD de otra persona: no se renombra, mueve ni borra; se puede salir de su equipo -->
+              <p class="sheet-meta">Shared by {{ sg.name }} · {{ sg.role }}</p>
+              <ul class="list plain acts">
+                <li><button class="li danger" type="button" (click)="leave(sg)"><span class="ms">logout</span><span class="li-text"><span class="li-title">Leave {{ sg.name }}’s team</span></span></button></li>
+              </ul>
+            } @else {
             <ul class="list plain acts">
               <li><button class="li" type="button" (click)="store.openRename(sh.what, sh.id, sh.g, sh.dp)"><span class="ms">edit</span><span class="li-text"><span class="li-title">Rename</span></span></button></li>
               @if (sh.what === 'gdd') {
@@ -67,6 +74,7 @@ type DelDlg = Extract<Dialog, { k: 'del' }>;
               }
               <li><button class="li danger" type="button" (click)="store.askDelete(sh)"><span class="ms">delete</span><span class="li-text"><span class="li-title">Delete</span></span></button></li>
             </ul>
+            }
           </div>
         }
         @if (noteSheet(); as sh) {
@@ -125,7 +133,7 @@ type DelDlg = Extract<Dialog, { k: 'del' }>;
           <div class="sheet" role="dialog" aria-modal="true" aria-label="Invite a member">
             <div class="handle"></div>
             <h2>Invite a member</h2>
-            <p class="sheet-meta">They’ll get an email to join your team.</p>
+            <p class="sheet-meta">When they log in with this email, they’ll see your invitation in Notes. Once they accept, they can see your GDDs.</p>
             <div class="sheet-body">
               <div class="field" [class.error]="sh.err">
                 <div class="field-box">
@@ -233,10 +241,19 @@ export class OverlaysComponent {
   member(id: string): Member | undefined {
     return this.store.data().team.members.find((m) => m.id === id);
   }
+  /** El GDD de otra persona de una hoja de acciones (para salir de su equipo). */
+  sharedOf(sh: ActSheet): { owner: string; name: string; role: 'Editor' | 'Viewer' } | null {
+    return sh.what === 'gdd' ? (this.store.gdd(sh.id)?.share ?? null) : null;
+  }
+  leave(t: { owner: string; name: string; role: 'Editor' | 'Viewer' }): void {
+    this.store.sheet.set(null);
+    void this.store.leaveTeam(t);
+  }
   openNote(id: string): void {
     const n = this.store.data().notes.find((x) => x.id === id);
     this.store.sheet.set(null);
     if (!n) return;
+    if (!this.store.gdd(n.g)) { this.store.toast('This note isn’t linked to a GDD you can open.'); return; }
     if (n.kind === 'change') { this.nav.go('/gdd/' + n.g + '/review/' + n.id); return; }
     const g = this.store.gdd(n.g);
     const dp = this.store.dept(g, n.dp);
@@ -246,6 +263,10 @@ export class OverlaysComponent {
     const em = sh.email.trim();
     if (em.indexOf('@') < 1) { this.store.sheet.set({ ...sh, err: true }); return; }
     if (sh.busy) return;
+    const t = this.store.data().team, low = em.toLowerCase();
+    if (low === this.store.data().user.email.toLowerCase()) { this.store.toast('That’s your own email.'); return; }
+    if (t.members.some((m) => m.email.toLowerCase() === low)) { this.store.toast(em + ' is already in your team.'); return; }
+    if (t.invites.some((v) => v.email.toLowerCase() === low)) { this.store.toast(em + ' already has an invitation.'); return; }
     const k = this.store.settings().slowMotion ? 4 : 1;
     this.store.sheet.set({ ...sh, busy: 'load' });
     setTimeout(() => {

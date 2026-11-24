@@ -1,8 +1,9 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable, computed, effect, inject, signal } from '@angular/core';
 
-import { ApiService, apiMessage } from './api.service';
-import type { AppData, Block, Dept, Dialog, Gdd, Note, Sheet, Snack } from './models';
+import { ApiService, type MeResponse, apiMessage } from './api.service';
+import { mergeGdd } from './merge';
+import type { AppData, Block, Dept, Dialog, Gdd, Invitation, Note, Role, Sheet, Snack, TeamRef } from './models';
 import type { Template} from './sample';
 import { CATALOG, buildGdd, mkBlock, mkSection, nid, sampleData } from './sample';
 import { ago, cap, dayAgo, isReal } from './time';
@@ -41,6 +42,7 @@ export class StoreService {
   private syncTimer: ReturnType<typeof setTimeout> | undefined;
   private syncing = false;
   private syncAgain = false;
+  private refreshing = false;
   readonly loadErr = signal(false);
   readonly sheet = signal<Sheet | null>(null);
   readonly dialog = signal<Dialog | null>(null);
@@ -65,10 +67,17 @@ export class StoreService {
   readonly now = signal(Date.now());
   /** Fecha de alta de la cuenta (la da el servidor). */
   readonly since = signal<number | null>(null);
-  readonly unread = computed(() => this.data().notes.filter((n) => n.unread).length);
+  /** Invitaciones a equipos de otras personas que esperan respuesta (las da el servidor). */
+  readonly invitations = signal<Invitation[]>([]);
+  /** Equipos de otras personas en los que estás. */
+  readonly teams = signal<TeamRef[]>([]);
+  readonly unread = computed(() => this.data().notes.filter((n) => n.unread).length + this.invitations().length);
 
   constructor() {
     setInterval(() => this.now.set(Date.now()), 60_000);
+    // Lo que cambian otras personas del equipo aparece solo: cada 30 s y al volver a la pestaña
+    setInterval(() => void this.refresh(), 30_000);
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') void this.refresh(); });
     if (typeof matchMedia !== 'undefined') {
       matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => this.systemDark.set(e.matches));
     }
@@ -100,10 +109,7 @@ export class StoreService {
     if (!this.api.token) return false;
     try {
       const r = await this.api.me();
-      const d: AppData = { gdds: r.gdds, notes: r.notes, sent: r.sent, user: r.user, team: r.team };
-      this.data.set(d);
-      this.since.set(r.since ? Date.parse(r.since) : null);
-      this.snapshot = structuredClone(d);
+      this.apply(r);
       this.settings.set({ ...DEFAULT_SETTINGS, ...(r.settings as Partial<Settings>), slowMotion: false });
       this.savedSettings = this.settingsKey();
       this.loadErr.set(false);
@@ -114,6 +120,45 @@ export class StoreService {
       this.loadErr.set(true); // Home enseña «We couldn’t load your GDDs» con Retry
       this.live.set(false);
       return true;
+    }
+  }
+  /** Pone en pantalla lo que llega del servidor y lo apunta como guardado. */
+  private apply(r: MeResponse): void {
+    const d: AppData = { gdds: r.gdds, notes: r.notes, sent: r.sent, user: r.user, team: r.team };
+    this.data.set(d);
+    this.since.set(r.since ? Date.parse(r.since) : null);
+    this.invitations.set(r.invitations ?? []);
+    this.teams.set(r.teams ?? []);
+    this.snapshot = structuredClone(d);
+    this.homeIndex.set(Math.max(0, Math.min(this.homeIndex(), d.gdds.length - 1)));
+  }
+  /** ¿Hay cambios en pantalla que aún no están en el servidor? */
+  private dirty(): boolean {
+    return !this.snapshot || JSON.stringify(this.data()) !== JSON.stringify(this.snapshot) || this.settingsKey() !== this.savedSettings;
+  }
+  /**
+   * Trae lo último del servidor (cambios de otras personas del equipo, notas e invitaciones nuevas).
+   * Solo si no hay nada tuyo pendiente de guardar ni una capa abierta: nunca pisa lo que estás haciendo.
+   */
+  async refresh(): Promise<void> {
+    if (!this.live() || this.syncing || this.refreshing || this.dirty() || this.sheet() || this.dialog()) return;
+    this.refreshing = true;
+    try {
+      const r = await this.api.me();
+      if (!this.syncing && !this.dirty()) this.apply(r);
+    } catch (e) {
+      if (e instanceof HttpErrorResponse && (e.status === 401 || e.status === 404)) { this.logout(); location.assign('/login'); }
+    } finally {
+      this.refreshing = false;
+    }
+  }
+  /** Espera a que todo lo pendiente esté guardado (antes de recargar los datos). */
+  private async settle(): Promise<void> {
+    clearTimeout(this.syncTimer);
+    for (let i = 0; i < 100 && (this.syncing || this.dirty()); i++) {
+      if (!this.syncing) await this.sync();
+      else await new Promise((ok) => setTimeout(ok, 100));
+      if (!this.syncing && this.dirty()) break; // no se pudo guardar: el snackbar ya lo dice
     }
   }
   logout(): void {
@@ -141,11 +186,25 @@ export class StoreService {
     const cur = this.data();
     const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
     const jobs: Promise<unknown>[] = [];
+    const revs = new Map<string, number>(); // versión nueva de cada GDD guardado
+    const conflicts = new Map<string, Gdd>(); // GDDs que otra persona cambió antes (su versión)
     cur.gdds.forEach((g, i) => {
       const o = old.gdds.findIndex((x) => x.id === g.id);
-      if (o !== i || !same(old.gdds[o], g)) jobs.push(this.api.saveGdd(g, i));
+      const changed = o < 0 || !same(old.gdds[o], g);
+      const moved = o !== i && !g.share; // el orden en Home solo cuenta en los GDDs tuyos
+      if ((!changed && !moved) || g.share?.role === 'Viewer') return;
+      jobs.push(
+        this.api.saveGdd(g, i).then(
+          (r) => { revs.set(g.id, r.rev); },
+          (e: unknown) => {
+            const theirs = e instanceof HttpErrorResponse && e.status === 409 ? (e.error as { gdd?: Gdd } | null)?.gdd : null;
+            if (theirs) { conflicts.set(g.id, theirs); return; }
+            throw e;
+          },
+        ),
+      );
     });
-    old.gdds.filter((g) => !cur.gdds.some((x) => x.id === g.id)).forEach((g) => jobs.push(this.api.deleteGdd(g.id)));
+    old.gdds.filter((g) => !g.share && !cur.gdds.some((x) => x.id === g.id)).forEach((g) => jobs.push(this.api.deleteGdd(g.id)));
     const boxes: ['received' | 'sent', 'notes' | 'sent'][] = [['received', 'notes'], ['sent', 'sent']];
     for (const [box, key] of boxes) {
       const a: (Note | AppData['sent'][number])[] = old[key];
@@ -158,14 +217,32 @@ export class StoreService {
     if (Object.keys(prof).length || sk !== this.savedSettings) {
       jobs.push(this.api.saveProfile({ ...prof, ...(sk !== this.savedSettings ? { settings: JSON.parse(sk) as Record<string, unknown> } : {}) }));
     }
-    if (!same(old.team, cur.team)) jobs.push(this.api.saveTeam(cur.team));
+    let team: AppData['team'] | null = null; // el equipo tal como lo deja el servidor
+    if (!same(old.team, cur.team)) jobs.push(this.api.saveTeam(cur.team).then((r) => { team = r.team; }));
     try {
       await Promise.all(jobs);
-      this.snapshot = structuredClone(cur);
+      const snap = structuredClone(cur);
+      revs.forEach((rev, id) => { const g = snap.gdds.find((x) => x.id === id); if (g) g.rev = rev; });
+      conflicts.forEach((theirs, id) => { const i = snap.gdds.findIndex((x) => x.id === id); if (i >= 0) snap.gdds[i] = { ...theirs, share: snap.gdds[i].share }; });
+      if (team) snap.team = team;
+      this.snapshot = snap;
       this.savedSettings = sk;
+      if (revs.size || conflicts.size || team) {
+        // Lo que se ve: con las versiones nuevas y, si hubo choque, con los dos cambios juntos
+        const d = structuredClone(this.data());
+        revs.forEach((rev, id) => { const g = d.gdds.find((x) => x.id === id); if (g) g.rev = rev; });
+        conflicts.forEach((theirs, id) => {
+          const i = d.gdds.findIndex((x) => x.id === id);
+          if (i >= 0) d.gdds[i] = mergeGdd(old.gdds.find((x) => x.id === id), d.gdds[i], { ...theirs, share: d.gdds[i].share });
+        });
+        if (team && same(d.team, cur.team)) d.team = team;
+        this.data.set(d);
+      }
+      if (conflicts.size) { this.syncAgain = true; this.toast('Someone in your team changed this GDD too. Both changes were kept.'); }
     } catch (e) {
       if (e instanceof HttpErrorResponse && e.status === 401) { this.logout(); location.assign('/login'); return; }
-      this.toast(e instanceof HttpErrorResponse && e.status === 400 ? apiMessage(e) : 'Your change couldn’t be saved.', { kind: 'err', action: { label: 'Retry', run: () => void this.sync() } });
+      const shown = e instanceof HttpErrorResponse && [400, 403, 404].includes(e.status);
+      this.toast(shown ? apiMessage(e) : 'Your change couldn’t be saved.', { kind: 'err', action: { label: 'Retry', run: () => void this.sync() } });
     } finally {
       this.syncing = false;
       if (this.syncAgain) { this.syncAgain = false; void this.sync(); }
@@ -194,6 +271,25 @@ export class StoreService {
   when(ts: number | undefined, fixed: string): string {
     return isReal(ts) ? cap(ago(ts, this.now())) : fixed;
   }
+  // ---------- permisos (GDDs de otras personas) ----------
+  /** Tu papel en un GDD: Owner (es tuyo), Editor (puedes escribir) o Viewer (solo leer). */
+  role(gid: string | null | undefined): Role {
+    return this.gdd(gid)?.share?.role ?? 'Owner';
+  }
+  canEdit(gid: string | null | undefined): boolean {
+    return this.role(gid) !== 'Viewer';
+  }
+  /** true (y lo avisa) si no puedes cambiar ese GDD. */
+  private readOnly(gid: string | null | undefined, ownerOnly = false): boolean {
+    const g = this.gdd(gid);
+    if (!g?.share || (!ownerOnly && g.share.role === 'Editor')) return false;
+    this.toast(ownerOnly ? 'Only ' + g.share.name + ' can do this.' : 'You can only read this GDD.');
+    return true;
+  }
+  private gidOf(bid: string): string | undefined {
+    return this.where(bid)?.g.id;
+  }
+
   gStat(g: Gdd): { t: string; k: StatusKind; n: number } {
     let old = 0, has = 0, total = 0;
     g.depts.forEach((x) => x.blocks.forEach((y) => { total++; if (y.status === 'Out of date') old++; if (y.status !== 'Empty') has++; }));
@@ -292,6 +388,7 @@ export class StoreService {
     return base + ' ' + i;
   }
   quickDept(gid: string): void {
+    if (this.readOnly(gid)) return;
     const g0 = this.gdd(gid);
     if (!g0) return;
     const name = this.uniq('New department', g0.depts.map((x) => x.name));
@@ -303,6 +400,7 @@ export class StoreService {
     this.toast(name + ' created');
   }
   quickBlock(gid: string, dpid: string): void {
+    if (this.readOnly(gid)) return;
     const dp0 = this.dept(this.gdd(gid), dpid);
     if (!dp0) return;
     const name = this.uniq('New block', dp0.blocks.map((x) => x.name));
@@ -312,11 +410,13 @@ export class StoreService {
     this.toast(name + ' created');
   }
   useTemplate(gid: string): void {
+    if (this.readOnly(gid)) return;
     const t = buildGdd('x', 'Minimal', [0, 2, 3, 5]);
     this.mutate((d) => { const g = d.gdds.find((x) => x.id === gid)!; g.depts = g.depts.concat(t.depts); touch(g); });
     this.toast('Minimal template added: 4 departments');
   }
   suggest(gid: string, dpid: string): void {
+    if (this.readOnly(gid)) return;
     let n = 0;
     this.mutate((d) => {
       const dp = d.gdds.find((x) => x.id === gid)!.depts.find((x) => x.id === dpid)!;
@@ -330,9 +430,11 @@ export class StoreService {
 
   // ---------- editor ----------
   setSec(bid: string, sid: string, key: 't' | 'x', v: string): void {
+    if (this.readOnly(this.gidOf(bid))) return;
     this.mutate((d) => { const s = this.where(bid, d)?.b.secs.find((x) => x.id === sid); if (s) s[key] = v; });
   }
   fmtSec(bid: string, sid: string, key: 'big' | 'b' | 'i' | 'list'): void {
+    if (this.readOnly(this.gidOf(bid))) return;
     this.mutate((d) => {
       const s = this.where(bid, d)?.b.secs.find((x) => x.id === sid);
       if (!s) return;
@@ -345,12 +447,14 @@ export class StoreService {
   }
   addSec(bid: string): string {
     const s = mkSection();
+    if (this.readOnly(this.gidOf(bid))) return s.id;
     this.mutate((d) => this.where(bid, d)?.b.secs.push(s));
     return s.id;
   }
   /** Guarda el bloque: si estaba pendiente de revisar, queda revisado. Devuelve el mensaje del snackbar. */
   save(bid: string): string {
     let msg = '';
+    if (this.readOnly(this.gidOf(bid))) return 'You can only read this GDD.';
     this.mutate((d) => {
       const w = this.where(bid, d);
       if (!w) return;
@@ -368,6 +472,7 @@ export class StoreService {
   }
   /** Marca un bloque como revisado (lo usa el selector de pantallas). */
   markReviewed(bid: string): void {
+    if (this.readOnly(this.gidOf(bid))) return;
     this.mutate((d) => {
       const w = this.where(bid, d);
       if (!w) return;
@@ -381,6 +486,7 @@ export class StoreService {
   // ---------- renombrar, mover, borrar ----------
   openRename(what: 'gdd' | 'dept' | 'block', id: string, g?: string, dp?: string): void {
     let val = '';
+    if (this.readOnly(what === 'gdd' ? id : g, what === 'gdd')) { this.sheet.set(null); return; }
     if (what === 'gdd') val = this.gdd(id)?.name ?? '';
     if (what === 'dept') val = this.dept(this.gdd(g), id)?.name ?? '';
     if (what === 'block') val = this.where(id)?.b.name ?? '';
@@ -400,9 +506,9 @@ export class StoreService {
     this.toast(dl.what === 'field' ? dl.label + ' saved' : 'Name changed');
     return true;
   }
-  /** Lista donde está el elemento de una hoja de acciones (para mover y borrar). */
+  /** Lista donde está el elemento de una hoja de acciones (para mover y borrar). En Home se ordenan solo los GDDs tuyos. */
   private listOf(d: AppData, sh: Extract<Sheet, { k: 'act' }>): { id: string; name: string }[] {
-    if (sh.what === 'gdd') return d.gdds;
+    if (sh.what === 'gdd') return d.gdds.filter((g) => !g.share);
     const g = d.gdds.find((x) => x.id === sh.g);
     if (sh.what === 'dept') return g?.depts ?? [];
     return g?.depts.find((x) => x.id === sh.dp)?.blocks ?? [];
@@ -410,28 +516,30 @@ export class StoreService {
   actIndex(sh: Extract<Sheet, { k: 'act' }>): { idx: number; len: number; name: string } {
     const arr = this.listOf(this.data(), sh);
     const idx = arr.findIndex((x) => x.id === sh.id);
-    return { idx, len: arr.length, name: idx >= 0 ? arr[idx].name : '' };
+    return { idx, len: arr.length, name: idx >= 0 ? arr[idx].name : sh.what === 'gdd' ? (this.gdd(sh.id)?.name ?? '') : '' };
   }
   move(sh: Extract<Sheet, { k: 'act' }>, dir: -1 | 1): void {
+    if (this.readOnly(sh.what === 'gdd' ? sh.id : sh.g, sh.what === 'gdd')) { this.sheet.set(null); return; }
     this.mutate((d) => {
       const arr = this.listOf(d, sh);
       const i = arr.findIndex((x) => x.id === sh.id);
       const j = i + dir;
       if (i < 0 || j < 0 || j >= arr.length) return;
       [arr[i], arr[j]] = [arr[j], arr[i]];
-      if (sh.what === 'gdd') this.homeIndex.set(j);
+      if (sh.what === 'gdd') { d.gdds = [...arr as Gdd[], ...d.gdds.filter((g) => g.share)]; this.homeIndex.set(j); }
     });
     this.sheet.set(null);
   }
   askDelete(sh: Extract<Sheet, { k: 'act' }>): void {
     this.sheet.set(null);
+    if (this.readOnly(sh.what === 'gdd' ? sh.id : sh.g, sh.what === 'gdd')) return;
     if (sh.what === 'block') this.deleteBlock(sh.id);
     else if (sh.what === 'dept') this.deleteDept(sh.id, sh.g!);
     else this.dialog.set({ k: 'del', what: 'gdd', id: sh.id });
   }
   deleteBlock(bid: string): void {
     const w = this.where(bid);
-    if (!w) return;
+    if (!w || this.readOnly(w.g.id)) return;
     this.afterDissolve(bid, () => {
       this.mutate((d) => { const x = this.where(bid, d)!; x.dp.blocks = x.dp.blocks.filter((b) => b.id !== bid); touch(x.g); }, true);
       this.toast(w.b.name + ' deleted', { undo: true });
@@ -439,7 +547,7 @@ export class StoreService {
   }
   deleteDept(did: string, gid: string): void {
     const dp = this.dept(this.gdd(gid), did);
-    if (!dp) return;
+    if (!dp || this.readOnly(gid)) return;
     this.afterDissolve(did, () => {
       this.mutate((d) => { const g = d.gdds.find((x) => x.id === gid)!; g.depts = g.depts.filter((x) => x.id !== did); touch(g); }, true);
       this.toast(dp.name + ' deleted', { undo: true });
@@ -457,7 +565,7 @@ export class StoreService {
     if (dl.what === 'gdd') {
       const name = this.gdd(dl.id)?.name ?? '';
       this.afterDissolve(dl.id!, () => {
-        this.mutate((d) => { d.gdds = d.gdds.filter((x) => x.id !== dl.id); d.notes = d.notes.filter((n) => n.g !== dl.id); });
+        this.mutate((d) => { d.gdds = d.gdds.filter((x) => x.id !== dl.id); d.notes = d.notes.filter((n) => n.g !== dl.id); }); // solo el dueño llega aquí
         this.homeIndex.set(Math.max(0, Math.min(this.homeIndex(), this.data().gdds.length - 1)));
         this.toast(name + ' deleted');
       });
@@ -556,6 +664,29 @@ export class StoreService {
     this.sheet.set(null);
     this.toast(name ? name + ' is now ' + role.toLowerCase() : 'Saved');
   }
+  /** Aceptar o rechazar una invitación a un equipo. Al aceptar, aparecen sus GDDs. */
+  async answerInvite(inv: Invitation, accept: boolean): Promise<void> {
+    try {
+      await this.settle();
+      await this.api.teamAction(inv.owner, accept ? 'accept' : 'decline');
+      await this.load();
+      this.toast(accept ? 'You joined ' + inv.name + '’s team' : 'Invitation declined', accept ? { kind: 'ok' } : {});
+    } catch (e) {
+      this.toast(apiMessage(e), { kind: 'err' });
+      void this.load(); // la invitación pudo dejar de existir: se vuelve a mirar
+    }
+  }
+  /** Salir del equipo de otra persona: dejas de ver sus GDDs. */
+  async leaveTeam(t: TeamRef): Promise<void> {
+    try {
+      await this.settle();
+      await this.api.teamAction(t.owner, 'leave');
+      await this.load();
+      this.toast('You left ' + t.name + '’s team');
+    } catch (e) {
+      this.toast(apiMessage(e), { kind: 'err' });
+    }
+  }
   cancelInvite(id: string): void {
     const v = this.data().team.invites.find((x) => x.id === id);
     this.mutate((d) => (d.team.invites = d.team.invites.filter((x) => x.id !== id)), true);
@@ -569,6 +700,8 @@ export class StoreService {
     const d = sampleData();
     if (empty) { d.gdds = []; d.notes = []; d.sent = []; }
     this.data.set(d);
+    this.invitations.set([]);
+    this.teams.set([]);
     this.loadErr.set(false);
     this.sheet.set(null);
     this.dialog.set(null);

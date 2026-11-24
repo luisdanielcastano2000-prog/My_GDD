@@ -25,7 +25,7 @@ function scrollToNew(content: () => IonContent | undefined, popped: () => string
       @if (g(); as gd) {
         <div class="page with-fab" style="gap:8px">
           @if (gd.depts.length) {
-            @if (!searching()) { <p class="intro t-body-medium">Your GDD follows the production pipeline. Open a department to see its blocks.</p> }
+            @if (!searching()) { <p class="intro t-body-medium">{{ edit() ? 'Your GDD follows the production pipeline. Open a department to see its blocks.' : 'Shared by ' + gd.share?.name + '. You can read it and send notes.' }}</p> }
             <ul class="dept-list">
               @for (x of list(); track x.id) {
                 <li class="dept-card card" [class.pop-in]="store.popped() === x.id" [class.dissolve]="store.dying() === x.id">
@@ -42,7 +42,7 @@ function scrollToNew(content: () => IonContent | undefined, popped: () => string
                       }
                     </span>
                   </span>
-                  <button class="icon-btn more" type="button" [attr.aria-label]="'More options for ' + x.name" (click)="store.sheet.set({ k: 'act', what: 'dept', id: x.id, g: gd.id })"><span class="ms">more_vert</span></button>
+                  @if (edit()) { <button class="icon-btn more" type="button" [attr.aria-label]="'More options for ' + x.name" (click)="store.sheet.set({ k: 'act', what: 'dept', id: x.id, g: gd.id })"><span class="ms">more_vert</span></button> }
                 </li>
               }
             </ul>
@@ -51,12 +51,14 @@ function scrollToNew(content: () => IonContent | undefined, popped: () => string
             <div class="empty">
               <span class="ms">layers</span>
               <h2 class="t-headline-small">No departments yet</h2>
-              <p>Add the departments your team needs, in production order.</p>
-              <button class="btn btn-text" type="button" (click)="store.useTemplate(gd.id)">Use a template instead</button>
+              @if (edit()) {
+                <p>Add the departments your team needs, in production order.</p>
+                <button class="btn btn-text" type="button" (click)="store.useTemplate(gd.id)">Use a template instead</button>
+              } @else { <p>{{ gd.share?.name }} hasn’t added departments yet.</p> }
             </div>
           }
         </div>
-        @if (!searching()) {
+        @if (!searching() && edit()) {
           <button class="fab" slot="fixed" type="button" (click)="store.quickDept(gd.id)"><span class="ms">add</span>Department</button>
         }
       }
@@ -74,6 +76,7 @@ export class DeptsPage {
   protected q = signal(this.store.takeDraft('depts', { q: '' }).q);
   protected searching = signal(!!this.q());
   protected g = computed(() => this.store.gdd(this.gid()));
+  protected edit = computed(() => this.store.canEdit(this.gid())); // Viewer: solo leer
   protected list = computed(() => {
     const g = this.g();
     if (!g) return [];
@@ -106,10 +109,10 @@ export class DeptsPage {
                     <span class="name">{{ b.name }}</span>
                   </span>
                   <span class="st"><app-status [kind]="b.status" [text]="b.status" [hideText]="true" /></span>
-                  <button class="icon-btn more" type="button" [attr.aria-label]="'More options for ' + b.name" (click)="store.sheet.set({ k: 'act', what: 'block', id: b.id, g: gid(), dp: d.id })"><span class="ms s20">more_vert</span></button>
+                  @if (edit()) { <button class="icon-btn more" type="button" [attr.aria-label]="'More options for ' + b.name" (click)="store.sheet.set({ k: 'act', what: 'block', id: b.id, g: gid(), dp: d.id })"><span class="ms s20">more_vert</span></button> }
                 </div>
               }
-              @if (!searching()) {
+              @if (!searching() && edit()) {
                 <div class="add-cell"><button class="btn btn-tonal m" type="button" (click)="store.quickBlock(gid(), d.id)"><span class="ms">add</span>Block</button></div>
               }
             </div>
@@ -119,9 +122,11 @@ export class DeptsPage {
             <div class="empty dashed">
               <span class="ms s40 ic-muted">description</span>
               <h2 class="t-title-large">No blocks yet</h2>
-              <p>Add the first block of this department. You can add as many as you need.</p>
-              <button class="btn btn-tonal m" type="button" (click)="store.quickBlock(gid(), d.id)"><span class="ms">add</span>Block</button>
-              <button class="btn btn-text" type="button" (click)="store.suggest(gid(), d.id)">Use suggested blocks</button>
+              @if (edit()) {
+                <p>Add the first block of this department. You can add as many as you need.</p>
+                <button class="btn btn-tonal m" type="button" (click)="store.quickBlock(gid(), d.id)"><span class="ms">add</span>Block</button>
+                <button class="btn btn-text" type="button" (click)="store.suggest(gid(), d.id)">Use suggested blocks</button>
+              } @else { <p>This department has no blocks yet.</p> }
             </div>
           }
         </div>
@@ -148,6 +153,7 @@ export class DeptPage {
   protected searching = signal(false);
   protected g = computed(() => this.store.gdd(this.gid()));
   protected dp = computed(() => this.store.dept(this.g(), this.dpid()));
+  protected edit = computed(() => this.store.canEdit(this.gid())); // Viewer: solo leer
   protected pos = computed(() => (this.g()?.depts.indexOf(this.dp()!) ?? 0) + 1);
   protected band = computed(() => (this.g() && this.dp() ? this.store.deptColor(this.g()!, this.dp()!) : ''));
   protected blocks = computed(() => {

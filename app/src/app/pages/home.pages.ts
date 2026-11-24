@@ -80,7 +80,7 @@ export class HomePage implements AfterViewInit {
   private car = viewChild<ElementRef<HTMLDivElement>>('car');
   protected gdds = computed(() => this.store.data().gdds);
   protected idx = computed(() => Math.max(0, Math.min(this.store.homeIndex(), this.gdds().length - 1)));
-  protected cards = computed(() => this.gdds().map((g) => ({ id: g.id, name: g.name, desc: g.desc, updated: this.store.gUpdated(g), st: this.store.gStat(g) })));
+  protected cards = computed(() => this.gdds().map((g) => ({ id: g.id, name: g.name, desc: g.share ? 'Shared by ' + g.share.name + ' · ' + g.share.role : g.desc, updated: this.store.gUpdated(g), st: this.store.gStat(g) })));
   protected cont = computed(() => {
     const g = this.gdds()[this.idx()];
     const L = g?.last;

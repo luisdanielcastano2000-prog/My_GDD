@@ -322,3 +322,12 @@ dl.gloss dd { margin: 2px 0 0; color: var(--gdd-on-surface-variant); }
 /* ---------- selector de pantallas (solo desarrollo) ---------- */
 .scenes .grp { display: flex; flex-wrap: wrap; gap: 8px; }
 .scenes .grp button { @extend .chip; }
+
+/* Invitación a un equipo (Notes y My team): texto arriba, botones debajo a la derecha */
+.invite-li {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 16px 8px;
+  .btn-row { justify-content: flex-end; }
+}
