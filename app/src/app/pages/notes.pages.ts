@@ -120,7 +120,8 @@ export class NotesPage {
   }
   private sentRow(n: SentNote): Row {
     const when = this.store.when(n.ts, n.when);
-    return { id: n.id, kind: 'sent', icon: 'send', title: '“' + n.text + '”', sub: when + ' · To: ' + n.to, unread: false, aria: 'Sent to ' + n.to + ': ' + n.text + ', ' + when };
+    const marked = n.aff?.length ? ' · ' + n.aff.length + (n.aff.length === 1 ? ' block' : ' blocks') + ' marked out of date' : '';
+    return { id: n.id, kind: 'sent', icon: 'send', title: '“' + n.text + '”', sub: when + ' · To: ' + n.to + marked, unread: false, aria: 'Sent to ' + n.to + ': ' + n.text + ', ' + when + marked };
   }
   toggle(id: string): void {
     this.store.notesCollapsed.update((c) => ({ ...c, [id]: !c[id] }));
@@ -169,7 +170,7 @@ export class NotesPage {
           <div class="field">
             <div class="field-box">
               <label for="nn-g">1 · Project</label>
-              <select id="nn-g" [value]="g()?.id" (change)="gid.set($any($event.target).value); dpid.set(null); bid.set(null)">
+              <select id="nn-g" [value]="g()?.id" (change)="gid.set($any($event.target).value); dpid.set(null); bid.set(null); aff.set([])">
                 @for (o of store.data().gdds; track o.id) { <option [value]="o.id" [selected]="o.id === g()?.id">{{ o.name }}</option> }
               </select>
               <span class="ms sel-ic">arrow_drop_down</span>
@@ -196,6 +197,27 @@ export class NotesPage {
             </div>
           </div>
           <p class="where"><span class="ms s20">layers</span>{{ path() }}</p>
+          <!-- Bloques afectados: se marcan «Out of date» para todo el equipo hasta que alguien los revise -->
+          <button class="li tall aff-toggle card" type="button" [attr.aria-expanded]="affOpen()" (click)="affOpen.set(!affOpen())">
+            <span class="ms ic-muted">{{ aff().length ? 'warning' : 'rule' }}</span>
+            <span class="li-text"><span class="li-title">Blocks affected by this change</span><span class="li-sub">{{ aff().length ? aff().length + (aff().length === 1 ? ' block' : ' blocks') + ' will be marked out of date for the team' : 'Optional · Mark the blocks the team should review' }}</span></span>
+            <span class="ms li-trail">{{ affOpen() ? 'expand_less' : 'expand_more' }}</span>
+          </button>
+          @if (affOpen()) {
+            @for (d of affDepts(); track d.id) {
+              <h3 class="group-title" style="padding:4px 4px 0">{{ d.name }}</h3>
+              <ul class="list card">
+                @for (x of d.blocks; track x.id) {
+                  <li>
+                    <button class="li" type="button" role="checkbox" [attr.aria-checked]="aff().includes(x.id)" (click)="flipAff(x.id)">
+                      <span class="check" [class.on]="aff().includes(x.id)">@if (aff().includes(x.id)) { <span class="ms">check</span> }</span>
+                      <span class="li-text"><span class="li-title">{{ x.name }}</span>@if (x.status === 'Out of date') { <span class="li-sub">Already out of date</span> }</span>
+                    </button>
+                  </li>
+                }
+              </ul>
+            } @empty { <p class="li-sub" style="padding:0 4px">This project has no other blocks yet.</p> }
+          }
           <h2 class="section-title" style="padding:0">Send to</h2>
           <div class="chips">
             <button class="chip" type="button" [class.on]="cTeam()" [attr.aria-pressed]="cTeam()" (click)="cTeam.set(!cTeam())">@if (cTeam()) { <span class="ms">check</span> }Whole team</button>
@@ -225,6 +247,10 @@ export class NewNotePage {
   protected dpid = signal(this.d.dp);
   protected bid = signal(this.d.b);
   protected cTeam = signal(true);
+  protected aff = signal<string[]>([]); // bloques afectados
+  protected affOpen = signal(false);
+  /** Bloques que se pueden marcar: todos los del GDD menos el de la nota. */
+  protected affDepts = computed(() => (this.g()?.depts ?? []).map((d) => ({ id: d.id, name: d.name, blocks: d.blocks.filter((x) => x.id !== this.b()?.id) })).filter((d) => d.blocks.length));
   protected cDep = signal(true);
   protected phase = signal<'' | 'load' | 'ok'>('');
   protected g = computed(() => this.store.gdd(this.gid()) ?? this.store.data().gdds.at(0) ?? null);
@@ -238,11 +264,15 @@ export class NewNotePage {
       setTimeout(() => this.store.toast('Your note couldn’t be sent. Check your connection.', { kind: 'err', action: { label: 'Retry', run: () => this.send() } }), 50);
     }
   }
+  flipAff(id: string): void {
+    this.aff.update((a) => (a.includes(id) ? a.filter((x) => x !== id) : [...a, id]));
+  }
   send(): void {
     const t = this.text().trim();
     if (!t) { this.err.set(true); return; }
+    const ok = new Set(this.affDepts().flatMap((d) => d.blocks.map((x) => x.id))); // si cambió de proyecto, solo los de este
     withLoading(this.store, this.phase, () => {
-      this.store.sendNote(t, this.g()!.id, this.dp()?.id ?? null, this.cTeam(), this.cDep());
+      this.store.sendNote(t, this.g()!.id, this.dp()?.id ?? null, this.cTeam(), this.cDep(), this.b()?.id ?? null, this.aff().filter((x) => ok.has(x)));
       this.nav.back('/notes');
     });
   }

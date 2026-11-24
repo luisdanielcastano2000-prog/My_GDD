@@ -331,3 +331,6 @@ dl.gloss dd { margin: 2px 0 0; color: var(--gdd-on-surface-variant); }
   padding: 12px 16px 8px;
   .btn-row { justify-content: flex-end; }
 }
+
+/* New note: botón que abre la lista de bloques afectados */
+.aff-toggle { width: 100%; text-align: left; border: none; }

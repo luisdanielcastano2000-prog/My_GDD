@@ -54,3 +54,21 @@ export function recipients(ownerId: string, team: Team | undefined, sender: stri
   const all = [ownerId, ...(team?.members ?? []).map((m) => m.uid).filter((x): x is string => !!x)];
   return [...new Set(all)].filter((x) => x !== sender);
 }
+
+/**
+ * «Out of date»: marca los bloques afectados por un cambio (pend + estado) dentro de los
+ * departamentos de un GDD. Devuelve los departamentos nuevos y los ids que de verdad existían.
+ */
+export function markOutOfDate(depts: Record<string, unknown>[], aff: string[]): { depts: Record<string, unknown>[]; marked: string[] } {
+  const want = new Set(aff);
+  const marked: string[] = [];
+  const out = depts.map((d) => ({
+    ...d,
+    blocks: (Array.isArray(d['blocks']) ? (d['blocks'] as Record<string, unknown>[]) : []).map((b) => {
+      if (typeof b['id'] !== 'string' || !want.has(b['id'])) return b;
+      marked.push(b['id']);
+      return { ...b, pend: true, status: 'Out of date' };
+    }),
+  }));
+  return { depts: out, marked };
+}

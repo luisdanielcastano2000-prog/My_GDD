@@ -8,7 +8,7 @@ Orden recomendado: **1 → 2 → 3 → 4 → 5 → 6 → 7**. Primero lo que cam
 
 ---
 
-## 1. «Out of date» de verdad ⬜
+## 1. «Out of date» de verdad ✅ 2026-11-24
 
 > **Decisión del usuario (2026-11-24): propuesta A** (con el extra del aviso «Saved»).
 

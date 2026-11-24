@@ -12,7 +12,7 @@ import type { Model } from 'mongoose';
 import { AuthGuard, UserId } from '../auth/auth.guard.js';
 import { PasswordDto, ProfileDto } from '../auth/dto.js';
 import { Feedback, Gdd, Note, User } from './schemas.js';
-import { type Member, type Team, cleanTeam, recipients, roleIn } from './team.js';
+import { type Member, type Team, cleanTeam, markOutOfDate, recipients, roleIn } from './team.js';
 
 class GddDto {
   @IsString() @MinLength(1, { message: 'Enter a project name.' }) @MaxLength(120) name: string;
@@ -290,19 +290,50 @@ export class NotesController {
       const o = await this.users.findById(g.owner, { team: 1 }).lean();
       if (roleIn(g.owner, teamOf(o), sender)) teamOwner = g.owner;
     }
+    const gid = g && teamOwner === g.owner ? String(data['g']) : null;
+    // «Out of date»: los bloques afectados se marcan en el GDD, para todo el equipo
+    const aff = gid && Array.isArray(data['aff']) ? data['aff'].filter((x): x is string => typeof x === 'string').slice(0, 500) : [];
+    const marked = aff.length && gid ? await this.markBlocks(gid, aff) : [];
     const o = await this.users.findById(teamOwner, { team: 1 }).lean();
     const to = recipients(teamOwner, teamOf(o), sender);
     if (!to.length) return 0;
-    const gid = g && (teamOwner === g.owner) ? String(data['g']) : null;
     const text = typeof data['text'] === 'string' ? data['text'] : '';
+    const where = await this.where(gid, data);
+    const base = { g: gid, dp: typeof data['dp'] === 'string' ? data['dp'] : undefined, b: typeof data['b'] === 'string' ? data['b'] : undefined, by: me.name, when: 'Just now', ts: Date.now(), unread: true };
     await this.notes.insertMany(
       to.map((uid) => ({
         _id: id + '-' + uid,
         owner: uid,
         box: 'received',
-        data: { kind: 'team', g: gid, dp: typeof data['dp'] === 'string' ? data['dp'] : undefined, title: '“' + text + '”', path: 'From: ' + me.name, by: me.name, when: 'Just now', ts: Date.now(), unread: true },
+        // Con bloques marcados llega como aviso de cambio (abre «Review»); si no, como nota del equipo
+        data: marked.length
+          ? { ...base, kind: 'change', title: '“' + text + '”', path: where || 'From: ' + me.name, aff: marked, rvd: [] }
+          : { ...base, kind: 'team', title: '“' + text + '”', path: 'From: ' + me.name },
       })),
     );
     return to.length;
+  }
+
+  /** Marca bloques como «Out of date» en un GDD (con su versión, reintentando si otra persona guardó a la vez). */
+  private async markBlocks(gid: string, aff: string[]): Promise<string[]> {
+    for (let i = 0; i < 5; i++) {
+      const doc = await this.gdds.findById(gid).lean<GddLean>();
+      if (!doc) return [];
+      const { depts, marked } = markOutOfDate(doc.depts, aff);
+      if (!marked.length) return [];
+      const rev = doc.rev ?? 0;
+      const r = await this.gdds.updateOne({ _id: gid, rev: doc.rev === undefined ? { $exists: false } : doc.rev }, { $set: { depts, rev: rev + 1, uts: Date.now(), updated: 'Updated today' } });
+      if (r.matchedCount) return marked;
+    }
+    return [];
+  }
+
+  /** «Animation › Blockings»: de dónde sale la nota (para el aviso de cambio). */
+  private async where(gid: string | null, data: Record<string, unknown>): Promise<string> {
+    if (!gid) return '';
+    const doc = await this.gdds.findById(gid, { depts: 1 }).lean<GddLean>();
+    const dp = doc?.depts.find((d) => d['id'] === data['dp']);
+    const b = dp && Array.isArray(dp['blocks']) ? (dp['blocks'] as Record<string, unknown>[]).find((x) => x['id'] === data['b']) : undefined;
+    return [dp?.['name'], b?.['name']].filter((x): x is string => typeof x === 'string').join(' › ');
   }
 }

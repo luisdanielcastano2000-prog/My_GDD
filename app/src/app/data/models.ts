@@ -95,6 +95,9 @@ export interface Note {
 export interface SentNote {
   id: string;
   g?: string;
+  dp?: string; // departamento y bloque de donde sale la nota (si los hay)
+  b?: string;
+  aff?: string[]; // bloques que esta nota marcó como «Out of date» (los marca el servidor)
   text: string;
   to: string;
   when: string;

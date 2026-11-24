@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { type Team, cleanTeam, recipients, roleIn } from './team.js';
+import { type Team, cleanTeam, markOutOfDate, recipients, roleIn } from './team.js';
 
 const saved: Team = {
   members: [
@@ -46,5 +46,15 @@ describe('roleIn y recipients', () => {
   it('una nota llega al dueño y a los miembros aceptados, no a quien la envía ni a invitaciones', () => {
     expect(recipients('me', saved, 'u2')).toEqual(['me']);
     expect(recipients('me', saved, 'me')).toEqual(['u2']);
+  });
+});
+
+describe('markOutOfDate', () => {
+  it('marca solo los bloques pedidos que existen, sin tocar el resto', () => {
+    const depts = [{ id: 'd1', name: 'Art', blocks: [{ id: 'b1', status: 'Up to date', pend: false, secs: [{ x: 'hola' }] }, { id: 'b2', status: 'Empty', pend: false }] }];
+    const r = markOutOfDate(depts, ['b1', 'no-existe']);
+    expect(r.marked).toEqual(['b1']);
+    expect(r.depts[0]['blocks']).toEqual([{ id: 'b1', status: 'Out of date', pend: true, secs: [{ x: 'hola' }] }, { id: 'b2', status: 'Empty', pend: false }]);
+    expect(depts[0].blocks[0].status).toBe('Up to date'); // no cambia el original
   });
 });

@@ -202,3 +202,12 @@ Cómo arrancar y cómo está organizado el proyecto: `CLAUDE.md`. Aquí va **lo 
 - 4 Acento: solo botones, enlaces y selección.
 - 6 Idiomas: **solo catalán y castellano** por ahora.
 - 7.1 Borrar cuenta: **sin acceso directo** en *Profile* (ya está en *Personal info*).
+
+**Roadmap 1 · «Out of date» (propuesta A)**
+- *New note*: nueva sección plegable «Blocks affected by this change», con casillas por departamento; no sale el bloque de la nota. Al enviar: «Note sent · N blocks marked out of date», y en *Sent* la nota lo indica.
+- Servidor: si la nota enviada lleva `aff`, marca esos bloques en el GDD (`pend`, `status: 'Out of date'`, `rev` +1; reintenta si otra persona guarda a la vez) y entrega a los demás un aviso `kind: 'change'` (título = la nota, ruta = «Departamento › Bloque» de origen), que abre *Review*. Sin `aff`, sigue siendo una nota del equipo normal. Función pura `markOutOfDate` en `team.ts`, con prueba.
+- *Review*: un bloque cuenta como revisado cuando ya no está pendiente en el GDD (igual para todo el equipo), no solo según la nota de cada uno.
+- Editor: el aviso «Saved» lleva la acción «Note a change», que abre *New note* con ese bloque.
+- Quien envía ve los bloques marcados al momento: tras guardar la nota, la app trae el GDD nuevo (`refreshAfterSync`).
+- **Decisión (Claude):** cualquiera del equipo, también un Viewer, puede marcar bloques al enviar una nota (las notas son para todos), pero solo quien puede editar los revisa.
+- Pruebas: `app/e2e/outdated.spec.ts` (5: Saved → Note a change → marcar 2 → Out of date para todos y en Home → Bea revisa uno en Review → a Ana le queda 1 → el Viewer marca, pero no revisa); `team.spec.ts` (api) 8/8. Todas las e2e en el Mac: **26/26**.

@@ -99,6 +99,8 @@ export class EditorPage {
   }
   save(): void {
     const msg = this.store.save(this.bid());
-    this.store.toast(msg, { kind: 'ok' });
+    if (!this.store.canEdit(this.gid())) return;
+    // Si el cambio puede afectar a otros bloques, avisar al equipo y marcarlos con un toque
+    this.store.toast(msg, { kind: 'ok', action: { label: 'Note a change', run: () => { this.store.setDraft('newnote', { g: this.gid(), dp: this.dpid(), b: this.bid() }); this.nav.go('/notes/new'); } } });
   }
 }

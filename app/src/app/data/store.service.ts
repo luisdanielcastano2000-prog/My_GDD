@@ -43,6 +43,7 @@ export class StoreService {
   private syncing = false;
   private syncAgain = false;
   private refreshing = false;
+  private refreshAfterSync = false; // tras enviar una nota que marca bloques
   /** Sube cada vez que cambian los datos o lo guardado: un refresco que empezó antes ya no vale. */
   private gen = 0;
   readonly loadErr = signal(false);
@@ -262,6 +263,7 @@ export class StoreService {
     } finally {
       this.syncing = false;
       if (this.syncAgain) { this.syncAgain = false; void this.sync(); }
+      else if (this.refreshAfterSync) { this.refreshAfterSync = false; setTimeout(() => void this.refresh(), 0); }
     }
   }
 
@@ -607,17 +609,25 @@ export class StoreService {
       this.toast('Note deleted', { undo: true });
     });
   }
-  sendNote(text: string, gid: string, dpid: string | null, cTeam: boolean, cDep: boolean): void {
+  /**
+   * Envía una nota. Si lleva bloques afectados (aff), el servidor los marca como «Out of date» en el GDD
+   * para todo el equipo y entrega a los demás un aviso de cambio (que abre la pantalla Review).
+   */
+  sendNote(text: string, gid: string, dpid: string | null, cTeam: boolean, cDep: boolean, bid: string | null = null, aff: string[] = []): void {
     this.mutate((d) => {
       const g = d.gdds.find((x) => x.id === gid) ?? d.gdds[0];
       const dp = g.depts.find((x) => x.id === dpid) ?? g.depts[0] ?? null;
       const to: string[] = [];
       if (cTeam) to.push('Whole team');
       if (dp && cDep) to.push(dp.name);
-      d.sent.push({ id: nid(), g: g.id, text, to: to.length ? to.join(', ') : 'Whole team', when: 'Just now', ts: Date.now() });
+      d.sent.push({ id: nid(), g: g.id, ...(dp ? { dp: dp.id } : {}), ...(bid ? { b: bid } : {}), ...(aff.length ? { aff } : {}), text, to: to.length ? to.join(', ') : 'Whole team', when: 'Just now', ts: Date.now() });
+      if (!this.live() && aff.length) { // selector de pantallas (sin servidor): se marcan aquí
+        g.depts.forEach((x) => x.blocks.forEach((b) => { if (aff.includes(b.id)) { b.pend = true; b.status = 'Out of date'; } }));
+      }
     });
+    if (aff.length && this.live()) this.refreshAfterSync = true; // los bloques los marca el servidor: traerlos al acabar
     this.notesTab.set('s');
-    this.toast('Note sent', { kind: 'ok' });
+    this.toast(aff.length ? 'Note sent · ' + aff.length + (aff.length === 1 ? ' block' : ' blocks') + ' marked out of date' : 'Note sent', { kind: 'ok' });
   }
   notify(n: Note | null): void {
     this.mutate((d) => d.sent.push({ id: nid(), g: n?.g, text: 'Please review: ' + (n ? n.title : 'the latest change'), to: 'Whole team', when: 'Just now', ts: Date.now() }));

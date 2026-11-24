@@ -61,8 +61,9 @@ export class ReviewPage {
       .map((bid) => {
         const w = this.store.where(bid);
         if (!w) return null;
-        const done = !!n?.rvd?.includes(bid);
         const needs = w.b.secs.some((s) => s.rev);
+        // Revisado: lo dice el propio bloque (cualquiera del equipo puede haberlo revisado) o la nota
+        const done = !!n?.rvd?.includes(bid) || (!w.b.pend && !needs && w.b.status !== 'Out of date');
         return { id: bid, name: w.b.name, path: w.dp.name, done, needs, st: done ? 'Reviewed' : needs ? 'Needs review' : 'Not reviewed yet', url: '/gdd/' + w.g.id + '/dept/' + w.dp.id + '/block/' + bid };
       })
       .filter((x) => !!x);
