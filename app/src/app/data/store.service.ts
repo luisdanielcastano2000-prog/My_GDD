@@ -43,6 +43,8 @@ export class StoreService {
   private syncing = false;
   private syncAgain = false;
   private refreshing = false;
+  /** Sube cada vez que cambian los datos o lo guardado: un refresco que empezó antes ya no vale. */
+  private gen = 0;
   readonly loadErr = signal(false);
   readonly sheet = signal<Sheet | null>(null);
   readonly dialog = signal<Dialog | null>(null);
@@ -124,6 +126,7 @@ export class StoreService {
   }
   /** Pone en pantalla lo que llega del servidor y lo apunta como guardado. */
   private apply(r: MeResponse): void {
+    this.gen++;
     const d: AppData = { gdds: r.gdds, notes: r.notes, sent: r.sent, user: r.user, team: r.team };
     this.data.set(d);
     this.since.set(r.since ? Date.parse(r.since) : null);
@@ -143,9 +146,11 @@ export class StoreService {
   async refresh(): Promise<void> {
     if (!this.live() || this.syncing || this.refreshing || this.dirty() || this.sheet() || this.dialog()) return;
     this.refreshing = true;
+    const gen = this.gen;
     try {
       const r = await this.api.me();
-      if (!this.syncing && !this.dirty()) this.apply(r);
+      // Si mientras tanto cambiaste algo, se guardó algo o se recargó (p. ej. al salir de un equipo), esta respuesta ya es vieja
+      if (gen === this.gen && !this.syncing && !this.dirty()) this.apply(r);
     } catch (e) {
       if (e instanceof HttpErrorResponse && (e.status === 401 || e.status === 404)) { this.logout(); location.assign('/login'); }
     } finally {
@@ -227,6 +232,7 @@ export class StoreService {
       if (team) snap.team = team;
       this.snapshot = snap;
       this.savedSettings = sk;
+      this.gen++;
       if (revs.size || conflicts.size || team) {
         // Lo que se ve: con las versiones nuevas y, si hubo choque, con los dos cambios juntos
         const d = structuredClone(this.data());
@@ -317,6 +323,7 @@ export class StoreService {
     if (keepUndo) this.undoData = this.data();
     fn(d);
     this.data.set(d);
+    this.gen++;
     this.scheduleSync();
   }
   takeDraft<T extends object>(key: string, fallback: T): T {
