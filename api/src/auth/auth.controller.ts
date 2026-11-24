@@ -1,16 +1,16 @@
 import { Body, ConflictException, Controller, HttpCode, Post, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
-import { ThrottlerGuard } from '@nestjs/throttler';
 import bcrypt from 'bcryptjs';
 import type { Model } from 'mongoose';
 
 import { User } from '../data/schemas.js';
 import { LoginDto, SignupDto } from './dto.js';
+import { IpThrottlerGuard } from './ip-throttler.guard.js';
 
 /** Crear cuenta y entrar. Devuelven un token que el front envía en cada petición. */
 @Controller('auth')
-@UseGuards(ThrottlerGuard)
+@UseGuards(IpThrottlerGuard)
 export class AuthController {
   constructor(
     @InjectModel(User.name) private readonly users: Model<User>,
