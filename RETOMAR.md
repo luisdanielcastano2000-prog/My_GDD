@@ -1,4 +1,4 @@
-> **Actualización 2026-11-24:** la app ya está publicada en https://my-gdd.onrender.com y comprobada. La sección 3 queda como referencia; lo siguiente es la sección 4.
+> **Actualización 2026-11-24:** la app está publicada en https://my-gdd.onrender.com, revisada a fondo y con los fallos encontrados corregidos. Lo siguiente: elegir entre las propuestas del final de `BITACORA.md` («Propuestas tras la revisión»). La sección 3 queda como referencia.
 
 # Retomar My GDD (mañana)
 

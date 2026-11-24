@@ -143,3 +143,16 @@ Cómo arrancar y cómo está organizado el proyecto: `CLAUDE.md`. Aquí va **lo 
 - Probado en el Mac en modo producción (`NODE_ENV=production npm run build` + `npm start`, puerto 3100): API con `curl` (since, cts/uts, feedback y feedback vacío → 400, tokens antiguos → 401 tras logout-others y tras cambiar la contraseña, 10 intentos → 429, cuenta borrada → 401) y navegador (11 comprobaciones, todas bien; con el reloj adelantado 2 días: «Updated 2 days ago», «edited 2 days ago», notas «2 days ago»).
 - Conocido y anterior a esto: `npm run lint` en `app/` falla en el paso de Prettier (20 archivos con formato distinto); ESLint y tipos, sin errores. No se reformatea para no mezclar 20 archivos en este cambio.
 - En línea (Render), todo lo anterior comprobado de nuevo en el navegador: 11/11 bien. **Pero el límite de intentos no saltaba**: 11 intentos → todos 401. Render está detrás de Cloudflare y de varios proxies, y `req.ip` cambia en cada petición. Arreglo: `api/src/auth/ip-throttler.guard.ts` cuenta por `CF-Connecting-IP` (Cloudflare pone la IP real y sustituye la que mande el visitante); se quita `trust proxy`. Probado en el Mac simulando la cabecera: el visitante 1 llega a 429 en el intento 11; el visitante 2 sigue pudiendo entrar.
+- En línea tras el deploy de `056c890`: 10 intentos fallidos → 401; el 11.º y siguientes → 429. Comprobado dos veces. Una cabecera `CF-Connecting-IP` falsa la bloquea Cloudflare (403). Durante el deploy hubo respuestas mezcladas (conviven la versión vieja y la nueva unos minutos).
+
+## Propuestas tras la revisión (2026-11-24, pendientes de decisión del usuario)
+
+1. **«Out of date» no ocurre nunca con datos reales.** Es la promesa principal de la app («up to date»), pero los avisos de cambio (`kind: 'change'`) solo existen en los datos de ejemplo; ni el prototipo dice qué los provoca. Propuesta: al guardar un bloque con cambios, avisar a los bloques relacionados (hay que decidir qué es «relacionado»: el mismo departamento, una lista de dependencias que elige el usuario…).
+2. **El equipo no comparte los GDDs.** «My team» dice «People who can see your GDDs», pero las otras cuentas no ven nada; solo reciben notas. Propuesta: GDDs compartidos con los roles Editor / Viewer (cambio grande en la API).
+3. **Notas a cualquiera.** Basta con escribir un email en «Invite member» para que esa cuenta reciba tus notas, sin aceptar nada. Propuesta: que la invitación se acepte antes de recibir notas (va junto con el punto 2).
+4. **Correo real** (contraseña olvidada, invitaciones, confirmar el cambio de email): necesita un servicio de correo (p. ej. Resend o Brevo, con plan gratis) y una cuenta del usuario. Hoy esas pantallas dicen «We sent…» sin enviar nada.
+5. **Verificación en dos pasos:** el interruptor no hace nada (no se guarda). Quitarlo o hacerlo real (va con el correo).
+6. **Idiomas:** se puede elegir, pero la app solo está en inglés (lo avisa). **Color de acento:** se elige pero no cambia la paleta.
+7. **Detalles de animación** ya anotados: desintegración en cuadrados al borrar y reordenar arrastrando.
+8. **Render gratis se duerme:** la primera visita tras 15 min tarda ~1 min. Opciones: plan de pago (~7 $/mes) o aceptar la espera.
+9. **Formato:** `npm run lint` de `app/` falla solo por Prettier (20 archivos). Arreglarlo es `npx prettier --write` en un commit aparte, sin cambios de código.
