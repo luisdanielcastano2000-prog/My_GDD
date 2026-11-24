@@ -4,6 +4,8 @@ import { IonContent, IonHeader } from '@ionic/angular';
 
 import { StoreService } from '../data/store.service';
 import { NavService } from '../shared/nav.service';
+import { ReorderDirective } from '../shared/reorder.directive';
+import { TilesDirective } from '../shared/tiles.directive';
 import { StatusComponent, TopBarComponent } from '../shared/ui';
 
 /** Cuando aparece algo nuevo al final de la lista (departamento o bloque), baja hasta verlo. */
@@ -16,7 +18,7 @@ function scrollToNew(content: () => IonContent | undefined, popped: () => string
 
 @Component({
   selector: 'app-depts',
-  imports: [IonHeader, IonContent, TopBarComponent, StatusComponent],
+  imports: [IonHeader, IonContent, TopBarComponent, StatusComponent, TilesDirective, ReorderDirective],
   template: `
     <ion-header class="cards">
       <app-top-bar title="Departments" [sub]="g()?.name ?? ''" back="/home" searchLabel="Search departments" [(query)]="q" [(searching)]="searching" />
@@ -26,9 +28,9 @@ function scrollToNew(content: () => IonContent | undefined, popped: () => string
         <div class="page with-fab" style="gap:8px">
           @if (gd.depts.length) {
             @if (!searching()) { <p class="intro t-body-medium">{{ intro() }}</p> }
-            <ul class="dept-list">
+            <ul class="dept-list" appReorder [reorderOn]="edit() && !q()" (reordered)="store.reorder('dept', gd.id, null, $event.from, $event.to)">
               @for (x of list(); track x.id) {
-                <li class="dept-card card" [class.pop-in]="store.popped() === x.id" [class.dissolve]="store.dying() === x.id">
+                <li class="dept-card card" [class.pop-in]="store.popped() === x.id" [appTiles]="store.tile(x.id)" [attr.data-flip]="x.id" [attr.data-reorder]="x.id">
                   <button class="open" type="button" [attr.aria-label]="'Open ' + x.name + ', ' + x.st.t" (click)="nav.go('/gdd/' + gd.id + '/dept/' + x.id)"></button>
                   <span class="num-band" [style.background]="x.band">{{ x.num }}</span>
                   <span class="content">
@@ -96,7 +98,7 @@ export class DeptsPage {
 
 @Component({
   selector: 'app-dept',
-  imports: [IonHeader, IonContent, TopBarComponent, StatusComponent],
+  imports: [IonHeader, IonContent, TopBarComponent, StatusComponent, TilesDirective, ReorderDirective],
   template: `
     <ion-header class="cards">
       <app-top-bar [title]="dp()?.name ?? ''" [sub]="g()?.name ?? ''" [back]="'/gdd/' + gid()" searchLabel="Search blocks" [(query)]="q" [(searching)]="searching" />
@@ -106,9 +108,9 @@ export class DeptsPage {
         <div class="page" style="gap:12px; padding-bottom: calc(80px * var(--gdd-ts) + 168px)">
           @if (!searching()) { <p class="crumb" style="padding:0">Department {{ pos() }} of {{ g()!.depts.length }} in the production pipeline</p> }
           @if (d.blocks.length) {
-            <div class="blocks">
+            <div class="blocks" appReorder [reorderOn]="edit() && !q()" (reordered)="store.reorder('block', gid(), d.id, $event.from, $event.to)">
               @for (b of blocks(); track b.id) {
-                <div class="block-tile card" [class.pop-in]="store.popped() === b.id" [class.dissolve]="store.dying() === b.id">
+                <div class="block-tile card" [class.pop-in]="store.popped() === b.id" [appTiles]="store.tile(b.id)" [attr.data-flip]="b.id" [attr.data-reorder]="b.id">
                   <button class="open" type="button" [attr.aria-label]="b.name + ', ' + b.status" (click)="nav.go('/gdd/' + gid() + '/dept/' + d.id + '/block/' + b.id)"></button>
                   <span class="band" [style.background]="band()"></span>
                   <span class="content">

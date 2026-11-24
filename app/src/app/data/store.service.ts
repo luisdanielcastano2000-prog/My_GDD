@@ -1,6 +1,8 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable, computed, effect, inject, signal } from '@angular/core';
 
+import { flipCapture, flipPlay, mvK } from '../shared/motion';
+
 import { ApiService, type MeResponse, apiMessage } from './api.service';
 import { mergeGdd } from './merge';
 import type { AppData, Block, Dept, Dialog, Gdd, Grant, Invitation, Note, Role, Sheet, Snack, TeamRef } from './models';
@@ -52,6 +54,8 @@ export class StoreService {
   readonly snack = signal<Snack | null>(null);
   readonly dying = signal<string | null>(null); // id de lo que se está borrando (animación)
   readonly popped = signal<string | null>(null); // id de lo recién creado (animación)
+  readonly rebuilding = signal<string | null>(null); // id de lo que vuelve con Undo (se reconstruye en cuadrados)
+  private lastDeleted: string | null = null;
   readonly homeIndex = signal(0);
   readonly notesTab = signal<'r' | 's'>('r');
   readonly notesCollapsed = signal<Record<string, boolean>>({});
@@ -111,6 +115,7 @@ export class StoreService {
       else if (dark) root.classList.add('theme-dark');
       if (dark) root.classList.add('ion-palette-dark');
       root.classList.toggle('reduce-motion', s.reduceMotion);
+      try { localStorage.setItem('gdd-reduce-motion', s.reduceMotion ? '1' : '0'); } catch { /* sin almacenamiento */ } // para el arranque (splash)
       root.classList.toggle('motion-slow', s.slowMotion);
       const ts = s.textSize === 'Larger' ? 1.4 : s.textSize === 'Large' ? 1.2 : 1;
       root.style.setProperty('--gdd-ts', String(ts));
@@ -398,7 +403,24 @@ export class StoreService {
     this.snackTimer = setTimeout(() => { if (this.snack()?.id === s.id) this.snack.set(null); }, (s.undo || s.action ? 10000 : 4000) * k);
   }
   undo(): void {
-    if (this.undoData) { this.data.set(this.undoData); this.scheduleSync(); }
+    if (this.undoData) {
+      const before = flipCapture();
+      const id = this.lastDeleted;
+      // Volver a como estaba, pero con la versión (rev) actual de cada GDD: el borrado ya se guardó y subió
+      // la versión; con la vieja, el servidor lo tomaría por un cambio de otra persona (409).
+      const revs = new Map(this.data().gdds.map((g) => [g.id, g.rev]));
+      const back = structuredClone(this.undoData);
+      back.gdds.forEach((g) => { if (revs.has(g.id)) g.rev = revs.get(g.id); });
+      this.data.set(back);
+      this.gen++;
+      this.scheduleSync();
+      flipPlay(before); // los vecinos se apartan para dejarle sitio
+      if (id) { // y lo borrado se reconstruye en cuadrados
+        this.rebuilding.set(id);
+        setTimeout(() => { if (this.rebuilding() === id) this.rebuilding.set(null); }, 700 * mvK());
+      }
+    }
+    this.lastDeleted = null;
     this.undoData = null;
     this.dying.set(null);
     this.snack.set(null);
@@ -410,9 +432,15 @@ export class StoreService {
 
   /** Espera la animación de borrar antes de cambiar los datos (si «menos movimiento» está activo, no espera). */
   private afterDissolve(id: string, fn: () => void): void {
-    const ms = this.settings().reduceMotion ? 0 : 420 * (this.settings().slowMotion ? 4 : 1);
+    const ms = this.settings().reduceMotion ? 150 : 420 * (this.settings().slowMotion ? 4 : 1);
     this.dying.set(id);
-    setTimeout(() => { fn(); this.dying.set(null); }, ms);
+    setTimeout(() => {
+      const before = flipCapture();
+      this.lastDeleted = id;
+      fn();
+      this.dying.set(null);
+      flipPlay(before); // el hueco se cierra deslizando los vecinos
+    }, ms);
   }
   private pop(id: string): void {
     this.popped.set(id);
@@ -590,6 +618,26 @@ export class StoreService {
       if (sh.what === 'gdd') { d.gdds = [...arr as Gdd[], ...d.gdds.filter((g) => g.share)]; this.homeIndex.set(j); }
     });
     this.sheet.set(null);
+  }
+  /** Reordenar arrastrando (departamentos de un GDD o bloques de un departamento). */
+  reorder(what: 'dept' | 'block', gid: string, dpid: string | null, from: number, to: number): void {
+    if (what === 'dept' ? this.deny(gid, 'depts') : this.deny(gid, 'dept', dpid)) return;
+    let name = '', n = 0;
+    this.mutate((d) => {
+      const g = d.gdds.find((x) => x.id === gid);
+      const arr: { name: string }[] | undefined = what === 'dept' ? g?.depts : g?.depts.find((x) => x.id === dpid)?.blocks;
+      if (!g || !arr || from < 0 || to < 0 || from >= arr.length || to >= arr.length) return;
+      const [it] = arr.splice(from, 1);
+      arr.splice(to, 0, it);
+      name = it.name;
+      n = arr.length;
+      touch(g);
+    });
+    if (name) this.toast(name + ' moved to position ' + (to + 1) + ' of ' + n);
+  }
+  /** Animación de una tarjeta: 'out' se desintegra (al borrar) · 'in' se reconstruye (Undo). */
+  tile(id: string): 'out' | 'in' | null {
+    return this.dying() === id ? 'out' : this.rebuilding() === id ? 'in' : null;
   }
   askDelete(sh: Extract<Sheet, { k: 'act' }>): void {
     this.sheet.set(null);

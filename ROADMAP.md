@@ -75,7 +75,7 @@ A tener en cuenta:
 
 Pasos: 4.1 paletas por acento y por tema · 4.2 aplicarlas al elegir (también en la vista previa de *Edit profile*) · 4.3 comprobación de contraste y capturas.
 
-## 5. Animaciones que faltan ⬜
+## 5. Animaciones que faltan ✅ 2026-11-24 (5.1–5.4; 5.5 ver bitácora)
 
 Según el README del sistema de diseño (tabla de movimiento) y los marcos `Mov-*`:
 - 5.1 **Eliminar un bloque, desintegrándose en cuadrados** (`dur-dissolve`); hoy solo se encoge y se desvanece.

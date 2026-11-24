@@ -347,3 +347,26 @@ dl.gloss dd { margin: 2px 0 0; color: var(--gdd-on-surface-variant); }
 
 /* Aviso «Verify your email» (Home, Notes, My team) */
 .verify-banner { margin: 12px 16px 0; align-items: center; .btn { margin-left: auto; flex-shrink: 0; } }
+
+/* ---------- Desintegración en cuadrados y reconstrucción (shared/tiles.directive.ts) ---------- */
+.tiles-on { background: transparent !important; border-color: transparent !important; box-shadow: none !important; pointer-events: none; }
+.tiles-on > :not(.tiles) { visibility: hidden; }
+.tiles { position: absolute; z-index: 2; pointer-events: none; }
+
+/* ---------- Reordenar arrastrando (shared/reorder.directive.ts) ---------- */
+[data-reorder] { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+.reordering { position: relative; }
+.lifted { position: relative; z-index: 30; box-shadow: 0 8px 20px rgb(0 0 0 / 18%) !important; outline: 2px solid var(--gdd-primary); outline-offset: -2px; }
+:root.theme-dark .lifted, :root.theme-dark-hc .lifted { box-shadow: none !important; background: var(--gdd-surface-container-highest) !important; }
+.reorder-ph { position: absolute; box-sizing: border-box; border-radius: var(--gdd-card-r, 12px); background: var(--gdd-primary); opacity: 0.12; pointer-events: none; }
+
+/* ---------- Arranque de la app (shared/splash.component.ts; keyframes del prototipo) ---------- */
+.splash { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; background: #3F48CC; pointer-events: none; }
+.splash.leaving { animation: fadeOut calc(150ms * var(--mv-k)) linear forwards; }
+.splash svg { display: block; overflow: visible; }
+.sp-pop { transform-box: fill-box; transform-origin: center; animation: spPop calc(0.4s * var(--mv-k)) ease-out both; animation-delay: calc(var(--d) * var(--mv-k)); }
+.sp-ring { transform-origin: 0 0; animation: spLap calc(0.65s * var(--mv-k)) var(--ease-ring, cubic-bezier(.65, 0, .35, 1)) calc(0.35s * var(--mv-k)) both; }
+.sp-key { transform: translate(calc(var(--x) * 1px), calc(var(--y) * 1px)); animation: spSpi calc(0.65s * var(--mv-k)) var(--ease-ring, cubic-bezier(.65, 0, .35, 1)) calc(0.35s * var(--mv-k)) both; }
+@keyframes spPop { 0% { transform: translateY(20px) scale(0) rotate(-25deg); opacity: 0; } 12% { opacity: 1; } 40% { transform: translateY(-34px) scale(1.25) rotate(10deg); } 65% { transform: translateY(0) scale(.88) rotate(-4deg); } 82% { transform: translateY(-6px) scale(1.05) rotate(2deg); } 100% { transform: none; opacity: 1; } }
+@keyframes spLap { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+@keyframes spSpi { from { transform: translate(calc(var(--x) * 1.5px), calc(var(--y) * 1.5px)); } to { transform: translate(calc(var(--x) * 1px), calc(var(--y) * 1px)); } }

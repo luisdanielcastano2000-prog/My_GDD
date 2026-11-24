@@ -54,7 +54,7 @@ interface Row { id: string; kind: 'change' | 'team' | 'sent'; icon: string; titl
             @if (gr.open) {
               <ul class="nt-list">
                 @for (it of gr.items; track it.id) {
-                  <li class="nt-li" [class.slide-out]="store.dying() === it.id">
+                  <li class="nt-li" [class.slide-out]="store.dying() === it.id" [attr.data-flip]="it.id">
                     <button class="li" type="button" [class.unread]="it.unread" [attr.aria-label]="it.aria" (click)="open(it)">
                       <span class="nt-ic" [class]="'nt-ic ' + it.kind"><span class="ms s20">{{ it.icon }}</span></span>
                       <span class="li-text"><span class="li-title">{{ it.title }}</span><span class="li-sub">{{ it.sub }}</span></span>

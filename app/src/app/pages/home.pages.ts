@@ -7,6 +7,7 @@ import type { Gdd } from '../data/models';
 import { CATALOG, TEMPLATE_DEPTS, type Template } from '../data/sample';
 import { StoreService } from '../data/store.service';
 import { NavService } from '../shared/nav.service';
+import { TilesDirective } from '../shared/tiles.directive';
 import { StatusComponent, TopBarComponent } from '../shared/ui';
 import { VerifyBannerComponent } from '../shared/verify-banner.component';
 
@@ -14,7 +15,7 @@ const CARD_STEP = 294; // ancho de tarjeta (286) + separación (8)
 
 @Component({
   selector: 'app-home',
-  imports: [IonHeader, IonContent, TopBarComponent, StatusComponent, VerifyBannerComponent],
+  imports: [IonHeader, IonContent, TopBarComponent, StatusComponent, VerifyBannerComponent, TilesDirective],
   template: `
     <ion-header class="cards"><app-top-bar [brand]="true" /></ion-header>
     <ion-content class="page-cards">
@@ -37,7 +38,7 @@ const CARD_STEP = 294; // ancho de tarjeta (286) + separación (8)
         <div class="home">
           <div #car class="carousel" (scroll)="onScroll($any($event.target))" aria-label="Your GDDs" role="list">
             @for (g of cards(); track g.id) {
-              <div class="gdd-card" role="listitem" [class.pop-in]="store.popped() === g.id" [class.dissolve]="store.dying() === g.id">
+              <div class="gdd-card" role="listitem" [class.pop-in]="store.popped() === g.id" [appTiles]="store.tile(g.id)" [attr.data-flip]="g.id">
                 <button class="open" type="button" [attr.aria-label]="'Open ' + g.name + ', ' + g.st.t" (click)="nav.go('/gdd/' + g.id)"></button>
                 <span class="band"><span class="ms">sports_esports</span></span>
                 <button class="icon-btn more" type="button" [attr.aria-label]="'More options for ' + g.name" (click)="store.sheet.set({ k: 'act', what: 'gdd', id: g.id })"><span class="ms">more_vert</span></button>

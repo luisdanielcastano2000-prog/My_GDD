@@ -389,12 +389,6 @@ ion-content.page-editor { --background: var(--gdd-ed-bg); }
   81% { transform: translateY(-8px) scale(1.06) rotate(2deg); animation-timing-function: ease-in; }
   100% { opacity: 1; transform: none; }
 }
-/* lo que se borra se deshace en cuadrados (versión simplificada: se encoge y se desvanece) */
-.dissolve { animation: dissolve calc(420ms * var(--mv-k)) var(--ease-accelerate) forwards; pointer-events: none; }
-@keyframes dissolve {
-  0% { opacity: 1; transform: none; filter: none; }
-  100% { opacity: 0; transform: scale(0.85) translateY(8px); filter: blur(4px); }
-}
 .slide-out { animation: slideOut calc(300ms * var(--mv-k)) var(--ease-accelerate) forwards; pointer-events: none; }
 @keyframes slideOut { to { opacity: 0; transform: translateX(100%); } }
 .fade-in { animation: fadeIn calc(150ms * var(--mv-k)) linear backwards; }
