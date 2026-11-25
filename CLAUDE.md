@@ -71,7 +71,7 @@ Capacitor 8 (`app/android/`, identificador `com.mygdd.app`, nombre «My GDD»). 
   `mkdir -p ~/Documents/MyGDD-firma && "$(/usr/libexec/java_home -v 21)/bin/keytool" -genkeypair -v -keystore ~/Documents/MyGDD-firma/my-gdd-release.jks -alias my-gdd -keyalg RSA -keysize 2048 -validity 10000`
   Fuera del repositorio (`*.jks` en `.gitignore`). **Si se pierde, no se puede actualizar la app ya instalada o publicada**: guardar copia del archivo y la contraseña.
 - **Generar la APK:** en `app/`, `npm run apk` (`scripts/apk-release.sh`: compila la web, `cap sync`, `gradlew assembleRelease`, `zipalign` y `apksigner`, que pide la contraseña). Sale en `~/Documents/MyGDD-APK/my-gdd-<versionName>.apk`. Para una versión nueva, subir `versionCode` y `versionName` en `app/android/app/build.gradle`.
-- **Icono:** de momento el de Capacitor. El sistema de diseño tiene las capas del icono adaptativo (`design/system/assets/Logos/README.md`), pero sus archivos no están en la copia local (traerlos = resincronizar, con OK del usuario).
+- **Icono y arranque:** del sistema de diseño (`design/system/assets/Logos/*.svg`): icono adaptativo (capa delantera + fondo `#3F48CC` + monocromo para Android 13+), clásico y redondo, y pantalla de arranque azul con el logo (`windowSplashScreenBackground`). Los PNG de `app/android/app/src/main/res` se generan desde esos SVG con Chromium de Playwright (script de una sola vez; si cambia el icono, repetirlo).
 
 ## Roadmap
 
