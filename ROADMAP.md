@@ -99,7 +99,7 @@ Todas respetan «menos movimiento» (fundido de 150 ms o menos).
 
 Pasos: 6.1 sistema de traducción + inglés · 6.2 español · 6.3 catalán · 6.4 japonés + fuente · 6.5 fechas y mensajes del servidor · 6.6 pruebas en los 4 idiomas.
 
-## 7. Pequeños pendientes ✅ 2026-11-25
+## 7. Pequeños pendientes ✅ 2026-11-25 en el Mac (`8f2b605`) · ⏳ sin publicar
 
 - 7.1 ✅ **Borrar la cuenta:** ya existe en *Profile › Personal info › Delete account*. **Decisión del usuario: no añadir acceso directo en *Profile*.**
 - 7.2 ✅ **Verificación en dos pasos real, con código por correo** (decisión del usuario, 2026-11-25). En línea queda inactiva hasta activar Brevo (sección 3).

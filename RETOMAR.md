@@ -1,3 +1,5 @@
+> **Actualización 2026-11-25 (tarde):** sección 7 hecha en el Mac (formato, dos pasos con código por correo, Render gratis), **sin publicar**: falta `git push` con el OK del usuario y probar en línea. Después solo queda Brevo (sección 3), que activa el usuario.
+
 > **Actualización 2026-11-25:** secciones 1–6 del roadmap hechas y publicadas (la 6, idiomas es/ca, comprobada en línea; los correos siguen en inglés por decisión del usuario). Lo siguiente: sección 7 de `ROADMAP.md` (pequeños pendientes). Brevo (sección 3) sigue pendiente de que el usuario lo active.
 
 > **Actualización 2026-11-24:** la app está publicada en https://my-gdd.onrender.com, revisada a fondo y con los fallos encontrados corregidos. Hechos los puntos 2 y 3 (GDDs compartidos con Editor/Viewer e invitaciones que se aceptan). Lo siguiente está en **`ROADMAP.md`** (secciones 1–7, en orden recomendado). El usuario envía cada sección; las marcadas ❓ necesitan antes su decisión. La sección 3 queda como referencia.
