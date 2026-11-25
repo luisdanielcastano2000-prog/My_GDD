@@ -286,3 +286,12 @@ Cómo arrancar y cómo está organizado el proyecto: `CLAUDE.md`. Aquí va **lo 
 - Git: `main` = `origin/main`, nada sin subir.
 - Catálogo Tech (`~/Documents/proyectos/actividad_01`): fases 1–4 terminadas; web en GitHub Pages → 200, `GET /products` en Render → 200 con datos de Atlas. Única duda, de 2026-11-20: el usuario no ha confirmado que cambió la contraseña de Atlas después de que saliera en el chat (ver `RETOMAR.md` de ese proyecto, punto 2).
 - **Estado de Claude:** sin trabajo en curso. **En pausa** (a la espera del OK del usuario): investigar el fallo ocasional de `animations.spec.ts` «arranque» (ver `RETOMAR.md`). Flecos menores, no bloquean: 5.5 (animaciones no comparadas una a una con cada marco `Mov-*`), japonés «más adelante».
+
+**APK de Android** (2026-11-25, rama `wip/apk`)
+- Recordado al usuario: prueba de animaciones «arranque» sigue en pausa.
+- **Decisiones del usuario:** sin Android Studio ni emulador; Java 21 (no había Java 25 ni ningún otro); web dentro de la APK (no ventana a la web publicada); APK de publicación firmada; `com.mygdd.app` · «My GDD».
+- Instalado sin Homebrew ni sudo: Temurin 21.0.13.1 (huella comprobada), Android cmdline-tools 23.0 **arm64** (la primera vez se bajó la x86_64 por error: «Bad CPU type»), platform-tools, android-36, build-tools 36.0.0 (+35.0.0 por Gradle). Licencias del SDK aceptadas al instalar.
+- No se pudo añadir `JAVA_HOME`/`ANDROID_HOME` a `~/.zshrc` (permiso denegado): el script no lo necesita; el usuario puede añadirlo a mano.
+- Código: `API_ORIGIN` + `authInterceptor` (solo en la app nativa), `CapacitorHttp` activado, `@capacitor/android` 8.6.2, `npx cap add android`, `npm run apk` (`scripts/apk-release.sh`), `*.jks` ignorados. Detalles en `CLAUDE.md` › «App de Android».
+- Comprobado: el script completo con una clave de prueba desechable (borrada) → APK firmada y verificada, `com.mygdd.app` 1.0, «My GDD», permiso INTERNET. Lint y unitarias (6/6) bien; la web no cambia.
+- **Falta:** (1) el usuario crea su clave y ejecuta `npm run apk`; (2) probarla en un móvil Android (sin emulador no se ha visto funcionar: entrar, guardar, dos pasos); (3) icono propio (necesita resincronizar el diseño, con OK); (4) fusionar `wip/apk` en `main`.
