@@ -279,3 +279,10 @@ Cómo arrancar y cómo está organizado el proyecto: `CLAUDE.md`. Aquí va **lo 
 - **Pruebas en línea con el correo activo:** las que invitan se saltan (las cuentas `@example.com` no se pueden verificar). Dos pruebas fallaban por cómo estaban escritas, no por la app: `general` «dos días después» miraba la nota enviada que crea una prueba saltada (ahora solo si hay notas enviadas) e `i18n` «toda la app en español» tomaba el primer `.li-text` de *Mi equipo*, que ahora es el aviso «Verifica tu email» (ahora busca la fila «(tú)»). Tras arreglarlas: `general` + `i18n` en línea 13 pasan, 1 saltada; en el Mac **60/60**.
 - Visto una vez (no se repitió en otras dos ejecuciones): `animations.spec.ts` «arranque» falló dentro de la suite completa en el Mac y pasó sola. Sin investigar; si vuelve, mirarlo.
 - **El roadmap queda completo y en línea.**
+
+**Comprobación de estado** (2026-11-25, pedida por el usuario)
+- `ROADMAP.md`: las 7 secciones ✅ (fecha y commit). Sin ⬜, ❓ ni 🔄.
+- En línea: `https://my-gdd.onrender.com/` → 200; `GET /api/me` sin sesión → 401 (la API responde).
+- Git: `main` = `origin/main`, nada sin subir.
+- Catálogo Tech (`~/Documents/proyectos/actividad_01`): fases 1–4 terminadas; web en GitHub Pages → 200, `GET /products` en Render → 200 con datos de Atlas. Única duda, de 2026-11-21: el usuario no ha confirmado que cambió la contraseña de Atlas después de que saliera en el chat (ver `RETOMAR.md` de ese proyecto, punto 2).
+- **Estado de Claude:** sin trabajo en curso. **En pausa** (a la espera del OK del usuario): investigar el fallo ocasional de `animations.spec.ts` «arranque» (ver `RETOMAR.md`). Flecos menores, no bloquean: 5.5 (animaciones no comparadas una a una con cada marco `Mov-*`), japonés «más adelante».
