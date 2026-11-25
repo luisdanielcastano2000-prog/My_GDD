@@ -1,3 +1,5 @@
+> **⏸️ En pausa (2026-11-25, por decisión del usuario):** investigar el fallo ocasional de `app/e2e/animations.spec.ts` «arranque» (falló una vez en la suite completa en el Mac; sola pasa). Estimado 30–60 min; si en 1 h no se reproduce, parar e informar. **Recordárselo al usuario** cuando dé nuevas instrucciones, y no empezarlo sin su OK.
+
 > **Actualización 2026-11-25 (Brevo):** roadmap completo y en línea, **con Brevo activo** (los correos llegan; la verificación en dos pasos ya se puede usar). No queda nada pendiente: lo siguiente es trabajo nuevo que pida el usuario.
 
 > **Actualización 2026-11-25:** secciones 1–6 del roadmap hechas y publicadas (la 6, idiomas es/ca, comprobada en línea; los correos siguen en inglés por decisión del usuario). Lo siguiente: sección 7 de `ROADMAP.md` (pequeños pendientes). Brevo (sección 3) sigue pendiente de que el usuario lo active.
