@@ -86,7 +86,7 @@ Según el README del sistema de diseño (tabla de movimiento) y los marcos `Mov-
 
 Todas respetan «menos movimiento» (fundido de 150 ms o menos).
 
-## 6. Idiomas: español y catalán 🔄 (rama `wip/idiomas`, casi lista; ver bitácora)
+## 6. Idiomas: español y catalán ✅ 2026-11-25 (`ac3d1f5`, comprobado en línea) · japonés más adelante · correos en inglés (decisión del usuario)
 
 > **Decisión del usuario (2026-11-24):** por ahora **solo catalán y castellano**; el japonés, más adelante.
 
