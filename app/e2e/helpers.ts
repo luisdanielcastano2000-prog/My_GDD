@@ -20,7 +20,12 @@ async function retry429<T>(fn: () => Promise<{ status: number; value: T }>): Pro
 }
 
 /** Un correo «enviado» (solo en el Mac: sin servicio de correo se guardan en la colección outbox). */
-export interface OutMail { to: string; subject: string; text: string; link?: string }
+export interface OutMail {
+  to: string;
+  subject: string;
+  text: string;
+  link?: string;
+}
 
 /** Correos a una dirección (más nuevo primero). null si no hay outbox (app publicada: se envían de verdad). */
 export async function outbox(request: APIRequestContext, to: string): Promise<OutMail[] | null> {
@@ -50,7 +55,10 @@ export async function verifyEmail(request: APIRequestContext, to: string): Promi
 /** ¿La app pide verificar el email? (si sí y no se puede verificar, las pruebas que invitan se saltan) */
 export async function skipIfCannotVerify(page: Page): Promise<void> {
   const me = await api<{ mail?: boolean; emailVerified?: boolean }>(page, '/api/me');
-  test.skip(!!me.mail && !me.emailVerified, 'La app publicada envía correos de verdad: las cuentas @example.com no se pueden verificar, así que no pueden invitar.');
+  test.skip(
+    !!me.mail && !me.emailVerified,
+    'La app publicada envía correos de verdad: las cuentas @example.com no se pueden verificar, así que no pueden invitar.',
+  );
 }
 
 /** Crea una cuenta por la API (y verifica su email si se puede). Devuelve su token. */
@@ -83,11 +91,19 @@ export async function signupUi(page: Page, user: string, run: string, verify = t
 }
 
 /** Llamada a la API desde la página, con el token de su sesión. */
-export async function api<T = Record<string, unknown>>(page: Page, path: string, init: { method?: string; body?: unknown } = {}): Promise<T> {
+export async function api<T = Record<string, unknown>>(
+  page: Page,
+  path: string,
+  init: { method?: string; body?: unknown } = {},
+): Promise<T> {
   return page.evaluate(
     async ([path, method, body]) => {
       const k = Object.keys(localStorage).find((x) => /token/i.test(x)) ?? '';
-      const r = await fetch(path, { method, body: body === undefined ? undefined : JSON.stringify(body), headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + localStorage.getItem(k) } });
+      const r = await fetch(path, {
+        method,
+        body: body === undefined ? undefined : JSON.stringify(body),
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + localStorage.getItem(k) },
+      });
       return r.json() as Promise<T>;
     },
     [path, init.method ?? 'GET', init.body] as const,

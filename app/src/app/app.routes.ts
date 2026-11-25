@@ -28,7 +28,11 @@ export const routes: Routes = [
   { path: 'gdd/:gid/outdated', canActivate: [authGuard], loadComponent: () => review().then((m) => m.OutdatedPage) },
   { path: 'gdd/:gid/review/:nid', canActivate: [authGuard], loadComponent: () => review().then((m) => m.ReviewPage) },
   { path: 'gdd/:gid/dept/:dpid', canActivate: [authGuard], loadComponent: () => depts().then((m) => m.DeptPage) },
-  { path: 'gdd/:gid/dept/:dpid/block/:bid', canActivate: [authGuard], loadComponent: () => import('./pages/editor.page').then((m) => m.EditorPage) },
+  {
+    path: 'gdd/:gid/dept/:dpid/block/:bid',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/editor.page').then((m) => m.EditorPage),
+  },
   // Notas
   { path: 'notes', canActivate: [authGuard], loadComponent: () => notes().then((m) => m.NotesPage) },
   { path: 'notes/new', canActivate: [authGuard], loadComponent: () => notes().then((m) => m.NewNotePage) },
@@ -46,6 +50,10 @@ export const routes: Routes = [
   { path: 'profile/language', canActivate: [authGuard], loadComponent: () => profile().then((m) => m.LanguagePage) },
   { path: 'profile/privacy', canActivate: [authGuard], loadComponent: () => profile().then((m) => m.PrivacyPage) },
   // Selector de pantallas del diseño (desarrollo)
-  { path: 'scenes', canActivate: [devGuard], loadComponent: () => import('./pages/scenes.page').then((m) => m.ScenesPage) },
+  {
+    path: 'scenes',
+    canActivate: [devGuard],
+    loadComponent: () => import('./pages/scenes.page').then((m) => m.ScenesPage),
+  },
   { path: '**', redirectTo: 'home' },
 ];

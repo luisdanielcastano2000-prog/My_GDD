@@ -6,12 +6,19 @@ import { email, runId, signupApi } from './helpers';
 
 test.describe.configure({ mode: 'serial' });
 
-type Json = Record<string, any>;  
+type Json = Record<string, any>;
 const run = runId();
 const G = 'g-' + run;
-const gdd = { name: 'Juego', order: 0, depts: [{ id: 'd1', name: 'Art', blocks: [{ id: 'b1', name: 'Style', secs: [] }] }] };
+const gdd = {
+  name: 'Juego',
+  order: 0,
+  depts: [{ id: 'd1', name: 'Art', blocks: [{ id: 'b1', name: 'Style', secs: [] }] }],
+};
 let rq: APIRequestContext;
-let ana = '', bea = '', cris = '', anaId = '';
+let ana = '',
+  bea = '',
+  cris = '',
+  anaId = '';
 
 async function call(token: string, method: string, path: string, data?: unknown): Promise<{ s: number; r: Json }> {
   const res = await rq.fetch(path, { method, data, headers: { Authorization: 'Bearer ' + token } });
@@ -25,7 +32,10 @@ test.beforeAll(async ({ playwright, baseURL }) => {
   bea = await signupApi(rq, 'bea', run);
   cris = await signupApi(rq, 'cris', run);
   const m = await me(ana);
-  test.skip(!!m['mail'] && !m['emailVerified'], 'La app publicada envía correos de verdad: las cuentas @example.com no se pueden verificar, así que no pueden invitar.');
+  test.skip(
+    !!m['mail'] && !m['emailVerified'],
+    'La app publicada envía correos de verdad: las cuentas @example.com no se pueden verificar, así que no pueden invitar.',
+  );
 });
 test.afterAll(async () => {
   for (const t of [ana, bea, cris]) await call(t, 'DELETE', '/api/me').catch(() => null);
@@ -35,7 +45,11 @@ test.afterAll(async () => {
 test('invitar no da acceso ni notas hasta aceptar (y no se mete a nadie a mano)', async () => {
   expect((await call(ana, 'PUT', `/api/gdds/${G}`, gdd)).r['rev']).toBe(1);
   const team = (await me(ana))['team'];
-  team.invites = [{ id: 'i1', email: email('bea', run), role: 'Editor' }, { id: 'i2', email: email('cris', run), role: 'Viewer' }, { id: 'i3', email: email('ana', run), role: 'Editor' }];
+  team.invites = [
+    { id: 'i1', email: email('bea', run), role: 'Editor' },
+    { id: 'i2', email: email('cris', run), role: 'Viewer' },
+    { id: 'i3', email: email('ana', run), role: 'Editor' },
+  ];
   team.members.push({ id: 'x', uid: 'intrusa', name: 'X', email: 'x@example.com', role: 'Editor' });
   const saved = (await call(ana, 'PUT', '/api/me/team', team)).r['team'];
   expect(saved.invites.map((v: Json) => v['email'])).toEqual([email('bea', run), email('cris', run)]);
@@ -46,7 +60,14 @@ test('invitar no da acceso ni notas hasta aceptar (y no se mete a nadie a mano)'
   expect(mb['invitations']).toEqual([expect.objectContaining({ name: 'Ana', role: 'Editor' })]);
   anaId = mb['invitations'][0].owner;
   expect((await call(bea, 'PUT', `/api/gdds/${G}`, gdd)).s).toBe(404);
-  expect((await call(ana, 'PUT', '/api/notes/n1-' + run, { box: 'sent', data: { g: G, text: 'Hola', to: 'Whole team', ts: 1 } })).r['delivered']).toBe(0);
+  expect(
+    (
+      await call(ana, 'PUT', '/api/notes/n1-' + run, {
+        box: 'sent',
+        data: { g: G, text: 'Hola', to: 'Whole team', ts: 1 },
+      })
+    ).r['delivered'],
+  ).toBe(0);
 });
 
 test('aceptar: Bea Editor y Cris Viewer ven el GDD', async () => {
@@ -54,14 +75,23 @@ test('aceptar: Bea Editor y Cris Viewer ven el GDD', async () => {
   expect((await call(cris, 'POST', `/api/teams/${anaId}/accept`)).s).toBe(200);
   expect((await call(bea, 'POST', `/api/teams/${anaId}/accept`)).s).toBe(404); // ya no hay invitación
   const ta = (await me(ana))['team'];
-  expect(ta.members.map((m: Json) => [m['name'], m['role']])).toEqual([['Ana', 'Owner'], ['Bea', 'Editor'], ['Cris', 'Viewer']]);
+  expect(ta.members.map((m: Json) => [m['name'], m['role']])).toEqual([
+    ['Ana', 'Owner'],
+    ['Bea', 'Editor'],
+    ['Cris', 'Viewer'],
+  ]);
   expect(ta.invites).toEqual([]);
   expect((await me(bea))['gdds'].map((g: Json) => [g['id'], g['share'].role])).toEqual([[G, 'Editor']]);
   expect((await me(cris))['gdds'][0].share.role).toBe('Viewer');
 });
 
 test('permisos y versiones: Editor escribe (no renombra), 409 al pisar, Viewer 403, nadie más borra', async () => {
-  const g2 = { ...gdd, name: 'Renombrado por Bea', rev: 1, depts: [{ id: 'd1', name: 'Art', blocks: [{ id: 'b1', name: 'Style', secs: [{ id: 's1', x: 'texto de Bea' }] }] }] };
+  const g2 = {
+    ...gdd,
+    name: 'Renombrado por Bea',
+    rev: 1,
+    depts: [{ id: 'd1', name: 'Art', blocks: [{ id: 'b1', name: 'Style', secs: [{ id: 's1', x: 'texto de Bea' }] }] }],
+  };
   expect((await call(bea, 'PUT', `/api/gdds/${G}`, g2)).r['rev']).toBe(2);
   expect((await me(ana))['gdds'][0].name).toBe('Juego');
   const old = await call(ana, 'PUT', `/api/gdds/${G}`, { ...gdd, rev: 1 });
@@ -76,7 +106,14 @@ test('permisos y versiones: Editor escribe (no renombra), 409 al pisar, Viewer 4
 });
 
 test('una nota del Viewer llega a Ana y Bea, en el grupo del GDD', async () => {
-  expect((await call(cris, 'PUT', '/api/notes/n2-' + run, { box: 'sent', data: { g: G, text: 'Revisad el estilo', to: 'Whole team', ts: 1 } })).r['delivered']).toBe(2);
+  expect(
+    (
+      await call(cris, 'PUT', '/api/notes/n2-' + run, {
+        box: 'sent',
+        data: { g: G, text: 'Revisad el estilo', to: 'Whole team', ts: 1 },
+      })
+    ).r['delivered'],
+  ).toBe(2);
   const n = (await me(ana))['notes'].find((x: Json) => String(x['title']).includes('Revisad'));
   expect([n.g, n.path]).toEqual([G, 'From: Cris']);
 });

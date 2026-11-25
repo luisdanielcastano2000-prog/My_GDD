@@ -10,13 +10,27 @@ import { NavService } from '../shared/nav.service';
 import { BrandComponent, TopBarComponent } from '../shared/ui';
 
 /** Botón con carga: texto → spinner (mín. 400 ms) → check en verde → sigue. */
-export function withLoading(store: StoreService, phase: WritableSignal<'' | 'load' | 'ok'>, done: () => void, fromLoad = false): void {
+export function withLoading(
+  store: StoreService,
+  phase: WritableSignal<'' | 'load' | 'ok'>,
+  done: () => void,
+  fromLoad = false,
+): void {
   // Evita envíos dobles; fromLoad = el spinner ya estaba girando mientras respondía el servidor
   if (phase() === 'ok' || (phase() === 'load' && !fromLoad)) return;
   const k = store.settings().slowMotion ? 4 : 1;
-  if (store.settings().reduceMotion) { done(); return; }
+  if (store.settings().reduceMotion) {
+    done();
+    return;
+  }
   phase.set('load');
-  setTimeout(() => { phase.set('ok'); setTimeout(() => { phase.set(''); done(); }, 650 * k); }, 400 * k);
+  setTimeout(() => {
+    phase.set('ok');
+    setTimeout(() => {
+      phase.set('');
+      done();
+    }, 650 * k);
+  }, 400 * k);
 }
 
 const validEmail = (e: string): boolean => e.trim().indexOf('@') > 0;
@@ -35,30 +49,66 @@ const validEmail = (e: string): boolean => e.trim().indexOf('@') > 0;
         <div class="field" [class.error]="errEmail()">
           <div class="field-box">
             <label for="lg-email">{{ 'Email' | t }}</label>
-            <input id="lg-email" type="email" autocomplete="email" [value]="email()" (input)="email.set($any($event.target).value); clear()" />
+            <input
+              id="lg-email"
+              type="email"
+              autocomplete="email"
+              [value]="email()"
+              (input)="email.set($any($event.target).value); clear()"
+            />
           </div>
-          @if (errEmail()) { <span class="field-error">{{ 'Enter your email.' | t }}</span> }
+          @if (errEmail()) {
+            <span class="field-error">{{ 'Enter your email.' | t }}</span>
+          }
         </div>
         <div class="field" [class.error]="errPw()">
           <div class="field-box">
             <label for="lg-pw">{{ 'Password' | t }}</label>
-            <input id="lg-pw" [type]="show() ? 'text' : 'password'" autocomplete="current-password" [value]="pw()" (input)="pw.set($any($event.target).value); clear()" />
-            <button class="icon-btn trail" type="button" [attr.aria-label]="(show() ? 'Hide password' : 'Show password') | t" (click)="show.set(!show())"><span class="ms">{{ show() ? 'visibility_off' : 'visibility' }}</span></button>
+            <input
+              id="lg-pw"
+              [type]="show() ? 'text' : 'password'"
+              autocomplete="current-password"
+              [value]="pw()"
+              (input)="pw.set($any($event.target).value); clear()"
+            />
+            <button
+              class="icon-btn trail"
+              type="button"
+              [attr.aria-label]="(show() ? 'Hide password' : 'Show password') | t"
+              (click)="show.set(!show())"
+            >
+              <span class="ms">{{ show() ? 'visibility_off' : 'visibility' }}</span>
+            </button>
           </div>
-          @if (errPw()) { <span class="field-error">{{ 'Enter your password.' | t }}</span> }
+          @if (errPw()) {
+            <span class="field-error">{{ 'Enter your password.' | t }}</span>
+          }
         </div>
         @if (bad()) {
-          <p class="bad" role="alert">{{ 'The email or password is incorrect. Try again or reset your password.' | t }}</p>
+          <p class="bad" role="alert">
+            {{ 'The email or password is incorrect. Try again or reset your password.' | t }}
+          </p>
         }
-        <button class="btn btn-text" type="button" style="align-self:flex-start;margin-left:-12px" (click)="forgot()">{{ 'Forgot password?' | t }}</button>
+        <button class="btn btn-text" type="button" style="align-self:flex-start;margin-left:-12px" (click)="forgot()">
+          {{ 'Forgot password?' | t }}
+        </button>
         <button class="btn btn-filled m block" type="submit" [class.ok]="phase() === 'ok'" [attr.aria-busy]="!!phase()">
           @switch (phase()) {
-            @case ('load') { <span class="spin"></span>{{ 'Logging in' | t }} }
-            @case ('ok') { <span class="ms">check</span>{{ 'Logged in' | t }} }
-            @default { {{ 'Log in' | t }} }
+            @case ('load') {
+              <span class="spin"></span>{{ 'Logging in' | t }}
+            }
+            @case ('ok') {
+              <span class="ms">check</span>{{ 'Logged in' | t }}
+            }
+            @default {
+              {{ 'Log in' | t }}
+            }
           }
         </button>
-        <p class="alt">{{ 'Don’t have an account?' | t }} <button class="btn btn-text" type="button" (click)="nav.go('/signup')">{{ 'Sign up' | t }}</button></p>
+        <p class="alt">
+          {{ 'Don’t have an account?' | t }}
+          <button class="btn btn-text" type="button" (click)="nav.go('/signup')">{{ 'Sign up' | t }}</button>
+        </p>
       </form>
     </ion-content>
   `,
@@ -75,7 +125,11 @@ export class LoginPage {
   protected bad = signal(this.d.bad);
   protected phase = signal<'' | 'load' | 'ok'>('');
 
-  clear(): void { this.errEmail.set(false); this.errPw.set(false); this.bad.set(false); }
+  clear(): void {
+    this.errEmail.set(false);
+    this.errPw.set(false);
+    this.bad.set(false);
+  }
   submit(): void {
     const em = this.email().trim();
     this.errEmail.set(!em);
@@ -116,36 +170,79 @@ export class LoginPage {
         <div class="field" [class.error]="errUser()">
           <div class="field-box">
             <label for="su-user">{{ 'User name' | t }}</label>
-            <input id="su-user" autocomplete="username" [value]="user()" (input)="user.set($any($event.target).value); errUser.set(false)" />
+            <input
+              id="su-user"
+              autocomplete="username"
+              [value]="user()"
+              (input)="user.set($any($event.target).value); errUser.set(false)"
+            />
           </div>
-          @if (errUser()) { <span class="field-error">{{ 'Enter a user name.' | t }}</span> }
+          @if (errUser()) {
+            <span class="field-error">{{ 'Enter a user name.' | t }}</span>
+          }
         </div>
         <div class="field" [class.error]="!!errEmail()">
           <div class="field-box">
             <label for="su-email">{{ 'Email' | t }}</label>
-            <input id="su-email" type="email" autocomplete="email" [value]="email()" (input)="email.set($any($event.target).value); errEmail.set('')" />
+            <input
+              id="su-email"
+              type="email"
+              autocomplete="email"
+              [value]="email()"
+              (input)="email.set($any($event.target).value); errEmail.set('')"
+            />
           </div>
-          @if (errEmail()) { <span class="field-error">{{ errEmail() | t }}</span> }
+          @if (errEmail()) {
+            <span class="field-error">{{ errEmail() | t }}</span>
+          }
           @if (errEmail() === taken) {
-            <button class="btn btn-text" type="button" style="align-self:flex-start" (click)="loginWith()">{{ 'Log in with this email' | t }}</button>
+            <button class="btn btn-text" type="button" style="align-self:flex-start" (click)="loginWith()">
+              {{ 'Log in with this email' | t }}
+            </button>
           }
         </div>
         <div class="field" [class.error]="errPw()">
           <div class="field-box">
             <label for="su-pw">{{ 'Password' | t }}</label>
-            <input id="su-pw" [type]="show() ? 'text' : 'password'" autocomplete="new-password" [value]="pw()" (input)="pw.set($any($event.target).value); errPw.set(false)" />
-            <button class="icon-btn trail" type="button" [attr.aria-label]="(show() ? 'Hide password' : 'Show password') | t" (click)="show.set(!show())"><span class="ms">{{ show() ? 'visibility_off' : 'visibility' }}</span></button>
+            <input
+              id="su-pw"
+              [type]="show() ? 'text' : 'password'"
+              autocomplete="new-password"
+              [value]="pw()"
+              (input)="pw.set($any($event.target).value); errPw.set(false)"
+            />
+            <button
+              class="icon-btn trail"
+              type="button"
+              [attr.aria-label]="(show() ? 'Hide password' : 'Show password') | t"
+              (click)="show.set(!show())"
+            >
+              <span class="ms">{{ show() ? 'visibility_off' : 'visibility' }}</span>
+            </button>
           </div>
-          @if (errPw()) { <span class="field-error">{{ 'The password needs at least 8 characters.' | t }}</span> } @else { <span class="field-help">{{ 'At least 8 characters.' | t }}</span> }
+          @if (errPw()) {
+            <span class="field-error">{{ 'The password needs at least 8 characters.' | t }}</span>
+          } @else {
+            <span class="field-help">{{ 'At least 8 characters.' | t }}</span>
+          }
         </div>
         <button class="btn btn-filled m block" type="submit" [class.ok]="phase() === 'ok'" [attr.aria-busy]="!!phase()">
           @switch (phase()) {
-            @case ('load') { <span class="spin"></span>{{ 'Creating your account' | t }} }
-            @case ('ok') { <span class="ms">check</span>{{ 'Account created' | t }} }
-            @default { {{ 'Sign up' | t }} }
+            @case ('load') {
+              <span class="spin"></span>{{ 'Creating your account' | t }}
+            }
+            @case ('ok') {
+              <span class="ms">check</span>{{ 'Account created' | t }}
+            }
+            @default {
+              {{ 'Sign up' | t }}
+            }
           }
         </button>
-        <p class="alt">{{ 'Already have an account?' | t }} <button class="btn btn-text" type="button" (click)="nav.root('/login')">{{ 'Log in' | t }}</button></p>
+        <p class="alt">
+          {{ 'Already have an account?' | t }}
+          <button class="btn btn-text" type="button" (click)="nav.root('/login')">{{ 'Log in' | t }}</button>
+        </p>
       </form>
     </ion-content>
   `,
@@ -168,7 +265,13 @@ export class SignupPage {
     const u = this.user().trim();
     const em = this.email().trim();
     this.errUser.set(!u);
-    this.errEmail.set(!validEmail(em) ? 'Enter an email address, for example name@example.com.' : em === this.store.data().user.email ? this.taken : '');
+    this.errEmail.set(
+      !validEmail(em)
+        ? 'Enter an email address, for example name@example.com.'
+        : em === this.store.data().user.email
+          ? this.taken
+          : '',
+    );
     this.errPw.set(this.pw().length < 8);
     if (this.errUser() || this.errEmail() || this.errPw()) return;
     if (this.phase()) return;
@@ -179,7 +282,8 @@ export class SignupPage {
         this.phase.set('');
         const m = apiMessage(e);
         if (e instanceof HttpErrorResponse && e.status === 409) this.errEmail.set(this.taken);
-        else if (e instanceof HttpErrorResponse && e.status === 400) this.errEmail.set(apiMessage(e, false)); // en inglés: la plantilla lo traduce
+        else if (e instanceof HttpErrorResponse && e.status === 400)
+          this.errEmail.set(apiMessage(e, false)); // en inglés: la plantilla lo traduce
         else this.store.toast(m, { kind: 'err' });
       },
     );
@@ -197,19 +301,35 @@ export class SignupPage {
     <ion-header><app-top-bar [title]="'Reset password' | t" back="/login" [profile]="false" /></ion-header>
     <ion-content>
       <form class="page" (submit)="$event.preventDefault(); send()" novalidate>
-        <p class="intro">{{ 'Enter the email of your account. We’ll send you a link to create a new password.' | t }}</p>
+        <p class="intro">
+          {{ 'Enter the email of your account. We’ll send you a link to create a new password.' | t }}
+        </p>
         <div class="field" [class.error]="err()">
           <div class="field-box">
             <label for="fg-email">{{ 'Email' | t }}</label>
-            <input id="fg-email" type="email" autocomplete="email" [value]="email()" (input)="email.set($any($event.target).value); err.set(false)" />
+            <input
+              id="fg-email"
+              type="email"
+              autocomplete="email"
+              [value]="email()"
+              (input)="email.set($any($event.target).value); err.set(false)"
+            />
           </div>
-          @if (err()) { <span class="field-error">{{ 'Enter the email of your account, for example name@example.com.' | t }}</span> }
+          @if (err()) {
+            <span class="field-error">{{ 'Enter the email of your account, for example name@example.com.' | t }}</span>
+          }
         </div>
         <button class="btn btn-filled m block" type="submit" [class.ok]="phase() === 'ok'" [attr.aria-busy]="!!phase()">
           @switch (phase()) {
-            @case ('load') { <span class="spin"></span>{{ 'Sending the link' | t }} }
-            @case ('ok') { <span class="ms">check</span>{{ 'Link sent' | t }} }
-            @default { {{ 'Send link' | t }} }
+            @case ('load') {
+              <span class="spin"></span>{{ 'Sending the link' | t }}
+            }
+            @case ('ok') {
+              <span class="ms">check</span>{{ 'Link sent' | t }}
+            }
+            @default {
+              {{ 'Send link' | t }}
+            }
           }
         </button>
       </form>
@@ -226,16 +346,31 @@ export class ForgotPage {
 
   send(): void {
     const em = this.email().trim();
-    if (!validEmail(em)) { this.err.set(true); return; }
+    if (!validEmail(em)) {
+      this.err.set(true);
+      return;
+    }
     if (this.phase()) return;
     this.phase.set('load');
     // El servidor manda el enlace (si la cuenta existe; responde igual si no, para no decir qué cuentas hay)
     this.api.forgot(em).then(
       (r) => {
-        if (!r.mail) { this.phase.set(''); this.store.toast(t('Email isn’t set up in this app yet, so we can’t send the link.'), { kind: 'err' }); return; }
-        withLoading(this.store, this.phase, () => this.nav.replace('/forgot/sent?email=' + encodeURIComponent(em)), true);
+        if (!r.mail) {
+          this.phase.set('');
+          this.store.toast(t('Email isn’t set up in this app yet, so we can’t send the link.'), { kind: 'err' });
+          return;
+        }
+        withLoading(
+          this.store,
+          this.phase,
+          () => this.nav.replace('/forgot/sent?email=' + encodeURIComponent(em)),
+          true,
+        );
       },
-      (e: unknown) => { this.phase.set(''); this.store.toast(apiMessage(e), { kind: 'err' }); },
+      (e: unknown) => {
+        this.phase.set('');
+        this.store.toast(apiMessage(e), { kind: 'err' });
+      },
     );
   }
 }
@@ -249,8 +384,12 @@ export class ForgotPage {
       <div class="sent-msg">
         <span class="ms">mail</span>
         <h2 class="t-headline-small">{{ 'Check your email' | t }}</h2>
-        <p class="intro">{{ 'We sent a link to {p0}. It can take a few minutes.' | t: { p0: email() || 'your email' } }}</p>
-        <button class="btn btn-filled m block" type="button" (click)="nav.root('/login')">{{ 'Back to log in' | t }}</button>
+        <p class="intro">
+          {{ 'We sent a link to {p0}. It can take a few minutes.' | t: { p0: email() || 'your email' } }}
+        </p>
+        <button class="btn btn-filled m block" type="button" (click)="nav.root('/login')">
+          {{ 'Back to log in' | t }}
+        </button>
         <button class="btn btn-text" type="button" (click)="again()">{{ 'Send the link again' | t }}</button>
       </div>
     </ion-content>
@@ -262,7 +401,10 @@ export class ForgotSentPage {
   private api = inject(ApiService);
   readonly email = input(''); // viene de ?email= (withComponentInputBinding)
   again(): void {
-    if (!validEmail(this.email())) { this.store.toast(t('We sent the link again')); return; } // selector de pantallas
+    if (!validEmail(this.email())) {
+      this.store.toast(t('We sent the link again'));
+      return;
+    } // selector de pantallas
     this.api.forgot(this.email()).then(
       () => this.store.toast(t('We sent the link again')),
       (e: unknown) => this.store.toast(apiMessage(e), { kind: 'err' }),
@@ -279,18 +421,30 @@ export class ForgotSentPage {
     <ion-content>
       <div class="sent-msg">
         @switch (state()) {
-          @case ('load') { <span class="spin" [attr.aria-label]="'Checking the link' | t"></span> }
+          @case ('load') {
+            <span class="spin" [attr.aria-label]="'Checking the link' | t"></span>
+          }
           @case ('ok') {
             <span class="ms ic-ok">mark_email_read</span>
             <h2 class="t-headline-small">{{ (kind() === 'email' ? 'New email confirmed' : 'Email verified') | t }}</h2>
-            <p class="intro">{{ kind() === 'email' ? ('Your account now uses {email}.' | t: { email: email() }) : ('You can now invite people and join teams.' | t) }}</p>
-            <button class="btn btn-filled m block" type="button" (click)="go()">{{ (logged() ? 'Continue' : 'Log in') | t }}</button>
+            <p class="intro">
+              {{
+                kind() === 'email'
+                  ? ('Your account now uses {email}.' | t: { email: email() })
+                  : ('You can now invite people and join teams.' | t)
+              }}
+            </p>
+            <button class="btn btn-filled m block" type="button" (click)="go()">
+              {{ (logged() ? 'Continue' : 'Log in') | t }}
+            </button>
           }
           @default {
             <span class="ms">link_off</span>
             <h2 class="t-headline-small">{{ 'This link doesn’t work' | t }}</h2>
             <p class="intro">{{ error() }}</p>
-            <button class="btn btn-filled m block" type="button" (click)="go()">{{ (logged() ? 'Go to Home' : 'Log in') | t }}</button>
+            <button class="btn btn-filled m block" type="button" (click)="go()">
+              {{ (logged() ? 'Go to Home' : 'Log in') | t }}
+            </button>
           }
         }
       </div>
@@ -315,7 +469,10 @@ export class VerifyPage implements OnInit {
         this.state.set('ok');
         if (this.api.token) await this.store.load(); // con sesión abierta: ya verificado / email nuevo en pantalla
       },
-      (e: unknown) => { this.error.set(apiMessage(e)); this.state.set('err'); },
+      (e: unknown) => {
+        this.error.set(apiMessage(e));
+        this.state.set('err');
+      },
     );
   }
   go(): void {
@@ -331,27 +488,60 @@ export class VerifyPage implements OnInit {
     <ion-header><app-top-bar [title]="'New password' | t" back="/login" [profile]="false" /></ion-header>
     <ion-content>
       <form class="page" (submit)="$event.preventDefault(); save()" novalidate>
-        <p class="intro">{{ 'Create a new password for your account. You’ll be logged out of all your devices.' | t }}</p>
+        <p class="intro">
+          {{ 'Create a new password for your account. You’ll be logged out of all your devices.' | t }}
+        </p>
         <div class="field" [class.error]="err() === 'pw'">
           <div class="field-box">
             <label for="rs-pw">{{ 'New password' | t }}</label>
-            <input id="rs-pw" [type]="show() ? 'text' : 'password'" autocomplete="new-password" [value]="pw()" (input)="pw.set($any($event.target).value); err.set('')" />
-            <button class="icon-btn trail" type="button" [attr.aria-label]="(show() ? 'Hide password' : 'Show password') | t" (click)="show.set(!show())"><span class="ms">{{ show() ? 'visibility_off' : 'visibility' }}</span></button>
+            <input
+              id="rs-pw"
+              [type]="show() ? 'text' : 'password'"
+              autocomplete="new-password"
+              [value]="pw()"
+              (input)="pw.set($any($event.target).value); err.set('')"
+            />
+            <button
+              class="icon-btn trail"
+              type="button"
+              [attr.aria-label]="(show() ? 'Hide password' : 'Show password') | t"
+              (click)="show.set(!show())"
+            >
+              <span class="ms">{{ show() ? 'visibility_off' : 'visibility' }}</span>
+            </button>
           </div>
-          @if (err() === 'pw') { <span class="field-error">{{ 'The password needs at least 8 characters.' | t }}</span> } @else { <span class="field-help">{{ 'At least 8 characters.' | t }}</span> }
+          @if (err() === 'pw') {
+            <span class="field-error">{{ 'The password needs at least 8 characters.' | t }}</span>
+          } @else {
+            <span class="field-help">{{ 'At least 8 characters.' | t }}</span>
+          }
         </div>
         <div class="field" [class.error]="err() === 'cf'">
           <div class="field-box">
             <label for="rs-cf">{{ 'Confirm new password' | t }}</label>
-            <input id="rs-cf" [type]="show() ? 'text' : 'password'" autocomplete="new-password" [value]="cf()" (input)="cf.set($any($event.target).value); err.set('')" />
+            <input
+              id="rs-cf"
+              [type]="show() ? 'text' : 'password'"
+              autocomplete="new-password"
+              [value]="cf()"
+              (input)="cf.set($any($event.target).value); err.set('')"
+            />
           </div>
-          @if (err() === 'cf') { <span class="field-error">{{ 'The passwords don’t match.' | t }}</span> }
+          @if (err() === 'cf') {
+            <span class="field-error">{{ 'The passwords don’t match.' | t }}</span>
+          }
         </div>
         <button class="btn btn-filled m block" type="submit" [class.ok]="phase() === 'ok'" [attr.aria-busy]="!!phase()">
           @switch (phase()) {
-            @case ('load') { <span class="spin"></span>{{ 'Saving' | t }} }
-            @case ('ok') { <span class="ms">check</span>{{ 'Password saved' | t }} }
-            @default { {{ 'Save password' | t }} }
+            @case ('load') {
+              <span class="spin"></span>{{ 'Saving' | t }}
+            }
+            @case ('ok') {
+              <span class="ms">check</span>{{ 'Password saved' | t }}
+            }
+            @default {
+              {{ 'Save password' | t }}
+            }
           }
         </button>
       </form>
@@ -369,17 +559,32 @@ export class ResetPage {
   protected err = signal<'' | 'pw' | 'cf'>('');
   protected phase = signal<'' | 'load' | 'ok'>('');
   save(): void {
-    if (this.pw().length < 8) { this.err.set('pw'); return; }
-    if (this.pw() !== this.cf()) { this.err.set('cf'); return; }
+    if (this.pw().length < 8) {
+      this.err.set('pw');
+      return;
+    }
+    if (this.pw() !== this.cf()) {
+      this.err.set('cf');
+      return;
+    }
     if (this.phase()) return;
     this.phase.set('load');
     this.api.resetPassword(this.token(), this.pw()).then(
-      () => withLoading(this.store, this.phase, () => {
-        if (this.api.token) this.store.logout(); // la sesión de este aparato también se cerró
-        this.nav.root('/login');
-        this.store.toast(t('Password changed. Log in with your new password.'), { kind: 'ok' });
-      }, true),
-      (e: unknown) => { this.phase.set(''); this.store.toast(apiMessage(e), { kind: 'err' }); },
+      () =>
+        withLoading(
+          this.store,
+          this.phase,
+          () => {
+            if (this.api.token) this.store.logout(); // la sesión de este aparato también se cerró
+            this.nav.root('/login');
+            this.store.toast(t('Password changed. Log in with your new password.'), { kind: 'ok' });
+          },
+          true,
+        ),
+      (e: unknown) => {
+        this.phase.set('');
+        this.store.toast(apiMessage(e), { kind: 'err' });
+      },
     );
   }
 }

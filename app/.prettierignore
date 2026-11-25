@@ -3,3 +3,6 @@
 # Gradle's build output.
 android/
 ios/
+# Generados por scripts/i18n-data.py
+src/app/i18n/es.ts
+src/app/i18n/ca.ts

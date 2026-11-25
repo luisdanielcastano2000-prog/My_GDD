@@ -7,7 +7,7 @@ import { flipCapture, flipPlay, mvK } from '../shared/motion';
 import { ApiService, type MeResponse, apiMessage } from './api.service';
 import { mergeGdd } from './merge';
 import type { AppData, Block, Dept, Dialog, Gdd, Grant, Invitation, Note, Role, Sheet, Snack, TeamRef } from './models';
-import type { Template} from './sample';
+import type { Template } from './sample';
 import { CATALOG, buildGdd, mkBlock, mkSection, nid, sampleData } from './sample';
 import { ago, cap, dayAgo, isReal } from './time';
 
@@ -26,7 +26,13 @@ function touch(g: Gdd): void {
   g.uts = Date.now();
 }
 
-const DEFAULT_SETTINGS: Settings = { textSize: 'Default', highContrast: false, reduceMotion: false, slowMotion: false, notifications: true };
+const DEFAULT_SETTINGS: Settings = {
+  textSize: 'Default',
+  highContrast: false,
+  reduceMotion: false,
+  slowMotion: false,
+  notifications: true,
+};
 
 /**
  * El «almacén» de la app: guarda los datos en memoria y las acciones que los cambian.
@@ -94,7 +100,10 @@ export class StoreService {
     setInterval(() => void this.refresh(), 30_000);
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') void this.refresh();
-      else if (this.live() && this.dirty()) { clearTimeout(this.syncTimer); void this.sync(); } // al irse de la pestaña: guardar ya
+      else if (this.live() && this.dirty()) {
+        clearTimeout(this.syncTimer);
+        void this.sync();
+      } // al irse de la pestaña: guardar ya
     });
     // Cerrar o recargar con algo sin guardar (la app guarda 0,4 s después de cada cambio): el navegador pregunta antes
     addEventListener('beforeunload', (e) => {
@@ -111,12 +120,23 @@ export class StoreService {
       const s = this.settings();
       const dark = this.dark();
       const root = document.documentElement;
-      root.classList.remove('theme-dark', 'theme-light-hc', 'theme-dark-hc', 'ion-palette-dark', 'ts-large', 'ts-larger');
+      root.classList.remove(
+        'theme-dark',
+        'theme-light-hc',
+        'theme-dark-hc',
+        'ion-palette-dark',
+        'ts-large',
+        'ts-larger',
+      );
       if (s.highContrast) root.classList.add(dark ? 'theme-dark-hc' : 'theme-light-hc');
       else if (dark) root.classList.add('theme-dark');
       if (dark) root.classList.add('ion-palette-dark');
       root.classList.toggle('reduce-motion', s.reduceMotion);
-      try { localStorage.setItem('gdd-reduce-motion', s.reduceMotion ? '1' : '0'); } catch { /* sin almacenamiento */ } // para el arranque (splash)
+      try {
+        localStorage.setItem('gdd-reduce-motion', s.reduceMotion ? '1' : '0');
+      } catch {
+        /* sin almacenamiento */
+      } // para el arranque (splash)
       root.classList.toggle('motion-slow', s.slowMotion);
       const ts = s.textSize === 'Larger' ? 1.4 : s.textSize === 'Large' ? 1.2 : 1;
       root.style.setProperty('--gdd-ts', String(ts));
@@ -154,7 +174,10 @@ export class StoreService {
       this.live.set(true);
       return true;
     } catch (e) {
-      if (e instanceof HttpErrorResponse && (e.status === 401 || e.status === 404)) { this.logout(); return false; }
+      if (e instanceof HttpErrorResponse && (e.status === 401 || e.status === 404)) {
+        this.logout();
+        return false;
+      }
       this.loadErr.set(true); // Home enseña «We couldn’t load your GDDs» con Retry
       this.live.set(false);
       return true;
@@ -176,7 +199,11 @@ export class StoreService {
   }
   /** ¿Hay cambios en pantalla que aún no están en el servidor? */
   private dirty(): boolean {
-    return !this.snapshot || JSON.stringify(this.data()) !== JSON.stringify(this.snapshot) || this.settingsKey() !== this.savedSettings;
+    return (
+      !this.snapshot ||
+      JSON.stringify(this.data()) !== JSON.stringify(this.snapshot) ||
+      this.settingsKey() !== this.savedSettings
+    );
   }
   /**
    * Trae lo último del servidor (cambios de otras personas del equipo, notas e invitaciones nuevas).
@@ -191,7 +218,10 @@ export class StoreService {
       // Si mientras tanto cambiaste algo, se guardó algo o se recargó (p. ej. al salir de un equipo), esta respuesta ya es vieja
       if (gen === this.gen && !this.syncing && !this.dirty()) this.apply(r);
     } catch (e) {
-      if (e instanceof HttpErrorResponse && (e.status === 401 || e.status === 404)) { this.logout(); location.assign('/login'); }
+      if (e instanceof HttpErrorResponse && (e.status === 401 || e.status === 404)) {
+        this.logout();
+        location.assign('/login');
+      }
     } finally {
       this.refreshing = false;
     }
@@ -225,7 +255,10 @@ export class StoreService {
   async sync(): Promise<void> {
     const old = this.snapshot;
     if (!this.live() || !old) return;
-    if (this.syncing) { this.syncAgain = true; return; }
+    if (this.syncing) {
+      this.syncAgain = true;
+      return;
+    }
     this.syncing = true;
     const cur = this.data();
     const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
@@ -239,35 +272,72 @@ export class StoreService {
       if ((!changed && !moved) || g.share?.role === 'Viewer') return;
       jobs.push(
         this.api.saveGdd(g, i).then(
-          (r) => { revs.set(g.id, r.rev); },
+          (r) => {
+            revs.set(g.id, r.rev);
+          },
           (e: unknown) => {
-            const theirs = e instanceof HttpErrorResponse && e.status === 409 ? (e.error as { gdd?: Gdd } | null)?.gdd : null;
-            if (theirs) { conflicts.set(g.id, theirs); return; }
+            const theirs =
+              e instanceof HttpErrorResponse && e.status === 409 ? (e.error as { gdd?: Gdd } | null)?.gdd : null;
+            if (theirs) {
+              conflicts.set(g.id, theirs);
+              return;
+            }
             throw e;
           },
         ),
       );
     });
-    old.gdds.filter((g) => !g.share && !cur.gdds.some((x) => x.id === g.id)).forEach((g) => jobs.push(this.api.deleteGdd(g.id)));
-    const boxes: ['received' | 'sent', 'notes' | 'sent'][] = [['received', 'notes'], ['sent', 'sent']];
+    old.gdds
+      .filter((g) => !g.share && !cur.gdds.some((x) => x.id === g.id))
+      .forEach((g) => jobs.push(this.api.deleteGdd(g.id)));
+    const boxes: ['received' | 'sent', 'notes' | 'sent'][] = [
+      ['received', 'notes'],
+      ['sent', 'sent'],
+    ];
     for (const [box, key] of boxes) {
       const a: (Note | AppData['sent'][number])[] = old[key];
       const b: (Note | AppData['sent'][number])[] = cur[key];
-      b.forEach((n) => { if (!same(a.find((x) => x.id === n.id), n)) jobs.push(this.api.saveNote(box, n)); });
+      b.forEach((n) => {
+        if (
+          !same(
+            a.find((x) => x.id === n.id),
+            n,
+          )
+        )
+          jobs.push(this.api.saveNote(box, n));
+      });
       a.filter((n) => !b.some((x) => x.id === n.id)).forEach((n) => jobs.push(this.api.deleteNote(n.id)));
     }
-    const prof = Object.fromEntries(Object.entries(cur.user).filter(([k, v]) => !same((old.user as unknown as Record<string, unknown>)[k], v)));
+    const prof = Object.fromEntries(
+      Object.entries(cur.user).filter(([k, v]) => !same((old.user as unknown as Record<string, unknown>)[k], v)),
+    );
     const sk = this.settingsKey();
     if (Object.keys(prof).length || sk !== this.savedSettings) {
-      jobs.push(this.api.saveProfile({ ...prof, ...(sk !== this.savedSettings ? { settings: JSON.parse(sk) as Record<string, unknown> } : {}) }));
+      jobs.push(
+        this.api.saveProfile({
+          ...prof,
+          ...(sk !== this.savedSettings ? { settings: JSON.parse(sk) as Record<string, unknown> } : {}),
+        }),
+      );
     }
     let team: AppData['team'] | null = null; // el equipo tal como lo deja el servidor
-    if (!same(old.team, cur.team)) jobs.push(this.api.saveTeam(cur.team).then((r) => { team = r.team; }));
+    if (!same(old.team, cur.team))
+      jobs.push(
+        this.api.saveTeam(cur.team).then((r) => {
+          team = r.team;
+        }),
+      );
     try {
       await Promise.all(jobs);
       const snap = structuredClone(cur);
-      revs.forEach((rev, id) => { const g = snap.gdds.find((x) => x.id === id); if (g) g.rev = rev; });
-      conflicts.forEach((theirs, id) => { const i = snap.gdds.findIndex((x) => x.id === id); if (i >= 0) snap.gdds[i] = { ...theirs, share: snap.gdds[i].share }; });
+      revs.forEach((rev, id) => {
+        const g = snap.gdds.find((x) => x.id === id);
+        if (g) g.rev = rev;
+      });
+      conflicts.forEach((theirs, id) => {
+        const i = snap.gdds.findIndex((x) => x.id === id);
+        if (i >= 0) snap.gdds[i] = { ...theirs, share: snap.gdds[i].share };
+      });
       if (team) snap.team = team;
       this.snapshot = snap;
       this.savedSettings = sk;
@@ -275,23 +345,46 @@ export class StoreService {
       if (revs.size || conflicts.size || team) {
         // Lo que se ve: con las versiones nuevas y, si hubo choque, con los dos cambios juntos
         const d = structuredClone(this.data());
-        revs.forEach((rev, id) => { const g = d.gdds.find((x) => x.id === id); if (g) g.rev = rev; });
+        revs.forEach((rev, id) => {
+          const g = d.gdds.find((x) => x.id === id);
+          if (g) g.rev = rev;
+        });
         conflicts.forEach((theirs, id) => {
           const i = d.gdds.findIndex((x) => x.id === id);
-          if (i >= 0) d.gdds[i] = mergeGdd(old.gdds.find((x) => x.id === id), d.gdds[i], { ...theirs, share: d.gdds[i].share });
+          if (i >= 0)
+            d.gdds[i] = mergeGdd(
+              old.gdds.find((x) => x.id === id),
+              d.gdds[i],
+              { ...theirs, share: d.gdds[i].share },
+            );
         });
         if (team && same(d.team, cur.team)) d.team = team;
         this.data.set(d);
       }
-      if (conflicts.size) { this.syncAgain = true; this.toast(t('Someone in your team changed this GDD too. Both changes were kept.')); }
+      if (conflicts.size) {
+        this.syncAgain = true;
+        this.toast(t('Someone in your team changed this GDD too. Both changes were kept.'));
+      }
     } catch (e) {
-      if (e instanceof HttpErrorResponse && e.status === 401) { this.logout(); location.assign('/login'); return; }
+      if (e instanceof HttpErrorResponse && e.status === 401) {
+        this.logout();
+        location.assign('/login');
+        return;
+      }
       const shown = e instanceof HttpErrorResponse && [400, 403, 404].includes(e.status);
-      this.toast(shown ? apiMessage(e) : t('Your change couldn’t be saved.'), { kind: 'err', action: { label: t('Retry'), run: () => void this.sync() } });
+      this.toast(shown ? apiMessage(e) : t('Your change couldn’t be saved.'), {
+        kind: 'err',
+        action: { label: t('Retry'), run: () => void this.sync() },
+      });
     } finally {
       this.syncing = false;
-      if (this.syncAgain) { this.syncAgain = false; void this.sync(); }
-      else if (this.refreshAfterSync) { this.refreshAfterSync = false; setTimeout(() => void this.refresh(), 0); }
+      if (this.syncAgain) {
+        this.syncAgain = false;
+        void this.sync();
+      } else if (this.refreshAfterSync) {
+        this.refreshAfterSync = false;
+        setTimeout(() => void this.refresh(), 0);
+      }
     }
   }
 
@@ -352,7 +445,17 @@ export class StoreService {
     if (!g?.share) return false;
     const ok = need === 'owner' ? false : need === 'depts' ? this.canManageDepts(gid) : this.canEditDept(gid, dpid);
     if (ok) return false;
-    this.toast(need === 'owner' ? t('Only {name} can do this.', { name: g.share.name }) : t(g.share.role === 'Viewer' ? 'You can only read this GDD.' : need === 'depts' ? 'Only editors of the whole GDD can change its departments.' : 'You can only edit your departments.'));
+    this.toast(
+      need === 'owner'
+        ? t('Only {name} can do this.', { name: g.share.name })
+        : t(
+            g.share.role === 'Viewer'
+              ? 'You can only read this GDD.'
+              : need === 'depts'
+                ? 'Only editors of the whole GDD can change its departments.'
+                : 'You can only edit your departments.',
+          ),
+    );
     return true;
   }
   /** deny() para un bloque (busca su GDD y departamento). */
@@ -362,11 +465,23 @@ export class StoreService {
   }
 
   gStat(g: Gdd): { t: string; k: StatusKind; n: number } {
-    let old = 0, has = 0, total = 0;
-    g.depts.forEach((x) => x.blocks.forEach((y) => { total++; if (y.status === 'Out of date') old++; if (y.status !== 'Empty') has++; }));
+    let old = 0,
+      has = 0,
+      total = 0;
+    g.depts.forEach((x) =>
+      x.blocks.forEach((y) => {
+        total++;
+        if (y.status === 'Out of date') old++;
+        if (y.status !== 'Empty') has++;
+      }),
+    );
     if (old) return { t: tn(old, '{n} block out of date', '{n} blocks out of date'), k: 'old', n: old };
     if (has) return { t: t('Up to date'), k: 'ok', n: 0 };
-    return { t: total ? tn(total, '{n} block to write', '{n} blocks to write') : t('No departments yet'), k: 'empty', n: 0 };
+    return {
+      t: total ? tn(total, '{n} block to write', '{n} blocks to write') : t('No departments yet'),
+      k: 'empty',
+      n: 0,
+    };
   }
   dStat(dp: Dept): { t: string; k: StatusKind; nb: string; old: number } {
     const n = dp.blocks.length;
@@ -406,7 +521,12 @@ export class StoreService {
     const s: Snack = { id: Date.now(), msg, ...opts };
     this.snack.set(s);
     const k = this.settings().slowMotion ? 4 : 1;
-    this.snackTimer = setTimeout(() => { if (this.snack()?.id === s.id) this.snack.set(null); }, (s.undo || s.action ? 10000 : 4000) * k);
+    this.snackTimer = setTimeout(
+      () => {
+        if (this.snack()?.id === s.id) this.snack.set(null);
+      },
+      (s.undo || s.action ? 10000 : 4000) * k,
+    );
   }
   undo(): void {
     if (this.undoData) {
@@ -416,14 +536,19 @@ export class StoreService {
       // la versión; con la vieja, el servidor lo tomaría por un cambio de otra persona (409).
       const revs = new Map(this.data().gdds.map((g) => [g.id, g.rev]));
       const back = structuredClone(this.undoData);
-      back.gdds.forEach((g) => { if (revs.has(g.id)) g.rev = revs.get(g.id); });
+      back.gdds.forEach((g) => {
+        if (revs.has(g.id)) g.rev = revs.get(g.id);
+      });
       this.data.set(back);
       this.gen++;
       this.scheduleSync();
       flipPlay(before); // los vecinos se apartan para dejarle sitio
-      if (id) { // y lo borrado se reconstruye en cuadrados
+      if (id) {
+        // y lo borrado se reconstruye en cuadrados
         this.rebuilding.set(id);
-        setTimeout(() => { if (this.rebuilding() === id) this.rebuilding.set(null); }, 700 * mvK());
+        setTimeout(() => {
+          if (this.rebuilding() === id) this.rebuilding.set(null);
+        }, 700 * mvK());
       }
     }
     this.lastDeleted = null;
@@ -450,7 +575,9 @@ export class StoreService {
   }
   private pop(id: string): void {
     this.popped.set(id);
-    setTimeout(() => { if (this.popped() === id) this.popped.set(null); }, 2500);
+    setTimeout(() => {
+      if (this.popped() === id) this.popped.set(null);
+    }, 2500);
   }
 
   // ---------- acceso ----------
@@ -468,7 +595,12 @@ export class StoreService {
 
   // ---------- crear ----------
   createGdd(name: string, tpl: Template, on: number[]): Gdd {
-    const g = buildGdd(name, tpl, [...on].sort((a, b) => a - b), t); // la plantilla, en el idioma de la app
+    const g = buildGdd(
+      name,
+      tpl,
+      [...on].sort((a, b) => a - b),
+      t,
+    ); // la plantilla, en el idioma de la app
     g.cts = Date.now();
     this.mutate((d) => d.gdds.unshift(g));
     this.homeIndex.set(0);
@@ -486,11 +618,18 @@ export class StoreService {
     if (this.deny(gid, 'depts')) return;
     const g0 = this.gdd(gid);
     if (!g0) return;
-    const name = this.uniq(t('New department'), g0.depts.map((x) => x.name));
+    const name = this.uniq(
+      t('New department'),
+      g0.depts.map((x) => x.name),
+    );
     const last = g0.depts[g0.depts.length - 1];
-    const lc = last ? last.col ?? ((g0.depts.length - 1) % 6) + 1 : 0;
+    const lc = last ? (last.col ?? ((g0.depts.length - 1) % 6) + 1) : 0;
     const nd: Dept = { id: nid(), name, blocks: [], col: (lc % 6) + 1 };
-    this.mutate((d) => { const g = d.gdds.find((x) => x.id === gid)!; g.depts.push(nd); touch(g); });
+    this.mutate((d) => {
+      const g = d.gdds.find((x) => x.id === gid)!;
+      g.depts.push(nd);
+      touch(g);
+    });
     this.pop(nd.id);
     this.toast(name + ' created');
   }
@@ -498,16 +637,27 @@ export class StoreService {
     if (this.deny(gid, 'dept', dpid)) return;
     const dp0 = this.dept(this.gdd(gid), dpid);
     if (!dp0) return;
-    const name = this.uniq(t('New block'), dp0.blocks.map((x) => x.name));
+    const name = this.uniq(
+      t('New block'),
+      dp0.blocks.map((x) => x.name),
+    );
     const nb = mkBlock(name, '');
-    this.mutate((d) => { const g = d.gdds.find((x) => x.id === gid)!; g.depts.find((x) => x.id === dpid)!.blocks.push(nb); touch(g); });
+    this.mutate((d) => {
+      const g = d.gdds.find((x) => x.id === gid)!;
+      g.depts.find((x) => x.id === dpid)!.blocks.push(nb);
+      touch(g);
+    });
     this.pop(nb.id);
     this.toast(name + ' created');
   }
   useTemplate(gid: string): void {
     if (this.deny(gid, 'depts')) return;
     const tpl = buildGdd('x', 'Minimal', [0, 2, 3, 5], t);
-    this.mutate((d) => { const g = d.gdds.find((x) => x.id === gid)!; g.depts = g.depts.concat(tpl.depts); touch(g); });
+    this.mutate((d) => {
+      const g = d.gdds.find((x) => x.id === gid)!;
+      g.depts = g.depts.concat(tpl.depts);
+      touch(g);
+    });
     this.toast(t('Minimal template added: 4 departments'));
   }
   suggest(gid: string, dpid: string): void {
@@ -518,7 +668,13 @@ export class StoreService {
       // El departamento puede llamarse como en el catálogo en inglés o en el idioma de la app
       const name = dp.name.toLowerCase();
       const c = CATALOG.find((x) => x[0].toLowerCase() === name || t(x[0]).toLowerCase() === name);
-      const list: [string, string][] = c ? c[2] : [['Overview', 'What this department does and its goals.'], ['Tasks', 'The work to do, in order.'], ['References', 'Links, images and examples to follow.']];
+      const list: [string, string][] = c
+        ? c[2]
+        : [
+            ['Overview', 'What this department does and its goals.'],
+            ['Tasks', 'The work to do, in order.'],
+            ['References', 'Links, images and examples to follow.'],
+          ];
       dp.blocks = dp.blocks.concat(list.map((x) => mkBlock(t(x[0]), t(x[1]))));
       n = list.length;
     });
@@ -528,7 +684,10 @@ export class StoreService {
   // ---------- editor ----------
   setSec(bid: string, sid: string, key: 't' | 'x', v: string): void {
     if (this.denyBlock(bid)) return;
-    this.mutate((d) => { const s = this.where(bid, d)?.b.secs.find((x) => x.id === sid); if (s) s[key] = v; });
+    this.mutate((d) => {
+      const s = this.where(bid, d)?.b.secs.find((x) => x.id === sid);
+      if (s) s[key] = v;
+    });
   }
   fmtSec(bid: string, sid: string, key: 'big' | 'b' | 'i' | 'list'): void {
     if (this.denyBlock(bid)) return;
@@ -556,11 +715,16 @@ export class StoreService {
       const w = this.where(bid, d);
       if (!w) return;
       const had = w.b.pend || w.b.secs.some((s) => s.rev);
-      w.b.secs.forEach((s) => { s.rev = false; s.chg = ''; });
+      w.b.secs.forEach((s) => {
+        s.rev = false;
+        s.chg = '';
+      });
       w.b.pend = false;
       const has = w.b.secs.some((s) => (s.x || '').trim() || (s.t || '').trim());
       w.b.status = has ? 'Up to date' : 'Empty';
-      d.notes.forEach((n) => { if (n.kind === 'change' && n.aff?.includes(bid) && !n.rvd?.includes(bid)) n.rvd?.push(bid); });
+      d.notes.forEach((n) => {
+        if (n.kind === 'change' && n.aff?.includes(bid) && !n.rvd?.includes(bid)) n.rvd?.push(bid);
+      });
       touch(w.g);
       w.g.last = { dp: w.dp.id, b: bid, when: 'Edited just now', ts: Date.now() };
       msg = had ? w.b.name + ' reviewed · Up to date' : has ? w.b.name + ' saved · Up to date' : w.b.name + ' saved';
@@ -573,17 +737,25 @@ export class StoreService {
     this.mutate((d) => {
       const w = this.where(bid, d);
       if (!w) return;
-      w.b.secs.forEach((s) => { s.rev = false; s.chg = ''; });
+      w.b.secs.forEach((s) => {
+        s.rev = false;
+        s.chg = '';
+      });
       w.b.pend = false;
       w.b.status = 'Up to date';
-      d.notes.forEach((n) => { if (n.kind === 'change' && n.aff?.includes(bid) && !n.rvd?.includes(bid)) n.rvd?.push(bid); });
+      d.notes.forEach((n) => {
+        if (n.kind === 'change' && n.aff?.includes(bid) && !n.rvd?.includes(bid)) n.rvd?.push(bid);
+      });
     });
   }
 
   // ---------- renombrar, mover, borrar ----------
   openRename(what: 'gdd' | 'dept' | 'block', id: string, g?: string, dp?: string): void {
     let val = '';
-    if (what === 'gdd' ? this.deny(id, 'owner') : what === 'dept' ? this.deny(g, 'depts') : this.deny(g, 'dept', dp)) { this.sheet.set(null); return; }
+    if (what === 'gdd' ? this.deny(id, 'owner') : what === 'dept' ? this.deny(g, 'depts') : this.deny(g, 'dept', dp)) {
+      this.sheet.set(null);
+      return;
+    }
     if (what === 'gdd') val = this.gdd(id)?.name ?? '';
     if (what === 'dept') val = this.dept(this.gdd(g), id)?.name ?? '';
     if (what === 'block') val = this.where(id)?.b.name ?? '';
@@ -592,7 +764,10 @@ export class StoreService {
   }
   saveRename(dl: Extract<Dialog, { k: 'rename' }>): boolean {
     const v = dl.val.trim();
-    if (!v && dl.what !== 'field') { this.dialog.set({ ...dl, err: true }); return false; }
+    if (!v && dl.what !== 'field') {
+      this.dialog.set({ ...dl, err: true });
+      return false;
+    }
     this.mutate((d) => {
       if (dl.what === 'gdd') d.gdds.find((x) => x.id === dl.id)!.name = v;
       if (dl.what === 'dept') d.gdds.find((x) => x.id === dl.g)!.depts.find((x) => x.id === dl.id)!.name = v;
@@ -613,27 +788,45 @@ export class StoreService {
   actIndex(sh: Extract<Sheet, { k: 'act' }>): { idx: number; len: number; name: string } {
     const arr = this.listOf(this.data(), sh);
     const idx = arr.findIndex((x) => x.id === sh.id);
-    return { idx, len: arr.length, name: idx >= 0 ? arr[idx].name : sh.what === 'gdd' ? (this.gdd(sh.id)?.name ?? '') : '' };
+    return {
+      idx,
+      len: arr.length,
+      name: idx >= 0 ? arr[idx].name : sh.what === 'gdd' ? (this.gdd(sh.id)?.name ?? '') : '',
+    };
   }
   move(sh: Extract<Sheet, { k: 'act' }>, dir: -1 | 1): void {
-    if (sh.what === 'gdd' ? this.deny(sh.id, 'owner') : sh.what === 'dept' ? this.deny(sh.g, 'depts') : this.deny(sh.g, 'dept', sh.dp)) { this.sheet.set(null); return; }
+    if (
+      sh.what === 'gdd'
+        ? this.deny(sh.id, 'owner')
+        : sh.what === 'dept'
+          ? this.deny(sh.g, 'depts')
+          : this.deny(sh.g, 'dept', sh.dp)
+    ) {
+      this.sheet.set(null);
+      return;
+    }
     this.mutate((d) => {
       const arr = this.listOf(d, sh);
       const i = arr.findIndex((x) => x.id === sh.id);
       const j = i + dir;
       if (i < 0 || j < 0 || j >= arr.length) return;
       [arr[i], arr[j]] = [arr[j], arr[i]];
-      if (sh.what === 'gdd') { d.gdds = [...arr as Gdd[], ...d.gdds.filter((g) => g.share)]; this.homeIndex.set(j); }
+      if (sh.what === 'gdd') {
+        d.gdds = [...(arr as Gdd[]), ...d.gdds.filter((g) => g.share)];
+        this.homeIndex.set(j);
+      }
     });
     this.sheet.set(null);
   }
   /** Reordenar arrastrando (departamentos de un GDD o bloques de un departamento). */
   reorder(what: 'dept' | 'block', gid: string, dpid: string | null, from: number, to: number): void {
     if (what === 'dept' ? this.deny(gid, 'depts') : this.deny(gid, 'dept', dpid)) return;
-    let name = '', n = 0;
+    let name = '',
+      n = 0;
     this.mutate((d) => {
       const g = d.gdds.find((x) => x.id === gid);
-      const arr: { name: string }[] | undefined = what === 'dept' ? g?.depts : g?.depts.find((x) => x.id === dpid)?.blocks;
+      const arr: { name: string }[] | undefined =
+        what === 'dept' ? g?.depts : g?.depts.find((x) => x.id === dpid)?.blocks;
       if (!g || !arr || from < 0 || to < 0 || from >= arr.length || to >= arr.length) return;
       const [it] = arr.splice(from, 1);
       arr.splice(to, 0, it);
@@ -649,7 +842,14 @@ export class StoreService {
   }
   askDelete(sh: Extract<Sheet, { k: 'act' }>): void {
     this.sheet.set(null);
-    if (sh.what === 'gdd' ? this.deny(sh.id, 'owner') : sh.what === 'dept' ? this.deny(sh.g, 'depts') : this.deny(sh.g, 'dept', sh.dp)) return;
+    if (
+      sh.what === 'gdd'
+        ? this.deny(sh.id, 'owner')
+        : sh.what === 'dept'
+          ? this.deny(sh.g, 'depts')
+          : this.deny(sh.g, 'dept', sh.dp)
+    )
+      return;
     if (sh.what === 'block') this.deleteBlock(sh.id);
     else if (sh.what === 'dept') this.deleteDept(sh.id, sh.g!);
     else this.dialog.set({ k: 'del', what: 'gdd', id: sh.id });
@@ -658,7 +858,11 @@ export class StoreService {
     const w = this.where(bid);
     if (!w || this.deny(w.g.id, 'dept', w.dp.id)) return;
     this.afterDissolve(bid, () => {
-      this.mutate((d) => { const x = this.where(bid, d)!; x.dp.blocks = x.dp.blocks.filter((b) => b.id !== bid); touch(x.g); }, true);
+      this.mutate((d) => {
+        const x = this.where(bid, d)!;
+        x.dp.blocks = x.dp.blocks.filter((b) => b.id !== bid);
+        touch(x.g);
+      }, true);
       this.toast(t('{name} deleted', { name: w.b.name }), { undo: true });
     });
   }
@@ -666,7 +870,11 @@ export class StoreService {
     const dp = this.dept(this.gdd(gid), did);
     if (!dp || this.deny(gid, 'depts')) return;
     this.afterDissolve(did, () => {
-      this.mutate((d) => { const g = d.gdds.find((x) => x.id === gid)!; g.depts = g.depts.filter((x) => x.id !== did); touch(g); }, true);
+      this.mutate((d) => {
+        const g = d.gdds.find((x) => x.id === gid)!;
+        g.depts = g.depts.filter((x) => x.id !== did);
+        touch(g);
+      }, true);
       this.toast(t('{name} deleted', { name: dp.name }), { undo: true });
     });
   }
@@ -674,7 +882,10 @@ export class StoreService {
   confirmDelete(dl: Extract<Dialog, { k: 'del' }>): 'account' | void {
     this.dialog.set(null);
     if (dl.what === 'account') {
-      const done = () => { this.logout(); this.toast(t('Your account was deleted')); };
+      const done = () => {
+        this.logout();
+        this.toast(t('Your account was deleted'));
+      };
       if (this.live()) this.api.deleteAccount().then(done, (e: unknown) => this.toast(apiMessage(e), { kind: 'err' }));
       else done();
       return 'account';
@@ -682,7 +893,10 @@ export class StoreService {
     if (dl.what === 'gdd') {
       const name = this.gdd(dl.id)?.name ?? '';
       this.afterDissolve(dl.id!, () => {
-        this.mutate((d) => { d.gdds = d.gdds.filter((x) => x.id !== dl.id); d.notes = d.notes.filter((n) => n.g !== dl.id); }); // solo el dueño llega aquí
+        this.mutate((d) => {
+          d.gdds = d.gdds.filter((x) => x.id !== dl.id);
+          d.notes = d.notes.filter((n) => n.g !== dl.id);
+        }); // solo el dueño llega aquí
         this.homeIndex.set(Math.max(0, Math.min(this.homeIndex(), this.data().gdds.length - 1)));
         this.toast(t('{name} deleted', { name }));
       });
@@ -690,7 +904,9 @@ export class StoreService {
     if (dl.what === 'member') {
       const name = this.data().team.members.find((x) => x.id === dl.id)?.name ?? '';
       this.afterDissolve(dl.id!, () => {
-        this.mutate((d) => { d.team.members = d.team.members.filter((x) => x.id !== dl.id); });
+        this.mutate((d) => {
+          d.team.members = d.team.members.filter((x) => x.id !== dl.id);
+        });
         this.toast(t('{name} was removed from your team', { name }));
       });
     }
@@ -703,7 +919,10 @@ export class StoreService {
   deleteNote(id: string, sent: boolean): void {
     this.sheet.set(null);
     this.afterDissolve(id, () => {
-      this.mutate((d) => { if (sent) d.sent = d.sent.filter((n) => n.id !== id); else d.notes = d.notes.filter((n) => n.id !== id); }, true);
+      this.mutate((d) => {
+        if (sent) d.sent = d.sent.filter((n) => n.id !== id);
+        else d.notes = d.notes.filter((n) => n.id !== id);
+      }, true);
       this.toast(t('Note deleted'), { undo: true });
     });
   }
@@ -711,24 +930,65 @@ export class StoreService {
    * Envía una nota. Si lleva bloques afectados (aff), el servidor los marca como «Out of date» en el GDD
    * para todo el equipo y entrega a los demás un aviso de cambio (que abre la pantalla Review).
    */
-  sendNote(text: string, gid: string, dpid: string | null, cTeam: boolean, cDep: boolean, bid: string | null = null, aff: string[] = []): void {
+  sendNote(
+    text: string,
+    gid: string,
+    dpid: string | null,
+    cTeam: boolean,
+    cDep: boolean,
+    bid: string | null = null,
+    aff: string[] = [],
+  ): void {
     this.mutate((d) => {
       const g = d.gdds.find((x) => x.id === gid) ?? d.gdds[0];
       const dp = g.depts.find((x) => x.id === dpid) ?? g.depts[0] ?? null;
       const to: string[] = [];
       if (cTeam) to.push('Whole team');
       if (dp && cDep) to.push(dp.name);
-      d.sent.push({ id: nid(), g: g.id, ...(dp ? { dp: dp.id } : {}), ...(dp && cDep && !cTeam ? { toDept: dp.id } : {}), ...(bid ? { b: bid } : {}), ...(aff.length ? { aff } : {}), text, to: to.length ? to.join(', ') : 'Whole team', when: 'Just now', ts: Date.now() });
-      if (!this.live() && aff.length) { // selector de pantallas (sin servidor): se marcan aquí
-        g.depts.forEach((x) => x.blocks.forEach((b) => { if (aff.includes(b.id)) { b.pend = true; b.status = 'Out of date'; } }));
+      d.sent.push({
+        id: nid(),
+        g: g.id,
+        ...(dp ? { dp: dp.id } : {}),
+        ...(dp && cDep && !cTeam ? { toDept: dp.id } : {}),
+        ...(bid ? { b: bid } : {}),
+        ...(aff.length ? { aff } : {}),
+        text,
+        to: to.length ? to.join(', ') : 'Whole team',
+        when: 'Just now',
+        ts: Date.now(),
+      });
+      if (!this.live() && aff.length) {
+        // selector de pantallas (sin servidor): se marcan aquí
+        g.depts.forEach((x) =>
+          x.blocks.forEach((b) => {
+            if (aff.includes(b.id)) {
+              b.pend = true;
+              b.status = 'Out of date';
+            }
+          }),
+        );
       }
     });
     if (aff.length && this.live()) this.refreshAfterSync = true; // los bloques los marca el servidor: traerlos al acabar
     this.notesTab.set('s');
-    this.toast(aff.length ? tn(aff.length, 'Note sent · {n} block marked out of date', 'Note sent · {n} blocks marked out of date') : t('Note sent'), { kind: 'ok' });
+    this.toast(
+      aff.length
+        ? tn(aff.length, 'Note sent · {n} block marked out of date', 'Note sent · {n} blocks marked out of date')
+        : t('Note sent'),
+      { kind: 'ok' },
+    );
   }
   notify(n: Note | null): void {
-    this.mutate((d) => d.sent.push({ id: nid(), g: n?.g, text: n ? t('Please review: {title}', { title: n.title }) : t('Please review the latest change'), to: 'Whole team', when: 'Just now', ts: Date.now() }));
+    this.mutate((d) =>
+      d.sent.push({
+        id: nid(),
+        g: n?.g,
+        text: n ? t('Please review: {title}', { title: n.title }) : t('Please review the latest change'),
+        to: 'Whole team',
+        when: 'Just now',
+        ts: Date.now(),
+      }),
+    );
     this.toast(t('Team notified'));
   }
 
@@ -743,15 +1003,28 @@ export class StoreService {
       d.user.accent = accent;
       if (!live) d.user.email = email; // con cuenta real, el email se cambia aparte (hay que confirmarlo)
       const me = d.team.members.find((x) => x.you);
-      if (me) { me.name = name; if (!live) me.email = email; }
+      if (me) {
+        me.name = name;
+        if (!live) me.email = email;
+      }
     });
-    if (!changed || !live) { this.toast(changed ? t('Changes saved. Check {email} to confirm your new email.', { email }) : t('Changes saved')); return; }
+    if (!changed || !live) {
+      this.toast(
+        changed ? t('Changes saved. Check {email} to confirm your new email.', { email }) : t('Changes saved'),
+      );
+      return;
+    }
     void (async () => {
       try {
         await this.settle();
         const r = await this.api.changeEmail(email.trim());
-        if (r.pending) { this.pendingEmail.set(r.email); this.toast(t('Changes saved. Check {email} to confirm your new email.', { email: r.email })); }
-        else { await this.load(); this.toast(t('Changes saved')); } // sin servicio de correo: cambiado al momento
+        if (r.pending) {
+          this.pendingEmail.set(r.email);
+          this.toast(t('Changes saved. Check {email} to confirm your new email.', { email: r.email }));
+        } else {
+          await this.load();
+          this.toast(t('Changes saved'));
+        } // sin servicio de correo: cambiado al momento
       } catch (e) {
         this.toast(apiMessage(e), { kind: 'err' });
       }
@@ -766,7 +1039,10 @@ export class StoreService {
   }
   /** Cambia el idioma de la app (inglés, español o catalán; el resto llega más adelante). */
   setLang(name: string): void {
-    if (!(name in LANGS)) { this.toast(t('{lang} isn’t available yet. It’s coming soon.', { lang: name })); return; }
+    if (!(name in LANGS)) {
+      this.toast(t('{lang} isn’t available yet. It’s coming soon.', { lang: name }));
+      return;
+    }
     this.mutate((d) => (d.user.lang = name));
     applyLang(LANGS[name]); // ya, para que el aviso salga en el idioma nuevo
     this.toast(t('Language changed to {lang}.', { lang: name }));
@@ -774,7 +1050,15 @@ export class StoreService {
   /** «Download my data»: descarga un archivo JSON con todo lo de la cuenta (sin la contraseña). */
   downloadData(): void {
     const d = this.data();
-    const file = { exported: new Date().toISOString(), user: d.user, settings: this.settings(), team: d.team, gdds: d.gdds, notes: d.notes, sent: d.sent };
+    const file = {
+      exported: new Date().toISOString(),
+      user: d.user,
+      settings: this.settings(),
+      team: d.team,
+      gdds: d.gdds,
+      notes: d.notes,
+      sent: d.sent,
+    };
     const url = URL.createObjectURL(new Blob([JSON.stringify(file, null, 2)], { type: 'application/json' }));
     const a = document.createElement('a');
     a.href = url;
@@ -785,7 +1069,10 @@ export class StoreService {
   }
   /** «Log out of other devices» (de verdad: el servidor invalida los demás tokens). */
   async logoutOthers(): Promise<void> {
-    if (!this.live()) { this.toast(t('You’re logged out of all other devices.')); return; } // selector de pantallas
+    if (!this.live()) {
+      this.toast(t('You’re logged out of all other devices.'));
+      return;
+    } // selector de pantallas
     try {
       await this.api.logoutOthers();
       this.toast(t('You’re logged out of all other devices.'));
@@ -809,14 +1096,29 @@ export class StoreService {
   /** Guarda a qué proyectos entra una persona del equipo, con qué rol y departamentos. */
   saveAccess(id: string, grants: Grant[]): void {
     let name = '';
-    this.mutate((d) => { const m = d.team.members.find((x) => x.id === id); if (m) { m.grants = grants; m.role = grants.some((x) => x.role === 'Editor') ? 'Editor' : 'Viewer'; name = m.name; } });
+    this.mutate((d) => {
+      const m = d.team.members.find((x) => x.id === id);
+      if (m) {
+        m.grants = grants;
+        m.role = grants.some((x) => x.role === 'Editor') ? 'Editor' : 'Viewer';
+        name = m.name;
+      }
+    });
     this.sheet.set(null);
     this.toast(name ? t('{name}’s access was saved', { name }) : t('Saved'));
   }
   /** Aviso si hay que verificar el email antes de invitar o aceptar (true = parar). */
   needVerify(what: string): boolean {
     if (!this.verifyRequired()) return false;
-    this.toast(t(what === 'invite people' ? 'Verify your email to invite people. Check {email}.' : 'Verify your email to accept invitations. Check {email}.', { email: this.data().user.email }), { action: { label: t('Send link'), run: () => void this.resendVerify() } });
+    this.toast(
+      t(
+        what === 'invite people'
+          ? 'Verify your email to invite people. Check {email}.'
+          : 'Verify your email to accept invitations. Check {email}.',
+        { email: this.data().user.email },
+      ),
+      { action: { label: t('Send link'), run: () => void this.resendVerify() } },
+    );
     return true;
   }
   async resendVerify(): Promise<void> {
@@ -828,10 +1130,17 @@ export class StoreService {
     }
   }
   async resendInvite(email: string): Promise<void> {
-    if (!this.live()) { this.toast(t('Invitation sent again to {email}', { email })); return; } // selector de pantallas
+    if (!this.live()) {
+      this.toast(t('Invitation sent again to {email}', { email }));
+      return;
+    } // selector de pantallas
     try {
       const r = await this.api.resendInvite(email);
-      this.toast(t(r.sent ? 'Invitation sent again to {email}' : '{email} will see your invitation in Notes when they log in.', { email }));
+      this.toast(
+        t(r.sent ? 'Invitation sent again to {email}' : '{email} will see your invitation in Notes when they log in.', {
+          email,
+        }),
+      );
     } catch (e) {
       this.toast(apiMessage(e), { kind: 'err' });
     }
@@ -843,7 +1152,10 @@ export class StoreService {
       await this.settle();
       await this.api.teamAction(inv.owner, accept ? 'accept' : 'decline');
       await this.load();
-      this.toast(accept ? t('You joined {name}’s team', { name: inv.name }) : t('Invitation declined'), accept ? { kind: 'ok' } : {});
+      this.toast(
+        accept ? t('You joined {name}’s team', { name: inv.name }) : t('Invitation declined'),
+        accept ? { kind: 'ok' } : {},
+      );
     } catch (e) {
       this.toast(apiMessage(e), { kind: 'err' });
       void this.load(); // la invitación pudo dejar de existir: se vuelve a mirar
@@ -871,7 +1183,11 @@ export class StoreService {
     this.live.set(false);
     clearTimeout(this.syncTimer);
     const d = sampleData();
-    if (empty) { d.gdds = []; d.notes = []; d.sent = []; }
+    if (empty) {
+      d.gdds = [];
+      d.notes = [];
+      d.sent = [];
+    }
     this.data.set(d);
     this.invitations.set([]);
     this.teams.set([]);

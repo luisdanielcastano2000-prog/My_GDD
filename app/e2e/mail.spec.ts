@@ -10,7 +10,9 @@ test.describe.configure({ mode: 'serial' });
 const run = runId();
 let A: Page, Bp: Page;
 const content = (p: Page) => p.locator('ion-content').last();
-const A_MAIL = email('ana', run), B_MAIL = email('bea', run), NEW_MAIL = email('ana-new', run);
+const A_MAIL = email('ana', run),
+  B_MAIL = email('bea', run),
+  NEW_MAIL = email('ana-new', run);
 const subjects = async (p: Page, to: string) => ((await outbox(p.request, to)) ?? []).map((m) => m.subject);
 
 async function newPage(browser: Browser): Promise<Page> {
@@ -21,7 +23,10 @@ test.beforeAll(async ({ browser }) => {
   A = await newPage(browser);
   Bp = await newPage(browser);
   await signupUi(A, 'ana', run, false); // sin verificar: eso es lo que se prueba
-  test.skip((await outbox(A.request, A_MAIL)) === null, 'Solo en el Mac: la app publicada envía los correos de verdad.');
+  test.skip(
+    (await outbox(A.request, A_MAIL)) === null,
+    'Solo en el Mac: la app publicada envía los correos de verdad.',
+  );
   await signupUi(Bp, 'bea', run, false);
   await api(A, `/api/gdds/m-${run}`, { method: 'PUT', body: { name: 'Juego', order: 0, depts: [] } });
 });
@@ -43,7 +48,9 @@ test('sin verificar no se puede invitar (pantalla y servidor)', async () => {
   await expect(A.locator('.snackbar')).toContainText('Verify your email to invite people');
   const team = (await api<{ team: { members: unknown[]; invites: unknown[] } }>(A, '/api/me')).team;
   team.invites = [{ id: 'x', email: B_MAIL, role: 'Editor' }];
-  expect(await api(A, '/api/me/team', { method: 'PUT', body: team })).toEqual(expect.objectContaining({ statusCode: 403, message: 'Verify your email to invite people.' }));
+  expect(await api(A, '/api/me/team', { method: 'PUT', body: team })).toEqual(
+    expect.objectContaining({ statusCode: 403, message: 'Verify your email to invite people.' }),
+  );
 });
 
 test('«Send link» manda otro correo; el enlace verifica y el aviso desaparece', async () => {
@@ -86,7 +93,9 @@ test('Bea sin verificar no puede aceptar; al verificar, sí', async () => {
   await expect(Bp.getByText('You joined Ana’s team')).toBeVisible();
 });
 
-test('«Forgot password?»: correo con enlace, contraseña nueva, se cierran las sesiones y llega el aviso', async ({ browser }) => {
+test('«Forgot password?»: correo con enlace, contraseña nueva, se cierran las sesiones y llega el aviso', async ({
+  browser,
+}) => {
   const p = await newPage(browser);
   await p.goto('/login');
   await p.getByRole('button', { name: 'Forgot password?' }).click();

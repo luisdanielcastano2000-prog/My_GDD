@@ -1,5 +1,5 @@
 // Piezas de interfaz compartidas por varias pantallas.
-import type { ElementRef} from '@angular/core';
+import type { ElementRef } from '@angular/core';
 import { Component, computed, effect, inject, input, model, output, signal, viewChild } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs';
@@ -41,11 +41,19 @@ export class BrandComponent {
   selector: 'app-status',
   template: `
     @switch (k()) {
-      @case ('old') { <span class="lbl av sym" aria-hidden="true">!</span> }
-      @case ('ok') { <span class="ms s16 ic-ok" aria-hidden="true">check_circle</span> }
-      @default { <span class="st-empty" aria-hidden="true"></span> }
+      @case ('old') {
+        <span class="lbl av sym" aria-hidden="true">!</span>
+      }
+      @case ('ok') {
+        <span class="ms s16 ic-ok" aria-hidden="true">check_circle</span>
+      }
+      @default {
+        <span class="st-empty" aria-hidden="true"></span>
+      }
     }
-    @if (text()) { <span [class.sr-only]="hideText()">{{ text() }}</span> }
+    @if (text()) {
+      <span [class.sr-only]="hideText()">{{ text() }}</span>
+    }
   `,
   host: { style: 'display:inline-flex;align-items:center;gap:6px' },
 })
@@ -55,7 +63,8 @@ export class StatusComponent {
   readonly text = input('');
   readonly hideText = input(false);
 }
-export const statusKind = (s: string): StatusKind => (s === 'Out of date' || s === 'old' ? 'old' : s === 'Up to date' || s === 'ok' ? 'ok' : 'empty');
+export const statusKind = (s: string): StatusKind =>
+  s === 'Out of date' || s === 'old' ? 'old' : s === 'Up to date' || s === 'ok' ? 'ok' : 'empty';
 
 /** Top app bar: atrás, título (o logo en Home), subtítulo, buscar y avatar. */
 @Component({
@@ -64,28 +73,53 @@ export const statusKind = (s: string): StatusKind => (s === 'Out of date' || s =
   template: `
     <div class="top-bar">
       @if (searching()) {
-        <button class="icon-btn" type="button" [attr.aria-label]="'Close search' | t" (click)="closeSearch()"><span class="ms">arrow_back</span></button>
-        <input #q class="search" type="search" [placeholder]="searchLabel()" [attr.aria-label]="searchLabel()" [value]="query()" (input)="query.set($any($event.target).value)" />
+        <button class="icon-btn" type="button" [attr.aria-label]="'Close search' | t" (click)="closeSearch()">
+          <span class="ms">arrow_back</span>
+        </button>
+        <input
+          #q
+          class="search"
+          type="search"
+          [placeholder]="searchLabel()"
+          [attr.aria-label]="searchLabel()"
+          [value]="query()"
+          (input)="query.set($any($event.target).value)"
+        />
         @if (query()) {
-          <button class="icon-btn" type="button" [attr.aria-label]="'Clear search' | t" (click)="query.set(''); q.focus()"><span class="ms">close</span></button>
+          <button
+            class="icon-btn"
+            type="button"
+            [attr.aria-label]="'Clear search' | t"
+            (click)="query.set(''); q.focus()"
+          >
+            <span class="ms">close</span>
+          </button>
         }
       } @else {
         @if (back() !== null) {
-          <button class="icon-btn" type="button" [attr.aria-label]="'Back' | t" (click)="goBack()"><span class="ms">arrow_back</span></button>
+          <button class="icon-btn" type="button" [attr.aria-label]="'Back' | t" (click)="goBack()">
+            <span class="ms">arrow_back</span>
+          </button>
         }
         <div class="titles" [class.with-back]="back() !== null">
           @if (brand()) {
             <h1><app-brand /></h1>
           } @else {
             <h1>{{ title() }}</h1>
-            @if (sub()) { <span class="sub">{{ sub() }}</span> }
+            @if (sub()) {
+              <span class="sub">{{ sub() }}</span>
+            }
           }
         </div>
         @if (searchLabel()) {
-          <button class="icon-btn" type="button" [attr.aria-label]="searchLabel()" (click)="openSearch()"><span class="ms">search</span></button>
+          <button class="icon-btn" type="button" [attr.aria-label]="searchLabel()" (click)="openSearch()">
+            <span class="ms">search</span>
+          </button>
         }
         @if (profile()) {
-          <button class="icon-btn avatar" type="button" [attr.aria-label]="'Profile' | t" (click)="nav.go('/profile')"><span class="ms">{{ avatar() }}</span></button>
+          <button class="icon-btn avatar" type="button" [attr.aria-label]="'Profile' | t" (click)="nav.go('/profile')">
+            <span class="ms">{{ avatar() }}</span>
+          </button>
         }
       }
     </div>
@@ -107,11 +141,21 @@ export class TopBarComponent {
   protected avatar = computed(() => AVATAR_ICON[this.store.data().user.av]);
 
   constructor() {
-    effect(() => { if (this.searching()) setTimeout(() => this.qEl()?.nativeElement.focus()); });
+    effect(() => {
+      if (this.searching()) setTimeout(() => this.qEl()?.nativeElement.focus());
+    });
   }
-  goBack(): void { this.nav.back(this.back() ?? '/home'); }
-  openSearch(): void { this.query.set(''); this.searching.set(true); }
-  closeSearch(): void { this.query.set(''); this.searching.set(false); }
+  goBack(): void {
+    this.nav.back(this.back() ?? '/home');
+  }
+  openSearch(): void {
+    this.query.set('');
+    this.searching.set(true);
+  }
+  closeSearch(): void {
+    this.query.set('');
+    this.searching.set(false);
+  }
 }
 
 /** Barra de navegación inferior: Home, Notes (con aviso de no leídas) y Help. */
@@ -121,16 +165,38 @@ export class TopBarComponent {
   template: `
     @if (visible()) {
       <nav class="nav-bar" [attr.aria-label]="'Main' | t">
-        <button type="button" [class.on]="tab() === 'home'" [attr.aria-current]="tab() === 'home' ? 'page' : null" (click)="go('home')">
-          <span class="pill"><span class="ms">home</span></span>{{ 'Home' | t }}
+        <button
+          type="button"
+          [class.on]="tab() === 'home'"
+          [attr.aria-current]="tab() === 'home' ? 'page' : null"
+          (click)="go('home')"
+        >
+          <span class="pill"><span class="ms">home</span></span
+          >{{ 'Home' | t }}
         </button>
-        <button type="button" [class.on]="tab() === 'notes'" [attr.aria-current]="tab() === 'notes' ? 'page' : null" (click)="go('notes')">
-          <span class="pill"><span class="ms">sticky_note_2</span>
-            @if (store.unread()) { <span class="badge" [attr.aria-label]="store.unread() + ' new'">{{ store.unread() }}<span class="ring"></span></span> }
-          </span>{{ 'Notes' | t }}
+        <button
+          type="button"
+          [class.on]="tab() === 'notes'"
+          [attr.aria-current]="tab() === 'notes' ? 'page' : null"
+          (click)="go('notes')"
+        >
+          <span class="pill"
+            ><span class="ms">sticky_note_2</span>
+            @if (store.unread()) {
+              <span class="badge" [attr.aria-label]="store.unread() + ' new'"
+                >{{ store.unread() }}<span class="ring"></span
+              ></span>
+            }</span
+          >{{ 'Notes' | t }}
         </button>
-        <button type="button" [class.on]="tab() === 'help'" [attr.aria-current]="tab() === 'help' ? 'page' : null" (click)="go('help')">
-          <span class="pill"><span class="ms">help</span></span>{{ 'Help' | t }}
+        <button
+          type="button"
+          [class.on]="tab() === 'help'"
+          [attr.aria-current]="tab() === 'help' ? 'page' : null"
+          (click)="go('help')"
+        >
+          <span class="pill"><span class="ms">help</span></span
+          >{{ 'Help' | t }}
         </button>
       </nav>
     }
@@ -153,7 +219,9 @@ export class NavBarComponent {
   });
 
   constructor() {
-    inject(Router).events.pipe(filter((e) => e instanceof NavigationEnd)).subscribe((e) => this.url.set((e as NavigationEnd).urlAfterRedirects.split('?')[0]));
+    inject(Router)
+      .events.pipe(filter((e) => e instanceof NavigationEnd))
+      .subscribe((e) => this.url.set((e as NavigationEnd).urlAfterRedirects.split('?')[0]));
   }
   go(t: 'home' | 'notes' | 'help'): void {
     if (this.tab() === t && this.url() === '/' + t) return;
@@ -166,7 +234,16 @@ export class NavBarComponent {
 /** Interruptor accesible (role="switch"). */
 @Component({
   selector: 'app-switch',
-  template: `<button type="button" class="switch" role="switch" [attr.aria-checked]="on()" [attr.aria-label]="label()" (click)="on.set(!on()); changed.emit(on())"><span></span></button>`,
+  template: `<button
+    type="button"
+    class="switch"
+    role="switch"
+    [attr.aria-checked]="on()"
+    [attr.aria-label]="label()"
+    (click)="on.set(!on()); changed.emit(on())"
+  >
+    <span></span>
+  </button>`,
 })
 export class SwitchComponent {
   readonly on = model(false);
@@ -181,8 +258,17 @@ export class SwitchComponent {
   template: `
     <div class="seg" role="radiogroup" [attr.aria-label]="label()">
       @for (o of options(); track o) {
-        <button type="button" role="radio" [class.on]="value() === o" [attr.aria-checked]="value() === o" (click)="value.set(o)">
-          @if (value() === o) { <span class="ms s18">check</span> }{{ o | t }}
+        <button
+          type="button"
+          role="radio"
+          [class.on]="value() === o"
+          [attr.aria-checked]="value() === o"
+          (click)="value.set(o)"
+        >
+          @if (value() === o) {
+            <span class="ms s18">check</span>
+          }
+          {{ o | t }}
         </button>
       }
     </div>

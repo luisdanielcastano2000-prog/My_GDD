@@ -2,7 +2,6 @@
 import { type Browser, type Page, expect, test } from '@playwright/test';
 import fs from 'node:fs';
 
-
 import { api, deleteAccount, email, PASSWORD, runId, screenText, signupUi, skipIfCannotVerify } from './helpers';
 
 test.describe.configure({ mode: 'serial' });
@@ -60,7 +59,10 @@ test('«Member since» con el mes real de alta', async () => {
 });
 
 test('«Download my data» descarga un JSON sin contraseña', async () => {
-  const [dl] = await Promise.all([A.waitForEvent('download'), A.getByRole('button', { name: /Download my data/ }).click()]);
+  const [dl] = await Promise.all([
+    A.waitForEvent('download'),
+    A.getByRole('button', { name: /Download my data/ }).click(),
+  ]);
   expect(dl.suggestedFilename()).toMatch(/^my-gdd-data-\d{4}-\d{2}-\d{2}\.json$/);
   const text = fs.readFileSync((await dl.path())!, 'utf8');
   expect(JSON.parse(text).gdds).toHaveLength(1);
@@ -70,14 +72,19 @@ test('«Download my data» descarga un JSON sin contraseña', async () => {
 test('«Send feedback» se guarda', async () => {
   await A.goto('/help/feedback');
   await A.locator('textarea').fill('Prueba de feedback');
-  const [res] = await Promise.all([A.waitForResponse((r) => r.url().includes('/api/me/feedback')), A.getByRole('button', { name: 'Send feedback' }).click()]);
+  const [res] = await Promise.all([
+    A.waitForResponse((r) => r.url().includes('/api/me/feedback')),
+    A.getByRole('button', { name: 'Send feedback' }).click(),
+  ]);
   expect(res.status()).toBe(201);
   await A.waitForURL(/\/help$/);
 });
 
 test('nota al equipo: solo tras aceptar, y sin «Ana, Ana»', async () => {
   await skipIfCannotVerify(A);
-  const team = await api<{ members: unknown[]; invites: unknown[] }>(A, '/api/me').then((d) => (d as unknown as { team: { members: unknown[]; invites: unknown[] } }).team);
+  const team = await api<{ members: unknown[]; invites: unknown[] }>(A, '/api/me').then(
+    (d) => (d as unknown as { team: { members: unknown[]; invites: unknown[] } }).team,
+  );
   team.invites = [{ id: 'i', email: email('bea', run), role: 'Editor' }];
   await api(A, '/api/me/team', { method: 'PUT', body: team });
   const inv = (await api<{ invitations: { owner: string }[] }>(Bp, '/api/me')).invitations[0];

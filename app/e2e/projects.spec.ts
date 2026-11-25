@@ -7,14 +7,48 @@ import { api, deleteAccount, email, runId, signupUi, skipIfCannotVerify } from '
 test.describe.configure({ mode: 'serial' });
 
 const run = runId();
-const G1 = 'p1-' + run, G2 = 'p2-' + run;
+const G1 = 'p1-' + run,
+  G2 = 'p2-' + run;
 const depts = [
-  { id: 'art', name: 'Art', col: 1, blocks: [{ id: 'b-art', name: 'Style', status: 'Empty', pend: false, rem: null, secs: [{ id: 's1', t: '', x: '', rev: false, chg: '', b: false, i: false, big: false }] }] },
-  { id: 'audio', name: 'Audio', col: 2, blocks: [{ id: 'b-audio', name: 'Music', status: 'Empty', pend: false, rem: null, secs: [{ id: 's2', t: '', x: '', rev: false, chg: '', b: false, i: false, big: false }] }] },
+  {
+    id: 'art',
+    name: 'Art',
+    col: 1,
+    blocks: [
+      {
+        id: 'b-art',
+        name: 'Style',
+        status: 'Empty',
+        pend: false,
+        rem: null,
+        secs: [{ id: 's1', t: '', x: '', rev: false, chg: '', b: false, i: false, big: false }],
+      },
+    ],
+  },
+  {
+    id: 'audio',
+    name: 'Audio',
+    col: 2,
+    blocks: [
+      {
+        id: 'b-audio',
+        name: 'Music',
+        status: 'Empty',
+        pend: false,
+        rem: null,
+        secs: [{ id: 's2', t: '', x: '', rev: false, chg: '', b: false, i: false, big: false }],
+      },
+    ],
+  },
 ];
 let A: Page, Bp: Page, C: Page, D: Page;
 const content = (p: Page) => p.locator('ion-content').last();
-type Me = { gdds: { id: string; name: string; rev?: number; depts: typeof depts; share?: { role: string; depts?: string[] } }[]; team: { members: { id: string; name: string; grants?: unknown }[]; invites: unknown[] }; invitations: { owner: string; projects?: string[] }[]; notes: { title: string }[] };
+type Me = {
+  gdds: { id: string; name: string; rev?: number; depts: typeof depts; share?: { role: string; depts?: string[] } }[];
+  team: { members: { id: string; name: string; grants?: unknown }[]; invites: unknown[] };
+  invitations: { owner: string; projects?: string[] }[];
+  notes: { title: string }[];
+};
 const me = (p: Page) => api<Me>(p, '/api/me');
 
 async function newPage(browser: Browser): Promise<Page> {
@@ -47,7 +81,11 @@ test('Ana invita a Bea solo al Juego 1, como Editor del departamento Art', async
   await expect(sheet.getByRole('checkbox', { name: /Juego 1/ })).toContainText('Can edit Art · Reads the rest');
   await sheet.getByRole('button', { name: /Send invite/ }).click();
   await expect(content(A)).toContainText('Editor · 1 of 2 projects · Waiting for them to accept');
-  await expect.poll(async () => (await me(A)).team.invites).toEqual([expect.objectContaining({ email: email('bea', run), grants: [{ g: G1, role: 'Editor', depts: ['art'] }] })]);
+  await expect
+    .poll(async () => (await me(A)).team.invites)
+    .toEqual([
+      expect.objectContaining({ email: email('bea', run), grants: [{ g: G1, role: 'Editor', depts: ['art'] }] }),
+    ]);
 });
 
 test('Bea ve a qué proyecto la invitan, acepta y solo le sale ese GDD', async () => {
@@ -70,17 +108,27 @@ test('Bea escribe en Art, pero Audio y la lista de departamentos son solo lectur
   await saved;
   await Bp.goto(`/gdd/${G1}/dept/audio/block/b-audio`);
   await expect(content(Bp)).toContainText('You edit other departments');
-  expect(await Bp.locator('textarea').first().evaluate((e) => (e as HTMLTextAreaElement).readOnly)).toBe(true);
+  expect(
+    await Bp.locator('textarea')
+      .first()
+      .evaluate((e) => (e as HTMLTextAreaElement).readOnly),
+  ).toBe(true);
   await Bp.goto(`/gdd/${G1}/dept/audio`);
   await expect(Bp.getByRole('button', { name: /^add ?Block$/ })).toHaveCount(0);
 });
 
 test('el servidor tampoco deja a Bea tocar Audio ni la lista de departamentos', async () => {
   const g = (await me(Bp)).gdds[0];
-  const tryPut = (d: typeof depts) => api<{ statusCode?: number; message?: string }>(Bp, `/api/gdds/${G1}`, { method: 'PUT', body: { name: g.name, order: 0, rev: g.rev, depts: d } });
+  const tryPut = (d: typeof depts) =>
+    api<{ statusCode?: number; message?: string }>(Bp, `/api/gdds/${G1}`, {
+      method: 'PUT',
+      body: { name: g.name, order: 0, rev: g.rev, depts: d },
+    });
   const audio = structuredClone(g.depts);
   audio[1].blocks[0].secs[0].x = 'no';
-  expect(await tryPut(audio)).toEqual(expect.objectContaining({ statusCode: 403, message: 'You can only edit your departments.' }));
+  expect(await tryPut(audio)).toEqual(
+    expect.objectContaining({ statusCode: 403, message: 'You can only edit your departments.' }),
+  );
   const renamed = structuredClone(g.depts);
   renamed[0].name = 'Arte';
   expect((await tryPut(renamed)).statusCode).toBe(403);
@@ -95,7 +143,12 @@ test('Ana le añade el Juego 2 como Viewer desde Manage', async () => {
   await sheet.getByRole('button', { name: 'Save' }).click();
   await expect(A.getByText('Bea’s access was saved')).toBeVisible();
   await expect(content(A)).toContainText('Editor · All projects');
-  await expect.poll(async () => (await me(Bp)).gdds.map((g) => [g.name, g.share?.role])).toEqual([['Juego 1', 'Editor'], ['Juego 2', 'Viewer']]);
+  await expect
+    .poll(async () => (await me(Bp)).gdds.map((g) => [g.name, g.share?.role]))
+    .toEqual([
+      ['Juego 1', 'Editor'],
+      ['Juego 2', 'Viewer'],
+    ]);
 });
 
 test('una nota «a un departamento» solo llega a quien lo tiene (y a la dueña)', async () => {

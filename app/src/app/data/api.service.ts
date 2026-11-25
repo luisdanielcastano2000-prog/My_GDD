@@ -38,7 +38,9 @@ export function apiMessage(e: unknown, translate = true): string {
 /** Añade el token de sesión a cada petición a /api. */
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const token = localStorage.getItem(TOKEN_KEY);
-  return next(token && req.url.startsWith('/api') ? req.clone({ setHeaders: { Authorization: 'Bearer ' + token } }) : req);
+  return next(
+    token && req.url.startsWith('/api') ? req.clone({ setHeaders: { Authorization: 'Bearer ' + token } }) : req,
+  );
 };
 
 /**

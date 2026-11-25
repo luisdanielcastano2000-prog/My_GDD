@@ -5,7 +5,6 @@ import { type Page, expect, test } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
 
-
 import { api, deleteAccount, runId, signupUi } from './helpers';
 
 test.describe.configure({ mode: 'serial' });
@@ -14,7 +13,8 @@ test.describe.configure({ mode: 'serial' });
 function dict(lang: 'es' | 'ca'): Record<string, string> {
   const s = fs.readFileSync(path.join(__dirname, `../src/app/i18n/${lang}.ts`), 'utf8');
   const out: Record<string, string> = {};
-  for (const m of s.matchAll(/^\s*'((?:[^'\\]|\\.)*)':\s*'((?:[^'\\]|\\.)*)',$/gm)) out[m[1].replace(/\\'/g, "'")] = m[2].replace(/\\'/g, "'");
+  for (const m of s.matchAll(/^\s*'((?:[^'\\]|\\.)*)':\s*'((?:[^'\\]|\\.)*)',$/gm))
+    out[m[1].replace(/\\'/g, "'")] = m[2].replace(/\\'/g, "'");
   return out;
 }
 /** Textos del catálogo de plantillas: al crear un GDD pasan a ser su contenido (no se traducen después). */
@@ -24,7 +24,12 @@ const CONTENT = (() => {
   return new Set([...cat.matchAll(/'((?:[^'\\]|\\.)*)'/g)].map((m) => m[1].replace(/\\'/g, "'")));
 })();
 /** Frases inglesas de la interfaz que no deberían verse en ese idioma (sin huecos {…}, de 2 palabras o más, distintas al traducir). */
-const english = (d: Record<string, string>): string[] => Object.entries(d).filter(([k, v]) => k !== v && !k.includes('{') && k.trim().split(/\s+/).length >= 2 && !v.includes(k) && !CONTENT.has(k)).map(([k]) => k);
+const english = (d: Record<string, string>): string[] =>
+  Object.entries(d)
+    .filter(
+      ([k, v]) => k !== v && !k.includes('{') && k.trim().split(/\s+/).length >= 2 && !v.includes(k) && !CONTENT.has(k),
+    )
+    .map(([k]) => k);
 
 let A: Page;
 let g: { id: string; dp: string; b: string };
@@ -33,15 +38,45 @@ async function check(p: Page, where: string, eng: string[]): Promise<void> {
   await p.waitForTimeout(400);
   const missing = await p.evaluate(() => (globalThis as { __i18nMissing?: () => string[] }).__i18nMissing?.() ?? []);
   expect(missing, `${where}: claves sin traducir`).toEqual([]);
-  const text = await p.evaluate(() => document.body.innerText + ' ' + [...document.querySelectorAll('[aria-label],[placeholder]')].map((e) => (e.getAttribute('aria-label') ?? '') + ' ' + (e.getAttribute('placeholder') ?? '')).join(' '));
+  const text = await p.evaluate(
+    () =>
+      document.body.innerText +
+      ' ' +
+      [...document.querySelectorAll('[aria-label],[placeholder]')]
+        .map((e) => (e.getAttribute('aria-label') ?? '') + ' ' + (e.getAttribute('placeholder') ?? ''))
+        .join(' '),
+  );
   const seen = eng.filter((k) => text.includes(k));
   expect(seen, `${where}: textos en inglés a la vista`).toEqual([]);
 }
 
 /** Recorre todas las pantallas (y abre hojas y diálogos) comprobando el idioma. */
 async function tour(p: Page, eng: string[]): Promise<void> {
-  const pages = ['/home', '/new-gdd', `/gdd/${g.id}`, `/gdd/${g.id}/dept/${g.dp}`, `/gdd/${g.id}/dept/${g.dp}/block/${g.b}`, `/gdd/${g.id}/outdated`, '/notes', '/notes/new', '/help', '/help/guide', '/help/glossary', '/help/feedback', '/profile', '/profile/edit', '/profile/personal', '/profile/password', '/profile/team', '/profile/language', '/profile/privacy'];
-  for (const url of pages) { await p.goto(url); await check(p, url, eng); }
+  const pages = [
+    '/home',
+    '/new-gdd',
+    `/gdd/${g.id}`,
+    `/gdd/${g.id}/dept/${g.dp}`,
+    `/gdd/${g.id}/dept/${g.dp}/block/${g.b}`,
+    `/gdd/${g.id}/outdated`,
+    '/notes',
+    '/notes/new',
+    '/help',
+    '/help/guide',
+    '/help/glossary',
+    '/help/feedback',
+    '/profile',
+    '/profile/edit',
+    '/profile/personal',
+    '/profile/password',
+    '/profile/team',
+    '/profile/language',
+    '/profile/privacy',
+  ];
+  for (const url of pages) {
+    await p.goto(url);
+    await check(p, url, eng);
+  }
   await p.goto('/notes');
   await p.getByRole('tab').nth(1).click(); // Enviadas
   await check(p, '/notes (sent)', eng);
@@ -69,7 +104,8 @@ test.beforeAll(async ({ browser }) => {
   const saved = A.waitForResponse((r) => r.url().includes('/api/gdds/') && r.request().method() === 'PUT' && r.ok());
   await A.getByRole('button', { name: 'Create GDD' }).click();
   await saved;
-  const d = (await api<{ gdds: { id: string; depts: { id: string; blocks: { id: string }[] }[] }[] }>(A, '/api/me')).gdds[0];
+  const d = (await api<{ gdds: { id: string; depts: { id: string; blocks: { id: string }[] }[] }[] }>(A, '/api/me'))
+    .gdds[0];
   g = { id: d.id, dp: d.depts[0].id, b: d.depts[0].blocks[0].id };
 });
 test.afterAll(async () => {
@@ -127,7 +163,10 @@ test('los idiomas sin traducción no se eligen; el acceso recuerda el idioma', a
   await expect(A.locator('.snackbar')).toContainText('Deutsch encara no està disponible.');
   await expect(A.getByRole('radio', { name: /Català/ })).toHaveAttribute('aria-checked', 'true');
   // Al cerrar sesión, la pantalla de entrada sigue en catalán (se recuerda en este navegador)
-  await A.evaluate(() => { const k = Object.keys(localStorage).find((x) => /token/i.test(x)); if (k) localStorage.removeItem(k); });
+  await A.evaluate(() => {
+    const k = Object.keys(localStorage).find((x) => /token/i.test(x));
+    if (k) localStorage.removeItem(k);
+  });
   await A.goto('/login');
   await expect(A.locator('ion-content')).toContainText('Inicia la sessió');
   await check(A, '/login', english(dict('ca')));

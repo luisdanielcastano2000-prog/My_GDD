@@ -49,7 +49,11 @@ test('Ana invita a Bea (Editor) y a Cris (Viewer)', async () => {
   await invite(A, email('bea', run), 'Editor');
   await invite(A, email('cris', run), 'Viewer');
   await expect(content(A)).toContainText('Waiting for them to accept');
-  await expect.poll(async () => (await api<{ team: { invites: { role: string }[] } }>(A, '/api/me')).team.invites.map((v) => v.role)).toEqual(['Editor', 'Viewer']);
+  await expect
+    .poll(async () =>
+      (await api<{ team: { invites: { role: string }[] } }>(A, '/api/me')).team.invites.map((v) => v.role),
+    )
+    .toEqual(['Editor', 'Viewer']);
 });
 
 test('Bea ve la invitación en Notes y acepta: el GDD sale en su Home', async () => {
@@ -80,7 +84,12 @@ test('Ana y Bea escriben a la vez en bloques distintos: hay choque (409) y se qu
   await expect(Bp.getByText('Both changes were kept.')).toBeVisible();
   await expect
     .poll(async () => {
-      const b = (await api<{ gdds: { rev: number; depts: { blocks: { id: string; secs: { x: string }[] }[] }[] }[] }>(A, '/api/me')).gdds[0];
+      const b = (
+        await api<{ gdds: { rev: number; depts: { blocks: { id: string; secs: { x: string }[] }[] }[] }[] }>(
+          A,
+          '/api/me',
+        )
+      ).gdds[0];
       const x = (id: string) => b.depts[0].blocks.find((y) => y.id === id)?.secs[0].x;
       return [x(g.b1), x(g.b2)];
     })
@@ -103,7 +112,11 @@ test('Cris (Viewer) solo lee: sin botones de cambiar ni barra de formato; sí «
   await expect(C.getByRole('button', { name: /^add ?Block$/ })).toHaveCount(0);
   await C.goto(`/gdd/${g.id}/dept/${g.dp}/block/${g.b1}`);
   await expect(C.locator('textarea').first()).toHaveValue('Texto de Ana');
-  expect(await C.locator('textarea').first().evaluate((e) => (e as HTMLTextAreaElement).readOnly)).toBe(true);
+  expect(
+    await C.locator('textarea')
+      .first()
+      .evaluate((e) => (e as HTMLTextAreaElement).readOnly),
+  ).toBe(true);
   await expect(C.locator('.toolbar')).toHaveCount(0);
   await expect(content(C)).toContainText('You can read this block');
 });

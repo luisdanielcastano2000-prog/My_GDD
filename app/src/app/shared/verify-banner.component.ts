@@ -13,7 +13,9 @@ import { TPipe } from '../i18n/i18n';
         <span class="ms s20" aria-hidden="true">mark_email_unread</span>
         <span class="li-text">
           <span class="li-title">{{ 'Verify your email' | t }}</span>
-          <span class="li-sub">{{ 'To invite people and join teams, open the link we sent to {p0}.' | t: { p0: store.data().user.email } }}</span>
+          <span class="li-sub">{{
+            'To invite people and join teams, open the link we sent to {p0}.' | t: { p0: store.data().user.email }
+          }}</span>
         </span>
         <button class="btn btn-text" type="button" (click)="store.resendVerify()">{{ 'Send link' | t }}</button>
       </div>

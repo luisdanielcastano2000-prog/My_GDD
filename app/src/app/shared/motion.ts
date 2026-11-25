@@ -13,12 +13,15 @@ const root = (): HTMLElement => document.documentElement;
 /** Multiplicador de duración: 4 en «lento» (marcos Mov-*-Lento), 1 normal. */
 export const mvK = (): number => (root().classList.contains('motion-slow') ? 4 : 1);
 /** «Menos movimiento» (ajuste de la app o del sistema): sin saltos ni desplazamientos, solo fundidos de ≤150 ms. */
-export const reduced = (): boolean => root().classList.contains('reduce-motion') || matchMedia('(prefers-reduced-motion: reduce)').matches;
+export const reduced = (): boolean =>
+  root().classList.contains('reduce-motion') || matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /** Posición de los elementos marcados con data-flip (antes de un cambio). */
 export function flipCapture(): Map<string, DOMRect> {
   const m = new Map<string, DOMRect>();
-  document.querySelectorAll<HTMLElement>('[data-flip]').forEach((el) => m.set(el.dataset['flip']!, el.getBoundingClientRect()));
+  document
+    .querySelectorAll<HTMLElement>('[data-flip]')
+    .forEach((el) => m.set(el.dataset['flip']!, el.getBoundingClientRect()));
   return m;
 }
 
@@ -30,9 +33,14 @@ export function flipPlay(before: Map<string, DOMRect>, dur = 300): void {
       const o = before.get(el.dataset['flip']!);
       if (!o) return;
       const n = el.getBoundingClientRect();
-      const dx = o.left - n.left, dy = o.top - n.top;
+      const dx = o.left - n.left,
+        dy = o.top - n.top;
       if (Math.abs(dx) < 1 && Math.abs(dy) < 1) return;
-      el.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: 'none' }], { duration: dur * mvK(), easing: EASE.std, fill: 'backwards' });
+      el.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: 'none' }], {
+        duration: dur * mvK(),
+        easing: EASE.std,
+        fill: 'backwards',
+      });
     });
   });
 }

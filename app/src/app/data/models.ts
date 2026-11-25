@@ -165,7 +165,17 @@ export type Sheet =
   | { k: 'invite'; email: string; role: 'Editor' | 'Viewer'; err: boolean; busy?: 'load' | 'ok'; grants?: Grant[] };
 
 export type Dialog =
-  | { k: 'rename'; what: 'gdd' | 'dept' | 'block' | 'field'; id?: string; g?: string; dp?: string; key?: 'phone' | 'country' | 'tz'; label?: string; val: string; err: boolean }
+  | {
+      k: 'rename';
+      what: 'gdd' | 'dept' | 'block' | 'field';
+      id?: string;
+      g?: string;
+      dp?: string;
+      key?: 'phone' | 'country' | 'tz';
+      label?: string;
+      val: string;
+      err: boolean;
+    }
   | { k: 'del'; what: 'gdd' | 'member' | 'account'; id?: string };
 
 export interface Snack {

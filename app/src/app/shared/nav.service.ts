@@ -44,7 +44,10 @@ export class NavService {
  * Cambio de pantalla (ficha de movimiento): la nueva entra por la derecha y la anterior
  * se desplaza un 25 %. dur-screen (350 ms), ease-decelerate. Con «menos movimiento»: fundido de 150 ms.
  */
-export function screenTransition(_: HTMLElement, opts: { enteringEl: HTMLElement; leavingEl?: HTMLElement; direction?: string }): Animation {
+export function screenTransition(
+  _: HTMLElement,
+  opts: { enteringEl: HTMLElement; leavingEl?: HTMLElement; direction?: string },
+): Animation {
   const root = document.documentElement;
   const k = root.classList.contains('motion-slow') ? 4 : 1;
   const back = opts.direction === 'back';
@@ -63,7 +66,9 @@ export function screenTransition(_: HTMLElement, opts: { enteringEl: HTMLElement
     entering.fromTo('transform', 'translateX(100%)', 'translateX(0)');
     leaving.fromTo('transform', 'translateX(0)', 'translateX(-25%)');
   }
-  entering.beforeStyles({ 'z-index': back ? '0' : '10', 'box-shadow': back ? 'none' : '-8px 0 24px rgba(0,0,0,.12)' }).afterClearStyles(['z-index', 'box-shadow']);
+  entering
+    .beforeStyles({ 'z-index': back ? '0' : '10', 'box-shadow': back ? 'none' : '-8px 0 24px rgba(0,0,0,.12)' })
+    .afterClearStyles(['z-index', 'box-shadow']);
   leaving.beforeStyles({ 'z-index': back ? '10' : '0' }).afterClearStyles(['z-index', 'transform']);
   return createAnimation()
     .duration((back ? 300 : 375) * k)

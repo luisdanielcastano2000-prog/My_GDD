@@ -6,7 +6,11 @@ import { api, deleteAccount, email, runId, signupUi, skipIfCannotVerify } from '
 
 test.describe.configure({ mode: 'serial' });
 
-type Gdd = { id: string; rev: number; depts: { id: string; name: string; blocks: { id: string; name: string; status: string; pend: boolean }[] }[] };
+type Gdd = {
+  id: string;
+  rev: number;
+  depts: { id: string; name: string; blocks: { id: string; name: string; status: string; pend: boolean }[] }[];
+};
 const run = runId();
 let A: Page, Bp: Page, C: Page;
 let g: Gdd;
@@ -35,7 +39,10 @@ test.beforeAll(async ({ browser }) => {
   g = await gddOf(A);
   // Equipo por la API (lo de invitar ya lo prueba team.spec.ts)
   const me = await api<{ team: { invites: unknown[] } }>(A, '/api/me');
-  me.team.invites = [{ id: 'i1', email: email('bea', run), role: 'Editor' }, { id: 'i2', email: email('cris', run), role: 'Viewer' }];
+  me.team.invites = [
+    { id: 'i1', email: email('bea', run), role: 'Editor' },
+    { id: 'i2', email: email('cris', run), role: 'Viewer' },
+  ];
   await api(A, '/api/me/team', { method: 'PUT', body: me.team });
   for (const p of [Bp, C]) {
     const inv = (await api<{ invitations: { owner: string }[] }>(p, '/api/me')).invitations[0];
@@ -67,7 +74,12 @@ test('Ana guarda un bloque y el aviso «Saved» ofrece «Note a change»; marca 
 });
 
 test('los bloques quedan «Out of date» para todo el equipo y Home lo cuenta', async () => {
-  await expect.poll(async () => { const x = await gddOf(Bp); return [block(x, 0, 1).status, block(x, 1, 0).status, block(x, 0, 0).status]; }).toEqual(['Out of date', 'Out of date', 'Up to date']);
+  await expect
+    .poll(async () => {
+      const x = await gddOf(Bp);
+      return [block(x, 0, 1).status, block(x, 1, 0).status, block(x, 0, 0).status];
+    })
+    .toEqual(['Out of date', 'Out of date', 'Up to date']);
   await A.goto('/home');
   await expect(content(A)).toContainText('2 blocks out of date');
 });

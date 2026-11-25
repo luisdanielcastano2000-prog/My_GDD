@@ -38,7 +38,11 @@ export const lang = signal<Lang>(firstLang());
 export function applyLang(l: Lang): void {
   lang.set(l);
   document.documentElement.lang = l;
-  try { localStorage.setItem('gdd-lang', l); } catch { /* sin almacenamiento */ }
+  try {
+    localStorage.setItem('gdd-lang', l);
+  } catch {
+    /* sin almacenamiento */
+  }
 }
 /** Claves que no tienen traducción (las pruebas e2e comprueban que quede vacío). */
 export const missing = new Set<string>();

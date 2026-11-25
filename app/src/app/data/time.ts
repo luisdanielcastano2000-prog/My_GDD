@@ -6,7 +6,11 @@ import { LOCALE, lang, t } from '../i18n/i18n';
 /** ¿Es un momento real (no un orden de los datos de ejemplo)? */
 export const isReal = (ts: number | null | undefined): ts is number => typeof ts === 'number' && ts > 1e12;
 
-const startOfDay = (now: number) => { const d = new Date(now); d.setHours(0, 0, 0, 0); return d.getTime(); };
+const startOfDay = (now: number) => {
+  const d = new Date(now);
+  d.setHours(0, 0, 0, 0);
+  return d.getTime();
+};
 
 /** Con detalle de minutos: «just now», «5 min ago», «3 h ago», «yesterday», «4 days ago», «on 12 Nov». */
 export function ago(ts: number, now = Date.now()): string {
