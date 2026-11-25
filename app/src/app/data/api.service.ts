@@ -1,5 +1,6 @@
 import { HttpClient, HttpErrorResponse, type HttpInterceptorFn } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
+import { Capacitor } from '@capacitor/core';
 import { firstValueFrom, type Observable } from 'rxjs';
 
 import { t } from '../i18n/i18n';
@@ -37,17 +38,26 @@ export function apiMessage(e: unknown, translate = true): string {
   return tr('Something went wrong. Try again.');
 }
 
-/** Añade el token de sesión a cada petición a /api. */
+/** Dirección de la API publicada: la usa la app de Android, que lleva la web dentro y no tiene /api al lado. */
+export const API_ORIGIN = 'https://my-gdd.onrender.com';
+
+/** Añade el token de sesión a cada petición a /api (y, en la app de Android, la dirección de Render). */
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
+  if (!req.url.startsWith('/api')) return next(req);
   const token = localStorage.getItem(TOKEN_KEY);
   return next(
-    token && req.url.startsWith('/api') ? req.clone({ setHeaders: { Authorization: 'Bearer ' + token } }) : req,
+    req.clone({
+      url: Capacitor.isNativePlatform() ? API_ORIGIN + req.url : req.url,
+      ...(token ? { setHeaders: { Authorization: 'Bearer ' + token } } : {}),
+    }),
   );
 };
 
 /**
  * Conexión con el backend (NestJS). En el Mac, /api llega a localhost:3000 por el proxy de
- * desarrollo; en Render, la web y la API están en la misma dirección.
+ * desarrollo; en Render, la web y la API están en la misma dirección; en la app de Android, el
+ * interceptor manda /api a Render (API_ORIGIN) y las peticiones salen por la parte nativa (CapacitorHttp),
+ * así que el servidor no necesita CORS.
  */
 @Injectable({ providedIn: 'root' })
 export class ApiService {

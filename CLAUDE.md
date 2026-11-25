@@ -62,6 +62,17 @@ NestJS 12 + Mongoose, ESM (los `import` relativos acaban en `.js`). Base MongoDB
 
 La API sirve también la web compilada (`app/www`, con `@nestjs/serve-static`): una sola dirección, sin CORS. En la raíz, `npm run build` instala y compila `app/` y `api/`; `npm start` arranca la API. Probado en el Mac en modo producción.
 
+## App de Android (APK)
+
+Capacitor 8 (`app/android/`, identificador `com.mygdd.app`, nombre «My GDD»). La web va dentro de la APK; solo los datos viajan a Render: en la app nativa el `authInterceptor` antepone `API_ORIGIN` (`https://my-gdd.onrender.com`) a `/api` y las peticiones salen por la parte nativa (`CapacitorHttp` en `capacitor.config.ts`), así que la API no necesita CORS. En el navegador no cambia nada. Los enlaces de los correos abren la web, no la app.
+
+- **Herramientas (sin Android Studio):** Java 21 (Temurin) en `~/Library/Java/JavaVirtualMachines/`, Android SDK en `~/Library/Android/sdk` (`cmdline-tools/latest` **arm64**: la versión x86_64 no funciona en este Mac; `platform-tools`, `platforms;android-36`, `build-tools;36.0.0`, y Gradle instaló `build-tools;35.0.0`). Gradle 8.14.3 (wrapper). El script ya busca Java y el SDK solo; no depende de `~/.zshrc`.
+- **Clave de firma (una sola vez, la crea el usuario en su Terminal; la contraseña nunca en el chat):**
+  `mkdir -p ~/Documents/MyGDD-firma && "$(/usr/libexec/java_home -v 21)/bin/keytool" -genkeypair -v -keystore ~/Documents/MyGDD-firma/my-gdd-release.jks -alias my-gdd -keyalg RSA -keysize 2048 -validity 10000`
+  Fuera del repositorio (`*.jks` en `.gitignore`). **Si se pierde, no se puede actualizar la app ya instalada o publicada**: guardar copia del archivo y la contraseña.
+- **Generar la APK:** en `app/`, `npm run apk` (`scripts/apk-release.sh`: compila la web, `cap sync`, `gradlew assembleRelease`, `zipalign` y `apksigner`, que pide la contraseña). Sale en `~/Documents/MyGDD-APK/my-gdd-<versionName>.apk`. Para una versión nueva, subir `versionCode` y `versionName` en `app/android/app/build.gradle`.
+- **Icono y arranque:** del sistema de diseño (`design/system/assets/Logos/*.svg`): icono adaptativo (capa delantera + fondo `#3F48CC` + monocromo para Android 13+), clásico y redondo, y pantalla de arranque azul con el logo (`windowSplashScreenBackground`). Los PNG de `app/android/app/src/main/res` se generan desde esos SVG con Chromium de Playwright (script de una sola vez; si cambia el icono, repetirlo).
+
 ## Roadmap
 
 `ROADMAP.md`: lo que queda por hacer, por secciones numeradas, con su estado y las dudas pendientes del usuario. El usuario envía cada sección cuando quiere empezarla; al acabarla se marca ✅ (fecha y commit) y se apunta en la bitácora. Antes de empezar una sección ❓, resolver sus dudas con el usuario.

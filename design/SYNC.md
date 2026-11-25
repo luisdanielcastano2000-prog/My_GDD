@@ -14,6 +14,7 @@ Copia local **de solo lectura** del diseño de My GDD en claude.ai. No se edita 
 - **Fecha:** 2026-11-23
 - **Vía usada:** (a) lectura directa de los artifacts con la cuenta de claude.ai de la sesión (conector `claude-artifacts`: `get_artifact` → `list_files` → `read_file` con `paths`, guardado en disco). No hizo falta la vía (b).
 - **Qué no se copia:** los archivos del visor y del tipo (`index.html`, `SKILL.md`, `artifact-type/**`).
+- **Imágenes del sistema de diseño (2026-11-25, con OK del usuario):** no salen en `list_files`; se guardan como *assets* del artifact. `design-system.json` › `assetGroups.Logos.files` da el `blob` de cada una → `list_assets` + `read_asset`. Copiados solo los 5 SVG del icono (para la APK); los logos con nombre y los PNG no. Misma versión `1795002814-f788`; sha256 comprobado.
 - **Comprobado:** el sha256 de cada archivo coincide con el que da `list_files`. `App.dc.html` pesa 460 295 bytes. Los JSON son válidos. Hay 112 marcos `F5-*`, 30 `Mov-*` y 2 `Prototipo-HF-*`.
 - **Aviso:** los marcos `*.dc.html` cargan `./support.js`, que pone el visor de claude.ai y no está en la copia. Fuera de claude.ai no se ven tal cual: sirven como referencia (escena, tema, orientación y tamaño de texto de cada marco).
 
@@ -184,6 +185,11 @@ fd02f347cad4      1042  project/Prototipo-HF-Claro.dc.html
 
 ```
 9d73d9011676       722  assets/Logos/README.md
+481c038f5705       146  assets/Logos/ic_launcher_background.svg
+be3ebff10ce8      2332  assets/Logos/ic_launcher_foreground.svg
+8b7608bc9aed       816  assets/Logos/ic_launcher_monochrome.svg
+414a3a0b9ceb      2387  assets/Logos/my-gdd-icono-cuadrado.svg
+73c9fffab16b      2396  assets/Logos/my-gdd-icono.svg
 4feb887683cd      3419  components/BottomSheet/preview.html
 2dad88548905       540  components/BottomSheet/README.md
 952b82d54f7b      4638  components/Button/preview.html
