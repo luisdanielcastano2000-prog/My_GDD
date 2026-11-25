@@ -271,3 +271,11 @@ Cómo arrancar y cómo está organizado el proyecto: `CLAUDE.md`. Aquí va **lo 
 - Prueba `app/e2e/twostep.spec.ts` (6, solo en el Mac). Capturas en catalán del paso del código y del interruptor revisadas. En el Mac: e2e **60/60**, unitarias 6/6 (app) y 12/12 (api), lint bien.
 - Roadmap 7 en línea (`8f2b605`, publicado con el OK del usuario): **46 pasan, 14 saltadas** (8 de correo y 6 de dos pasos: sin outbox). A mano en línea (cuenta de prueba, borrada): activar los dos pasos → 400 «Two-step verification needs email, which isn’t set up yet.», `twoStep` sigue en false y se entra sin código.
 - **El roadmap queda completo**, salvo activar Brevo (sección 3, lo hace el usuario). Con Brevo activo, los dos pasos se podrán usar.
+
+**Roadmap 3 · Brevo activado en línea** (2026-11-25)
+- El usuario creó la cuenta de Brevo, verificó su Gmail como remitente y puso las variables en Render (con ayuda paso a paso; la clave nunca pasó por el chat).
+- Tropiezos, por si se repiten: (1) Brevo cambió los menús (ahora todo cuelga de **Settings**, abajo a la izquierda); (2) la clave se perdió al cerrar la ventana → se creó otra (Brevo solo la enseña una vez); (3) la clave se puso primero en **otro servicio** de Render → `mail: false` en línea; (4) faltaba `MAIL_FROM` → Brevo respondía **400** (`[Mail] Brevo respondió 400 al enviar «Verify your email»` en *Logs*). Con `MAIL_FROM` puesto, el usuario recibió el correo.
+- Comprobado en línea con una cuenta de prueba (borrada): `GET /api/me` → `mail: true`; activar los dos pasos sin verificar → 403 «Verify your email to turn on two-step verification.».
+- **Pruebas en línea con el correo activo:** las que invitan se saltan (las cuentas `@example.com` no se pueden verificar). Dos pruebas fallaban por cómo estaban escritas, no por la app: `general` «dos días después» miraba la nota enviada que crea una prueba saltada (ahora solo si hay notas enviadas) e `i18n` «toda la app en español» tomaba el primer `.li-text` de *Mi equipo*, que ahora es el aviso «Verifica tu email» (ahora busca la fila «(tú)»). Tras arreglarlas: `general` + `i18n` en línea 13 pasan, 1 saltada; en el Mac **60/60**.
+- Visto una vez (no se repitió en otras dos ejecuciones): `animations.spec.ts` «arranque» falló dentro de la suite completa en el Mac y pasó sola. Sin investigar; si vuelve, mirarlo.
+- **El roadmap queda completo y en línea.**

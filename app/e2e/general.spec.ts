@@ -125,7 +125,10 @@ test('dos días después las fechas avanzan solas', async ({ browser }) => {
   await p.goto('/home');
   await expect(p.locator('ion-content').last()).toContainText('Updated 2 days ago');
   await expect(p.locator('ion-content').last()).toContainText('edited 2 days ago');
-  await p.goto('/notes');
-  await p.getByRole('tab', { name: 'Sent' }).click();
-  await expect(p.locator('ion-content').last()).toContainText('2 days ago');
+  // La nota enviada la crea «nota al equipo», que se salta si no se pueden verificar las cuentas (app publicada con correo)
+  if ((await api<{ sent: unknown[] }>(A, '/api/me')).sent.length) {
+    await p.goto('/notes');
+    await p.getByRole('tab', { name: 'Sent' }).click();
+    await expect(p.locator('ion-content').last()).toContainText('2 days ago');
+  }
 });

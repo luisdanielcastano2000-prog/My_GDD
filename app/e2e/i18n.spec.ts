@@ -125,7 +125,7 @@ test('toda la app en español', async () => {
   await tour(A, english(dict('es')));
   // Palabras sueltas que el filtro de frases no ve: tu fila en Mi equipo
   await A.goto('/profile/team');
-  await expect(A.locator('.li-text').first()).toContainText(/\(tú\)\s*Propietario/);
+  await expect(A.locator('.li-text', { hasText: '(tú)' })).toContainText(/\(tú\)\s*Propietario/); // no el aviso «Verifica tu email»
 });
 
 test('fechas y avisos en español; los GDDs nuevos usan la plantilla en español', async () => {

@@ -1,4 +1,4 @@
-> **Actualización 2026-11-25 (noche):** roadmap completo y publicado (secciones 1–7, comprobadas en línea). Solo queda que el usuario active Brevo (pasos en `ROADMAP.md`, sección 3); con eso funcionan el correo y la verificación en dos pasos. Cualquier otra cosa es trabajo nuevo que pide el usuario.
+> **Actualización 2026-11-25 (Brevo):** roadmap completo y en línea, **con Brevo activo** (los correos llegan; la verificación en dos pasos ya se puede usar). No queda nada pendiente: lo siguiente es trabajo nuevo que pida el usuario.
 
 > **Actualización 2026-11-25:** secciones 1–6 del roadmap hechas y publicadas (la 6, idiomas es/ca, comprobada en línea; los correos siguen en inglés por decisión del usuario). Lo siguiente: sección 7 de `ROADMAP.md` (pequeños pendientes). Brevo (sección 3) sigue pendiente de que el usuario lo active.
 
