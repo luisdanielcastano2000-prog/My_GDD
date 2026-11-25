@@ -1,3 +1,8 @@
+> **📌 Pendiente para la próxima revisión (2026-11-25) — recordárselo al usuario:**
+> 1. **APK de Android:** funciona en el móvil (entrar, guardar, el cambio sale en la web), pero el usuario quiere iterarla más adelante (sin concretar todavía: preguntarle qué). Ver `CLAUDE.md` › «App de Android» y la bitácora.
+> 2. **Prueba de animaciones** «arranque» (ver el aviso de abajo), sigue en pausa.
+> 3. **Pruebas en línea con poca cobertura:** con Brevo activo, en línea solo corren 21 de 60 (39 saltadas: las cuentas de prueba `@example.com` no pueden verificar el email, así que no pueden invitar). En el Mac corren todas. Idea por decidir con el usuario: un modo de prueba en el servidor para marcar verificadas las cuentas de prueba, o aceptarlo así.
+
 > **⏸️ En pausa (2026-11-25, por decisión del usuario):** investigar el fallo ocasional de `app/e2e/animations.spec.ts` «arranque» (falló una vez en la suite completa en el Mac; sola pasa). Estimado 30–60 min; si en 1 h no se reproduce, parar e informar. **Recordárselo al usuario** cuando dé nuevas instrucciones, y no empezarlo sin su OK.
 
 > **Actualización 2026-11-25 (Brevo):** roadmap completo y en línea, **con Brevo activo** (los correos llegan; la verificación en dos pasos ya se puede usar). No queda nada pendiente: lo siguiente es trabajo nuevo que pida el usuario.
