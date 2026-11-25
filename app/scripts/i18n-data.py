@@ -417,6 +417,7 @@ T = {
 "Editor": ("Editor", "Editor"),
 "Viewer": ("Lector", "Lector"),
 "Owner": ("Propietario", "Propietari"),
+"{name} (you)": ("{name} (tú)", "{name} (tu)"),
 "Departments they can edit · None selected = all": ("Departamentos que puede editar · Ninguno = todos", "Departaments que pot editar · Cap = tots"),
 "Their departments · They get the notes sent to them": ("Sus departamentos · Recibe las notas que se les envían", "Els seus departaments · Rep les notes que s’hi envien"),
 "No access": ("Sin acceso", "Sense accés"),

@@ -403,6 +403,7 @@ export const CA: Record<string, string> = {
   'Editor': 'Editor',
   'Viewer': 'Lector',
   'Owner': 'Propietari',
+  '{name} (you)': '{name} (tu)',
   'Departments they can edit · None selected = all': 'Departaments que pot editar · Cap = tots',
   'Their departments · They get the notes sent to them': 'Els seus departaments · Rep les notes que s’hi envien',
   'No access': 'Sense accés',

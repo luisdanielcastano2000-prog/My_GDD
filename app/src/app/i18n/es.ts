@@ -403,6 +403,7 @@ export const ES: Record<string, string> = {
   'Editor': 'Editor',
   'Viewer': 'Lector',
   'Owner': 'Propietario',
+  '{name} (you)': '{name} (tú)',
   'Departments they can edit · None selected = all': 'Departamentos que puede editar · Ninguno = todos',
   'Their departments · They get the notes sent to them': 'Sus departamentos · Recibe las notas que se les envían',
   'No access': 'Sin acceso',

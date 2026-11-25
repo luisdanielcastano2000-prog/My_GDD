@@ -275,7 +275,7 @@ export class PasswordPage {
           @for (m of team().members; track m.id) {
             <li class="setting" style="min-height:72px" [class.slide-out]="store.dying() === m.id" [attr.data-flip]="m.id">
               <span class="member-ini" [class.you]="m.you">{{ m.name.charAt(0).toUpperCase() }}</span>
-              <span class="li-text"><span class="li-title">{{ m.you ? m.name + ' (you)' : m.name }}</span><span class="li-sub">{{ m.you ? m.role : access(m.role, m.grants) }}</span></span>
+              <span class="li-text"><span class="li-title">{{ m.you ? ('{name} (you)' | t: { name: m.name }) : m.name }}</span><span class="li-sub">{{ m.you ? (m.role | t) : access(m.role, m.grants) }}</span></span>
               @if (!m.you) { <button class="btn btn-outlined" type="button" (click)="store.sheet.set({ k: 'manage', id: m.id, role: m.role, grants: m.grants })">{{ 'Manage' | t }}</button> }
             </li>
           }

@@ -87,6 +87,9 @@ test('cambiar a español: al momento, sin recargar, y se guarda en la cuenta', a
 
 test('toda la app en español', async () => {
   await tour(A, english(dict('es')));
+  // Palabras sueltas que el filtro de frases no ve: tu fila en Mi equipo
+  await A.goto('/profile/team');
+  await expect(A.locator('.li-text').first()).toContainText(/\(tú\)\s*Propietario/);
 });
 
 test('fechas y avisos en español; los GDDs nuevos usan la plantilla en español', async () => {
@@ -120,7 +123,7 @@ test('toda la app en catalán', async () => {
 
 test('los idiomas sin traducción no se eligen; el acceso recuerda el idioma', async ({ browser }) => {
   await A.goto('/profile/language');
-  await A.getByRole('radio', { name: /Deutsch/ }).click();
+  await A.getByRole('radio', { name: /Deutsch/ }).click({ force: true }); // aria-disabled: Playwright no lo pulsaría
   await expect(A.locator('.snackbar')).toContainText('Deutsch encara no està disponible.');
   await expect(A.getByRole('radio', { name: /Català/ })).toHaveAttribute('aria-checked', 'true');
   // Al cerrar sesión, la pantalla de entrada sigue en catalán (se recuerda en este navegador)
