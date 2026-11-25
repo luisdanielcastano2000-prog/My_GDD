@@ -261,3 +261,11 @@ Cómo arrancar y cómo está organizado el proyecto: `CLAUDE.md`. Aquí va **lo 
 - **Decisión del usuario (2026-11-25):** los correos se quedan en inglés.
 - Roadmap 6 en línea (`ac3d1f5`, `wip/idiomas` fusionada en `main` sin conflicto): **46 pasan, 8 saltadas** (correo).
 - **Siguiente:** sección 7 (pequeños pendientes) y, cuando el usuario lo active, Brevo (sección 3).
+
+**Roadmap 7 · Pequeños pendientes** (2026-11-25)
+- **Decisiones del usuario:** 7.2 hacer real la verificación en dos pasos con código por correo; 7.4 quedarse con Render gratis. 7.1 ya estaba hecho.
+- 7.3 Prettier en `app/` en un commit aparte (40 archivos, solo formato). Prettier también reformateaba `i18n/es.ts` y `ca.ts` y rompía `i18n:check` (lee esos archivos línea a línea) → van en `.prettierignore` (los genera `i18n-data.py`). Comprobado: lint, unitarias, e2e 54/54 y capturas es/ca iguales a las de antes (solo cambia el email de la cuenta de prueba).
+- 7.2 Dos pasos: servidor (`User.twoStep`, `User.devices`; `MailService.newCode/useCode`; `codeMail`; `POST /api/auth/login/code`; `PATCH /api/me/two-step`; `auth/devices.ts`), front (paso del código en *Log in*, interruptor real, `ApiService.device`) y 13 textos nuevos en es/ca (589 claves). Detalles en `CLAUDE.md`.
+- **Decisiones (Claude):** «aparato nuevo» = navegador sin el identificador guardado (no se borra al cerrar sesión); el código va en el asunto del correo (se ve en la notificación); tras 5 fallos el código se anula; «Send a new code» repite el inicio de sesión (anula el anterior); con el correo apagado no se pide código (si no, nadie podría entrar) y el interruptor no se puede activar; «Log out of other devices» y la contraseña nueva por enlace olvidan los aparatos de confianza; correo en inglés, como los demás.
+- **Fallo encontrado y arreglado:** si el servidor no dejaba activarlo, el interruptor se quedaba encendido en pantalla (el valor iba de false a true y otra vez a false antes de que Angular lo pintara) → la vuelta atrás espera un instante (`setTimeout`).
+- Prueba `app/e2e/twostep.spec.ts` (6, solo en el Mac). Capturas en catalán del paso del código y del interruptor revisadas. En el Mac: e2e **60/60**, unitarias 6/6 (app) y 12/12 (api), lint bien.

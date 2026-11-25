@@ -10,7 +10,7 @@
 // - 'brevo'  : hay clave → se envía de verdad.
 // - 'outbox' : sin clave y fuera de producción (Mac, pruebas) → se guarda en la colección outbox.
 // - 'off'    : sin clave en producción → no se envía nada y no se pide verificar el email.
-import { createHash, randomBytes } from 'node:crypto';
+import { createHash, randomBytes, randomInt } from 'node:crypto';
 
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -74,6 +74,29 @@ export class MailService {
   async useToken(token: string, kinds: string[]): Promise<{ uid: string; kind: string; email?: string } | null> {
     const t = await this.tokens.findOneAndDelete({ _id: sha256(String(token)), kind: { $in: kinds }, exp: { $gt: new Date() } }).lean();
     return t ? { uid: t.uid, kind: t.kind, email: t.email } : null;
+  }
+
+  /**
+   * Código para entrar en dos pasos (10 min). Devuelve el código (va en el correo) y el «ticket»
+   * que guarda el front para enviarlo con el código. Se guardan solo sus sha256.
+   */
+  async newCode(uid: string): Promise<{ ticket: string; code: string }> {
+    await this.tokens.deleteMany({ uid, kind: 'code' });
+    const ticket = randomBytes(32).toString('base64url');
+    const code = String(randomInt(0, 1_000_000)).padStart(6, '0');
+    await this.tokens.create({ _id: sha256(ticket), uid, kind: 'code', code: sha256(ticket + code), tries: 0, exp: new Date(Date.now() + 10 * 60_000) });
+    return { ticket, code };
+  }
+
+  /** Comprueba un código: 'ok' (y lo borra), 'bad' (cuenta el intento; al 5.º se anula) o 'gone' (caducado, usado o anulado). */
+  async useCode(ticket: string, code: string): Promise<{ r: 'ok'; uid: string } | { r: 'bad' | 'gone' }> {
+    const id = sha256(String(ticket));
+    const t = await this.tokens.findOne({ _id: id, kind: 'code', exp: { $gt: new Date() } }).lean();
+    if (!t) return { r: 'gone' };
+    if (t.code === sha256(ticket + code) && (await this.tokens.deleteOne({ _id: id })).deletedCount) return { r: 'ok', uid: t.uid };
+    const after = await this.tokens.findOneAndUpdate({ _id: id }, { $inc: { tries: 1 } }, { new: true }).lean();
+    if (!after || (after.tries ?? 0) >= 5) { await this.tokens.deleteOne({ _id: id }); return { r: 'gone' }; }
+    return { r: 'bad' };
   }
 
   link(path: string, token: string): string {

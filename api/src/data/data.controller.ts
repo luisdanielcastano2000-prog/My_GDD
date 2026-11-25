@@ -10,7 +10,8 @@ import { IsArray, IsBoolean, IsIn, IsNumber, IsObject, IsOptional, IsString, Max
 import type { Model } from 'mongoose';
 
 import { AuthGuard, UserId } from '../auth/auth.guard.js';
-import { EmailDto, PasswordDto, ProfileDto } from '../auth/dto.js';
+import { trust } from '../auth/devices.js';
+import { DeviceDto, EmailDto, PasswordDto, ProfileDto, TwoStepDto } from '../auth/dto.js';
 import { IpThrottlerGuard } from '../auth/ip-throttler.guard.js';
 import { MailService } from '../mail/mail.service.js';
 import { emailChangeMail, inviteMail, passwordChangedMail, verifyMail } from '../mail/templates.js';
@@ -107,6 +108,7 @@ export class MeController {
       // Correo: si está activo, hay que verificar el email para invitar y aceptar invitaciones
       mail: this.mail.enabled,
       emailVerified: !!u.emailVerified,
+      twoStep: !!u.twoStep,
       pendingEmail: this.mail.enabled ? ((await this.users.db.collection('tokens').findOne({ uid: id, kind: 'email', exp: { $gt: new Date() } }))?.['email'] as string | undefined) : undefined,
       teams,
       // Invitaciones: de quién, con qué rol y a qué proyectos (sin grants = a todos)
@@ -177,8 +179,28 @@ export class MeController {
   /** «Log out of other devices»: los tokens anteriores dejan de valer; este aparato recibe uno nuevo. */
   @Post('logout-others')
   @HttpCode(200)
-  async logoutOthers(@UserId() id: string): Promise<{ token: string }> {
+  async logoutOthers(@UserId() id: string, @Body() dto: DeviceDto): Promise<{ token: string }> {
+    // Con dos pasos, los otros aparatos dejan de ser de confianza: al volver a entrar piden código
+    await this.users.updateOne({ _id: id }, { $set: { devices: trust([], dto.device) } });
     return { token: await this.bump(id) };
+  }
+
+  /**
+   * Activar o quitar la verificación en dos pasos. Hace falta correo (para mandar los códigos) y el email
+   * verificado (si no, el código podría ir a un buzón equivocado). Este navegador queda de confianza.
+   */
+  @Patch('two-step')
+  async twoStep(@UserId() id: string, @Body() dto: TwoStepDto): Promise<{ ok: true; twoStep: boolean }> {
+    const u = await this.users.findById(id);
+    if (!u) throw new NotFoundException('This account no longer exists.');
+    if (dto.on) {
+      if (!this.mail.enabled) throw new BadRequestException('Two-step verification needs email, which isn’t set up yet.');
+      if (!u.emailVerified) throw new ForbiddenException('Verify your email to turn on two-step verification.');
+      u.devices = trust(u.devices, dto.device);
+    }
+    u.twoStep = dto.on;
+    await u.save();
+    return { ok: true, twoStep: u.twoStep };
   }
 
   /** «Send feedback»: se guarda en la colección feedback (se lee en Atlas). */

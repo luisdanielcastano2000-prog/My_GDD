@@ -99,12 +99,12 @@ Todas respetan «menos movimiento» (fundido de 150 ms o menos).
 
 Pasos: 6.1 sistema de traducción + inglés · 6.2 español · 6.3 catalán · 6.4 japonés + fuente · 6.5 fechas y mensajes del servidor · 6.6 pruebas en los 4 idiomas.
 
-## 7. Pequeños pendientes ⬜
+## 7. Pequeños pendientes ✅ 2026-11-25
 
 - 7.1 ✅ **Borrar la cuenta:** ya existe en *Profile › Personal info › Delete account*. **Decisión del usuario: no añadir acceso directo en *Profile*.**
-- 7.2 Verificación en dos pasos: quitar el interruptor (no hace nada) o hacerla real después del correo (3).
-- 7.3 Formato del código (Prettier) en `app/`: un commit aparte, sin cambios de código.
-- 7.4 Render gratis se duerme: aceptarlo o pasar al plan de pago.
+- 7.2 ✅ **Verificación en dos pasos real, con código por correo** (decisión del usuario, 2026-11-25). En línea queda inactiva hasta activar Brevo (sección 3).
+- 7.3 ✅ Prettier en `app/` (commit aparte, solo formato; los diccionarios generados quedan fuera de Prettier).
+- 7.4 ✅ **Decisión del usuario (2026-11-25): se acepta el plan gratis** (se duerme a los 15 min; primera carga ~1 min).
 
 ---
 

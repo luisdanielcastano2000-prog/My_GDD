@@ -427,8 +427,17 @@ export class PersonalPage {
           <li class="setting">
             <span class="li-text"
               ><span class="li-title">{{ 'Two-step verification' | t }}</span
-              ><span class="li-sub">{{ 'Ask for a code when you log in on a new device.' | t }}</span></span
-            ><app-switch [label]="'Two-step verification' | t" [(on)]="tfa" />
+              ><span class="li-sub">{{
+                (store.live() && !store.mailOn()
+                  ? 'Available once email is set up.'
+                  : 'Ask for a code from your email when you log in on a new device.'
+                ) | t
+              }}</span></span
+            ><app-switch
+              [label]="'Two-step verification' | t"
+              [(on)]="store.twoStep"
+              (changed)="store.setTwoStep($event)"
+            />
           </li>
           <li>
             <button class="li" type="button" (click)="store.logoutOthers()">
@@ -470,7 +479,6 @@ export class PasswordPage {
   protected vals = signal({ cur: '', nw: '', cf: '' });
   protected perr = signal<'' | 'cur' | 'nw' | 'cf'>('');
   protected show = signal(false);
-  protected tfa = signal(false);
   setVal(k: 'cur' | 'nw' | 'cf', v: string): void {
     this.vals.update((x) => ({ ...x, [k]: v }));
     this.perr.set('');

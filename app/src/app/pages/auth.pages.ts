@@ -45,70 +45,125 @@ const validEmail = (e: string): boolean => e.trim().indexOf('@') > 0;
           <app-brand />
           <p class="tagline">{{ 'Your GDD, structured and up to date.' | t }}</p>
         </div>
-        <h2><span class="ms ic-muted">account_circle</span>{{ 'Log in' | t }}</h2>
-        <div class="field" [class.error]="errEmail()">
-          <div class="field-box">
-            <label for="lg-email">{{ 'Email' | t }}</label>
-            <input
-              id="lg-email"
-              type="email"
-              autocomplete="email"
-              [value]="email()"
-              (input)="email.set($any($event.target).value); clear()"
-            />
+        @if (ticket()) {
+          <!-- Segundo paso (verificación en dos pasos): el código que llega por correo -->
+          <div>
+            <h2><span class="ms ic-muted">mark_email_unread</span>{{ 'Check your email' | t }}</h2>
+            <p class="li-sub">
+              {{ 'We sent a 6-digit code to {email}. It works for 10 minutes.' | t: { email: email().trim() } }}
+            </p>
           </div>
-          @if (errEmail()) {
-            <span class="field-error">{{ 'Enter your email.' | t }}</span>
-          }
-        </div>
-        <div class="field" [class.error]="errPw()">
-          <div class="field-box">
-            <label for="lg-pw">{{ 'Password' | t }}</label>
-            <input
-              id="lg-pw"
-              [type]="show() ? 'text' : 'password'"
-              autocomplete="current-password"
-              [value]="pw()"
-              (input)="pw.set($any($event.target).value); clear()"
-            />
-            <button
-              class="icon-btn trail"
-              type="button"
-              [attr.aria-label]="(show() ? 'Hide password' : 'Show password') | t"
-              (click)="show.set(!show())"
-            >
-              <span class="ms">{{ show() ? 'visibility_off' : 'visibility' }}</span>
-            </button>
+          <div class="field" [class.error]="!!codeErr()">
+            <div class="field-box">
+              <label for="lg-code">{{ 'Code' | t }}</label>
+              <input
+                id="lg-code"
+                inputmode="numeric"
+                autocomplete="one-time-code"
+                maxlength="6"
+                [value]="code()"
+                (input)="setCode($any($event.target))"
+              />
+            </div>
+            @if (codeErr()) {
+              <span class="field-error" role="alert">{{ codeErr() | t }}</span>
+            }
           </div>
-          @if (errPw()) {
-            <span class="field-error">{{ 'Enter your password.' | t }}</span>
+          <button
+            class="btn btn-filled m block"
+            type="submit"
+            [class.ok]="phase() === 'ok'"
+            [attr.aria-busy]="!!phase()"
+          >
+            @switch (phase()) {
+              @case ('load') {
+                <span class="spin"></span>{{ 'Logging in' | t }}
+              }
+              @case ('ok') {
+                <span class="ms">check</span>{{ 'Logged in' | t }}
+              }
+              @default {
+                {{ 'Log in' | t }}
+              }
+            }
+          </button>
+          <button class="btn btn-text" type="button" style="align-self:center" (click)="resend()">
+            {{ 'Send a new code' | t }}
+          </button>
+          <button class="btn btn-text" type="button" style="align-self:center" (click)="back()">
+            {{ 'Back' | t }}
+          </button>
+        } @else {
+          <h2><span class="ms ic-muted">account_circle</span>{{ 'Log in' | t }}</h2>
+          <div class="field" [class.error]="errEmail()">
+            <div class="field-box">
+              <label for="lg-email">{{ 'Email' | t }}</label>
+              <input
+                id="lg-email"
+                type="email"
+                autocomplete="email"
+                [value]="email()"
+                (input)="email.set($any($event.target).value); clear()"
+              />
+            </div>
+            @if (errEmail()) {
+              <span class="field-error">{{ 'Enter your email.' | t }}</span>
+            }
+          </div>
+          <div class="field" [class.error]="errPw()">
+            <div class="field-box">
+              <label for="lg-pw">{{ 'Password' | t }}</label>
+              <input
+                id="lg-pw"
+                [type]="show() ? 'text' : 'password'"
+                autocomplete="current-password"
+                [value]="pw()"
+                (input)="pw.set($any($event.target).value); clear()"
+              />
+              <button
+                class="icon-btn trail"
+                type="button"
+                [attr.aria-label]="(show() ? 'Hide password' : 'Show password') | t"
+                (click)="show.set(!show())"
+              >
+                <span class="ms">{{ show() ? 'visibility_off' : 'visibility' }}</span>
+              </button>
+            </div>
+            @if (errPw()) {
+              <span class="field-error">{{ 'Enter your password.' | t }}</span>
+            }
+          </div>
+          @if (bad()) {
+            <p class="bad" role="alert">
+              {{ 'The email or password is incorrect. Try again or reset your password.' | t }}
+            </p>
           }
-        </div>
-        @if (bad()) {
-          <p class="bad" role="alert">
-            {{ 'The email or password is incorrect. Try again or reset your password.' | t }}
+          <button class="btn btn-text" type="button" style="align-self:flex-start;margin-left:-12px" (click)="forgot()">
+            {{ 'Forgot password?' | t }}
+          </button>
+          <button
+            class="btn btn-filled m block"
+            type="submit"
+            [class.ok]="phase() === 'ok'"
+            [attr.aria-busy]="!!phase()"
+          >
+            @switch (phase()) {
+              @case ('load') {
+                <span class="spin"></span>{{ 'Logging in' | t }}
+              }
+              @case ('ok') {
+                <span class="ms">check</span>{{ 'Logged in' | t }}
+              }
+              @default {
+                {{ 'Log in' | t }}
+              }
+            }
+          </button>
+          <p class="alt">
+            {{ 'Don’t have an account?' | t }}
+            <button class="btn btn-text" type="button" (click)="nav.go('/signup')">{{ 'Sign up' | t }}</button>
           </p>
         }
-        <button class="btn btn-text" type="button" style="align-self:flex-start;margin-left:-12px" (click)="forgot()">
-          {{ 'Forgot password?' | t }}
-        </button>
-        <button class="btn btn-filled m block" type="submit" [class.ok]="phase() === 'ok'" [attr.aria-busy]="!!phase()">
-          @switch (phase()) {
-            @case ('load') {
-              <span class="spin"></span>{{ 'Logging in' | t }}
-            }
-            @case ('ok') {
-              <span class="ms">check</span>{{ 'Logged in' | t }}
-            }
-            @default {
-              {{ 'Log in' | t }}
-            }
-          }
-        </button>
-        <p class="alt">
-          {{ 'Don’t have an account?' | t }}
-          <button class="btn btn-text" type="button" (click)="nav.go('/signup')">{{ 'Sign up' | t }}</button>
-        </p>
       </form>
     </ion-content>
   `,
@@ -124,6 +179,10 @@ export class LoginPage {
   protected errPw = signal(false);
   protected bad = signal(this.d.bad);
   protected phase = signal<'' | 'load' | 'ok'>('');
+  // Dos pasos: ticket del servidor (hay que poner el código del correo), el código y su error
+  protected ticket = signal<string | null>(null);
+  protected code = signal('');
+  protected codeErr = signal('');
 
   clear(): void {
     this.errEmail.set(false);
@@ -131,6 +190,7 @@ export class LoginPage {
     this.bad.set(false);
   }
   submit(): void {
+    if (this.ticket()) return this.submitCode();
     const em = this.email().trim();
     this.errEmail.set(!em);
     this.errPw.set(!this.pw());
@@ -139,13 +199,65 @@ export class LoginPage {
     if (this.phase()) return;
     this.phase.set('load');
     this.store.login(em, this.pw()).then(
-      () => withLoading(this.store, this.phase, () => this.nav.root('/home'), true),
+      (ticket) => {
+        if (!ticket) return withLoading(this.store, this.phase, () => this.nav.root('/home'), true);
+        this.phase.set('');
+        this.code.set('');
+        this.codeErr.set('');
+        this.ticket.set(ticket);
+        setTimeout(() => document.getElementById('lg-code')?.focus());
+      },
       (e: unknown) => {
         this.phase.set('');
         if (e instanceof HttpErrorResponse && e.status === 401) this.bad.set(true);
         else this.store.toast(apiMessage(e), { kind: 'err' });
       },
     );
+  }
+  /** Solo cifras (también si se pega «123 456»). */
+  setCode(el: HTMLInputElement): void {
+    const v = el.value.replace(/\D/g, '').slice(0, 6);
+    if (el.value !== v) el.value = v;
+    this.code.set(v);
+    this.codeErr.set('');
+  }
+  submitCode(): void {
+    const ticket = this.ticket();
+    if (!ticket || this.phase()) return;
+    if (!/^\d{6}$/.test(this.code())) {
+      this.codeErr.set('Enter the 6-digit code.');
+      return;
+    }
+    this.phase.set('load');
+    this.store.loginCode(ticket, this.code()).then(
+      () => withLoading(this.store, this.phase, () => this.nav.root('/home'), true),
+      (e: unknown) => {
+        this.phase.set('');
+        if (e instanceof HttpErrorResponse && (e.status === 400 || e.status === 401))
+          this.codeErr.set(apiMessage(e, false));
+        else this.store.toast(apiMessage(e), { kind: 'err' });
+      },
+    );
+  }
+  /** «Send a new code»: vuelve a entrar con la misma contraseña (el código anterior deja de valer). */
+  resend(): void {
+    if (this.phase()) return;
+    this.store.login(this.email().trim(), this.pw()).then(
+      (ticket) => {
+        this.code.set('');
+        this.codeErr.set('');
+        if (ticket) {
+          this.ticket.set(ticket);
+          this.store.toast(t('We sent a new code to {email}.', { email: this.email().trim() }));
+        } else withLoading(this.store, this.phase, () => this.nav.root('/home'), true);
+      },
+      (e: unknown) => this.store.toast(apiMessage(e), { kind: 'err' }),
+    );
+  }
+  back(): void {
+    this.ticket.set(null);
+    this.code.set('');
+    this.codeErr.set('');
   }
   forgot(): void {
     this.store.setDraft('forgot', { email: this.email() });

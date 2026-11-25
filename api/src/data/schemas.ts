@@ -25,6 +25,10 @@ export class User {
   @Prop({ default: false }) emailVerified: boolean;
   /** Versión de sesión: al subirla, los tokens antiguos dejan de valer (cambiar contraseña, «Log out of other devices»). */
   @Prop({ default: 0 }) tv: number;
+  /** Verificación en dos pasos: al entrar desde un aparato nuevo se pide un código que llega por correo. */
+  @Prop({ default: false }) twoStep: boolean;
+  /** Aparatos de confianza (sha256 del identificador de cada navegador; los 10 últimos): ahí no se pide código. */
+  @Prop({ type: [String], default: [] }) devices: string[];
   @Prop({ type: Object, default: () => ({ members: [], invites: [] }) }) team: { members: Record<string, unknown>[]; invites: Record<string, unknown>[] };
 }
 export type UserDoc = HydratedDocument<User>;
@@ -77,8 +81,10 @@ export const FeedbackSchema = SchemaFactory.createForClass(Feedback);
 export class MailToken {
   @Prop({ type: String, required: true }) _id: string; // sha256 del token
   @Prop({ required: true, index: true }) uid: string;
-  @Prop({ required: true, enum: ['verify', 'reset', 'email'] }) kind: string;
+  @Prop({ required: true, enum: ['verify', 'reset', 'email', 'code'] }) kind: string;
   @Prop() email?: string; // el email nuevo (kind 'email')
+  @Prop() code?: string; // sha256 del código de 6 cifras (kind 'code', entrar en dos pasos)
+  @Prop() tries?: number; // intentos fallidos con ese código (al 5.º se anula)
   @Prop({ required: true, expires: 0 }) exp: Date; // índice TTL: se borra al caducar
 }
 export const MailTokenSchema = SchemaFactory.createForClass(MailToken);

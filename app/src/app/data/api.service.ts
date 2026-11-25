@@ -7,6 +7,7 @@ import { t } from '../i18n/i18n';
 import type { AppData, Gdd, Invitation, Note, SentNote, TeamRef } from './models';
 
 const TOKEN_KEY = 'mygdd.token';
+const DEVICE_KEY = 'mygdd.device'; // identificador de este navegador (dos pasos); no se borra al salir
 
 /** Lo que devuelve GET /api/me al entrar. */
 export interface MeResponse {
@@ -22,6 +23,7 @@ export interface MeResponse {
   mail?: boolean; // hay servicio de correo (si no, no se pide verificar el email)
   emailVerified?: boolean;
   pendingEmail?: string; // email nuevo esperando confirmación
+  twoStep?: boolean; // verificación en dos pasos activada
 }
 
 /** Mensaje de error de la API en lenguaje del diseño (o uno genérico si no hay conexión). */
@@ -63,10 +65,34 @@ export class ApiService {
     return firstValueFrom(o);
   }
 
+  /** Identificador de este navegador: con dos pasos, aquí no se vuelve a pedir el código tras usarlo una vez. */
+  get device(): string {
+    let d = localStorage.getItem(DEVICE_KEY);
+    if (!d) {
+      d = crypto.randomUUID();
+      localStorage.setItem(DEVICE_KEY, d);
+    }
+    return d;
+  }
+
   // ---------- cuenta ----------
-  async login(email: string, password: string): Promise<void> {
-    const r = await this.run(this.http.post<{ token: string }>('/api/auth/login', { email, password }));
+  /** Entra. Con dos pasos desde un aparato nuevo no hay token todavía: devuelve el ticket para enviar con el código. */
+  async login(email: string, password: string): Promise<string | null> {
+    const r = await this.run(
+      this.http.post<{ token?: string; ticket?: string }>('/api/auth/login', { email, password, device: this.device }),
+    );
+    if (r.token) this.setToken(r.token);
+    return r.token ? null : (r.ticket ?? null);
+  }
+  /** Segundo paso: el código del correo. */
+  async loginCode(ticket: string, code: string): Promise<void> {
+    const r = await this.run(
+      this.http.post<{ token: string }>('/api/auth/login/code', { ticket, code, device: this.device }),
+    );
     this.setToken(r.token);
+  }
+  setTwoStep(on: boolean): Promise<unknown> {
+    return this.run(this.http.patch('/api/me/two-step', { on, device: this.device }));
   }
   async signup(user: string, email: string, password: string): Promise<void> {
     const r = await this.run(this.http.post<{ token: string }>('/api/auth/signup', { user, email, password }));
@@ -85,7 +111,7 @@ export class ApiService {
   }
   /** «Log out of other devices»: este aparato sigue dentro con un token nuevo. */
   async logoutOthers(): Promise<void> {
-    const r = await this.run(this.http.post<{ token: string }>('/api/me/logout-others', {}));
+    const r = await this.run(this.http.post<{ token: string }>('/api/me/logout-others', { device: this.device }));
     this.setToken(r.token);
   }
   sendFeedback(topic: string, text: string, reply: boolean): Promise<unknown> {

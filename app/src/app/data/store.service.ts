@@ -91,6 +91,7 @@ export class StoreService {
   readonly mailOn = signal(false);
   readonly emailVerified = signal(true);
   readonly pendingEmail = signal<string | null>(null);
+  readonly twoStep = signal(false); // verificación en dos pasos
   readonly verifyRequired = computed(() => this.live() && this.mailOn() && !this.emailVerified());
   readonly unread = computed(() => this.data().notes.filter((n) => n.unread).length + this.invitations().length);
 
@@ -193,6 +194,7 @@ export class StoreService {
     this.mailOn.set(!!r.mail);
     this.emailVerified.set(r.emailVerified ?? true);
     this.pendingEmail.set(r.pendingEmail ?? null);
+    this.twoStep.set(!!r.twoStep);
     this.teams.set(r.teams ?? []);
     this.snapshot = structuredClone(d);
     this.homeIndex.set(Math.max(0, Math.min(this.homeIndex(), d.gdds.length - 1)));
@@ -587,10 +589,48 @@ export class StoreService {
     await this.load();
     this.toast(t('Account created. Welcome, {name}!', { name: this.data().user.name }));
   }
-  async login(email: string, password: string): Promise<void> {
-    await this.api.login(email, password);
+  /** Entra. Devuelve un ticket si hace falta el código del correo (dos pasos); si no, null y ya está dentro. */
+  async login(email: string, password: string): Promise<string | null> {
+    const ticket = await this.api.login(email, password);
+    if (ticket) return ticket;
     this.reset(true);
     await this.load();
+    return null;
+  }
+  async loginCode(ticket: string, code: string): Promise<void> {
+    await this.api.loginCode(ticket, code);
+    this.reset(true);
+    await this.load();
+  }
+  /** Interruptor «Two-step verification» (ya movido a `on`). Necesita correo y el email verificado; si no, vuelve atrás. */
+  async setTwoStep(on: boolean): Promise<void> {
+    this.twoStep.set(on);
+    if (!this.live()) return; // selector de pantallas
+    // Volver atrás después de que la pantalla pinte el cambio: si no, Angular no ve diferencia y el interruptor se queda movido
+    const undo = (): void => void setTimeout(() => this.twoStep.set(!on));
+    if (on && !this.mailOn()) {
+      undo();
+      this.toast(t('Two-step verification needs email, which isn’t set up yet.'));
+      return;
+    }
+    if (on && !this.emailVerified()) {
+      undo();
+      this.toast(t('Verify your email to turn on two-step verification.'), {
+        action: { label: t('Send link'), run: () => void this.resendVerify() },
+      });
+      return;
+    }
+    try {
+      await this.api.setTwoStep(on);
+      this.toast(
+        on
+          ? t('Two-step verification is on. New devices will ask for a code from your email.')
+          : t('Two-step verification is off.'),
+      );
+    } catch (e) {
+      undo();
+      this.toast(apiMessage(e), { kind: 'err' });
+    }
   }
 
   // ---------- crear ----------
@@ -1194,6 +1234,7 @@ export class StoreService {
     this.mailOn.set(false);
     this.emailVerified.set(true);
     this.pendingEmail.set(null);
+    this.twoStep.set(false);
     this.loadErr.set(false);
     this.sheet.set(null);
     this.dialog.set(null);

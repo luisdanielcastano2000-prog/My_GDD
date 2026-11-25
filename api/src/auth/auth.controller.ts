@@ -6,8 +6,9 @@ import type { Model } from 'mongoose';
 
 import { User } from '../data/schemas.js';
 import { MailService } from '../mail/mail.service.js';
-import { passwordChangedMail, resetMail, verifyMail } from '../mail/templates.js';
-import { EmailDto, LoginDto, ResetDto, SignupDto, TokenDto } from './dto.js';
+import { codeMail, passwordChangedMail, resetMail, verifyMail } from '../mail/templates.js';
+import { trust, trusted } from './devices.js';
+import { CodeDto, EmailDto, LoginDto, ResetDto, SignupDto, TokenDto } from './dto.js';
 import { IpThrottlerGuard } from './ip-throttler.guard.js';
 
 /** Crear cuenta y entrar. Devuelven un token que el front envía en cada petición. */
@@ -77,6 +78,7 @@ export class AuthController {
     if (!u) throw new BadRequestException('This account no longer exists.');
     u.passwordHash = await bcrypt.hash(dto.password, 10);
     u.tv = (u.tv ?? 0) + 1; // fuera de todos los aparatos
+    u.devices = []; // y ninguno queda de confianza: con dos pasos, todos piden código otra vez
     u.emailVerified = true; // el enlace llegó a su email
     await u.save();
     await this.mail.send(u.email, passwordChangedMail(u.name));
@@ -85,10 +87,33 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(200)
-  async login(@Body() dto: LoginDto): Promise<{ token: string }> {
+  async login(@Body() dto: LoginDto): Promise<{ token: string } | { twoStep: true; ticket: string }> {
     const doc = await this.users.findOne({ email: dto.email.trim().toLowerCase() });
     // Mismo mensaje si falla el email o la contraseña: no dice qué cuentas existen.
     if (!doc || !(await bcrypt.compare(dto.password, doc.passwordHash))) throw new UnauthorizedException('The email or password is incorrect.');
+    // Dos pasos: desde un aparato nuevo, la contraseña no basta; se manda un código al email.
+    // Sin correo (modo 'off') no se puede mandar: se entra como antes (el interruptor tampoco se puede activar).
+    if (doc.twoStep && this.mail.enabled && !trusted(doc.devices, dto.device)) {
+      const { ticket, code } = await this.mail.newCode(String(doc._id));
+      await this.mail.send(doc.email, codeMail(doc.name, code));
+      return { twoStep: true, ticket };
+    }
     return { token: await this.jwt.signAsync({ sub: String(doc._id), tv: doc.tv ?? 0 }) };
+  }
+
+  /** Segundo paso: el código del correo. Si vale, este navegador queda de confianza. */
+  @Post('login/code')
+  @HttpCode(200)
+  async loginCode(@Body() dto: CodeDto): Promise<{ token: string }> {
+    const c = await this.mail.useCode(dto.ticket, dto.code);
+    if (c.r !== 'ok') {
+      if (c.r === 'bad') throw new UnauthorizedException('That code isn’t right. Check the email and try again.');
+      throw new BadRequestException('This code has expired. Send a new one.');
+    }
+    const u = await this.users.findById(c.uid);
+    if (!u) throw new BadRequestException('This account no longer exists.');
+    u.devices = trust(u.devices, dto.device);
+    await u.save();
+    return { token: await this.jwt.signAsync({ sub: String(u._id), tv: u.tv ?? 0 }) };
   }
 }

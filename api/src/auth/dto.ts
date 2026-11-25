@@ -1,5 +1,5 @@
 // Reglas de los datos que llegan (la misma validación que el formulario del front: el front se puede saltar).
-import { IsEmail, IsIn, IsObject, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsBoolean, IsEmail, IsIn, IsObject, IsOptional, IsString, Matches, MaxLength, MinLength } from 'class-validator';
 
 export class SignupDto {
   @IsString() @MinLength(1, { message: 'Enter a user name.' }) @MaxLength(40) user: string;
@@ -23,6 +23,23 @@ export class ResetDto {
 export class LoginDto {
   @IsString() email: string;
   @IsString() password: string;
+  /** Identificador de este navegador (lo crea el front y lo guarda): para no pedir código en un aparato de confianza. */
+  @IsOptional() @IsString() @MaxLength(100) device?: string;
+}
+
+export class CodeDto {
+  @IsString() @MinLength(10) @MaxLength(200) ticket: string;
+  @IsString() @Matches(/^\d{6}$/, { message: 'Enter the 6-digit code.' }) code: string;
+  @IsOptional() @IsString() @MaxLength(100) device?: string;
+}
+
+export class TwoStepDto {
+  @IsBoolean() on: boolean;
+  @IsOptional() @IsString() @MaxLength(100) device?: string;
+}
+
+export class DeviceDto {
+  @IsOptional() @IsString() @MaxLength(100) device?: string;
 }
 
 export class ProfileDto {

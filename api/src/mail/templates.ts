@@ -28,3 +28,6 @@ export const inviteMail = (from: string, projects: string[], url: string): Mail 
 
 export const emailChangeMail = (name: string, url: string): Mail =>
   mail('Confirm your new email', [`Hi ${name}, confirm that this is the new email of your My GDD account.`], { label: 'Confirm my new email', url }, 'The link works for 48 hours. Until you confirm it, your account keeps the old email.');
+
+export const codeMail = (name: string, code: string): Mail =>
+  mail(`${code} is your My GDD code`, [`Hi ${name}, use this code to log in to My GDD on a new device:`, code, 'It works for 10 minutes and only once.'], undefined, 'If you didn’t try to log in, change your password: someone knows it.');
